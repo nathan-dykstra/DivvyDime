@@ -9,7 +9,7 @@
         height: var(--searchbar-primary-height);
         width: 100%;
         border: none;
-        background-color: #e2e2e2 !important;
+        background-color: var(--secondary-grey) !important;
         font-size: 1em;
         display: inline-flex;
         flex-direction: row;

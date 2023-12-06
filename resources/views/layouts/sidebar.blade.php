@@ -1,5 +1,6 @@
 @php
     $sidebar = config('sidebar');
+    $mobile_nav = config('mobilenav')
 @endphp
 
 <nav>
@@ -8,7 +9,7 @@
     <div class="sidebar" id="sidebar">
         <div class="pin-sidebar-btn-container">
             <div class="tooltip tooltip-left pin-sidebar-tooltip">
-                <i class="fa-solid fa-thumbtack pin-sidebar-icon hidden" id="pin-sidebar-icon" onclick="animateSidebarIcon(), pinSidebar()"></i>
+                <x-icon-button class="hidden" icon="fa-solid fa-thumbtack pin-sidebar-icon" id="pin-sidebar-icon" onclick="animateSidebarIcon(), pinSidebar()"></x-icon-button>
                 <span class="tooltip-text" id="pin-sidebar-tooltip">Pin Sidebar</span>
             </div>
         </div>
@@ -24,7 +25,7 @@
             @foreach($sidebar as $item)
                 <li>
                     <a href="{{ route($item['route']) }}" >
-                        <div class="sidebar-item" onclick="highlightSidebarItem(this)"><i class="{{ $item['icon'] }} sidebar-icon"></i>{{ $item['text'] }}</div>
+                        <div class="sidebar-item"><i class="{{ $item['icon'] }} sidebar-icon"></i>{{ $item['text'] }}</div>
                     </a>
                 </li>
             @endforeach
@@ -36,16 +37,57 @@
 
     <div class="mobile-navigation-wrapper">
         <ul class="mobile-navigation">
-            @foreach($sidebar as $item)
+            @foreach($mobile_nav as $item)
                 <li>
-                    <a href="{{ route($item['route']) }}" class="mobile-navigation-item">
-                        <div class="">
+                    <a href="{{ route($item['route']) }}" class="mobile-navigation-item" onclick="mobileHighlightNavSelection()">
+                        <div>
                             <i class="{{ $item['icon'] }}"></i>
                         </div>
-                        <div onclick="highlightNavigationItem(this)">{{ $item['text'] }}</div>
+                        <div>{{ $item['text'] }}</div>
                     </a>
                 </li>
             @endforeach
         </ul>
     </div>
 </nav>
+
+<script>
+    function highlightSidebarItem() {
+        const currentRoute = '{{ route(Route::currentRouteName()) }}';
+
+        const sidebarItems = document.querySelectorAll(".sidebar-items li");
+
+        // Loop through sidebar items to find a match with the current route
+        sidebarItems.forEach((item, index) => {
+            const anchor = item.querySelector('a');
+            const href = anchor.getAttribute('href');
+
+            if (href === currentRoute) {
+                console.log(currentRoute);
+                console.log(href);
+                item.querySelector('.sidebar-item').classList.add('sidebar-item-active');
+            }
+        });
+    }
+
+    function mobileHighlightNavSelection() {
+        const currentRoute = '{{ route(Route::currentRouteName()) }}';
+
+        const sidebarItems = document.querySelectorAll(".mobile-navigation li");
+
+        // Loop through sidebar items to find a match with the current route
+        sidebarItems.forEach((item, index) => {
+            const anchor = item.querySelector('a');
+            const href = anchor.getAttribute('href');
+
+            if (href === currentRoute) {
+                console.log(currentRoute);
+                console.log(href);
+                item.querySelector('.mobile-navigation-item').classList.add('mobile-nav-item-active');
+            }
+        });
+    }
+
+    highlightSidebarItem();
+    mobileHighlightNavSelection();
+</script>

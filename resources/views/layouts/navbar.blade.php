@@ -10,7 +10,7 @@
 
         <div class="mobile-search-icon-btn" id="mobile-search-icon-btn">
             <i class="fa-solid fa-xmark fa-sm mobile-search-close" id="mobile-search-close" onclick="closeMobileSearch()"></i>
-            <i class="fa-solid fa-magnifying-glass fa-sm" id="mobile-search-icon"></i>
+            <i class="fa-solid fa-magnifying-glass fa-sm mobile-search-icon-open" id="mobile-search-icon"></i>
         </div>
     </div>
 
@@ -108,7 +108,9 @@
 
                             <div class="search-icon-btn" id="search-icon-btn">
                                 <i class="fa-solid fa-xmark fa-sm search-close" id="search-close" onclick="closeSearchbar()"></i>
-                                <i class="fa-solid fa-magnifying-glass fa-sm search-icon" id="search-icon" onclick="animateSearchIcon(this), expandSearchbar()"></i>
+                                <x-topnav-button icon="fa-solid fa-magnifying-glass fa-sm search-icon" iconId="search-icon" onclick="animateSearchIcon(this), expandSearchbar()"></x-topnav-button>
+
+                                <!--<i class="fa-solid fa-magnifying-glass fa-sm search-icon" id="search-icon" onclick="animateSearchIcon(this), expandSearchbar()"></i>-->
                             </div>
 
                             <div class="search-results" id="search-results">
@@ -192,14 +194,14 @@
                     </li>
                     <li>
                         <a href="{{ route('profile.edit') }}">
-                            <x-button-nobackground class="profile-btn" icon="fa-solid fa-user fa-sm icon">Profile</x-button-nobackground>
+                            <x-topnav-button icon="fa-solid fa-user fa-sm icon">Profile</x-topnav-button>
                         </a>
                     </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <!--<button type="submit">Log Out</button>-->
-                            <x-button-nobackground type="submit" class="log-out-btn" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">Log Out</x-button-nobackground>
+                            <x-topnav-button type="submit" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">Log Out</x-topnav-button>
                         </form>
                     </li>
                 </ul>
@@ -216,19 +218,21 @@
                 <ul>
                     <li>
                         <div class="open-mobile-search-btn" id="open-mobile-search-btn">
-                            <i class="fa-solid fa-magnifying-glass search-icon" id="mobile-open-search-icon" onclick="openMobileSearch()"></i>
+                            <x-topnav-button icon="fa-solid fa-magnifying-glass fa-sm search-icon" iconId="mobile-open-search-icon" onclick="openMobileSearch()"></x-topnav-button>
+
+                            <!--<i class="fa-solid fa-magnifying-glass fa-sm search-icon" id="mobile-open-search-icon" onclick="openMobileSearch()"></i>-->
                         </div>
                     </li>
                     <li>
                         <a href="{{ route('profile.edit') }}">
-                            <x-button-nobackground class="profile-btn" id="mobile-profile-btn" icon="fa-solid fa-user fa-sm icon">Profile</x-button-nobackground>
+                            <x-topnav-button id="mobile-profile-btn" icon="fa-solid fa-user fa-sm icon">Profile</x-topnav-button>
                         </a>
                     </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <!--<button type="submit">Log Out</button>-->
-                            <x-button-nobackground type="submit" class="log-out-btn" id="mobile-log-out-btn" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">Log Out</x-button-nobackground>
+                            <x-topnav-button type="submit" id="mobile-log-out-btn" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">Log Out</x-topnav-button>
                         </form>
                     </li>
                 </ul>

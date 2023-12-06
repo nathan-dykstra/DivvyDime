@@ -22,6 +22,7 @@ const sidebar = document.getElementById("sidebar");
 const sidebarButton = document.getElementById("show-sidebar-btn");
 const pinSidebarTooltip = document.getElementById("pin-sidebar-tooltip");
 const pinSidebarBtn = document.getElementById("pin-sidebar-icon");
+const sidebarItems = document.getElementById("sidebar-items");
 
 // Navbar
 const navbar = document.getElementById("navbar-content");
@@ -113,8 +114,6 @@ window.autoOpenSidebar = function() {
         app.style.marginLeft = sidebarWidth;
         sidebarButton.style.display = "none";
     }
-
-    pinSidebarBtn.classList.remove("hidden");
 }
 
 window.adjustSearchResultsHeight = function() {
@@ -210,17 +209,6 @@ window.animateSidebarIcon = function() {
     setTimeout(() => {
         icon.style.animation = '';
     }, 300);
-}
-
-window.highlightSidebarItem = function(item) {
-    let parent = item.parentNode;
-    let sidebarItems = parent.children;
-
-    for (let i = 0; i < sidebarItems.length; i++) {
-        sidebarItems[i].classList.remove("sidebar-item-active");
-    }
-
-    item.classList.add("sidebar-item-active");
 }
 
 
