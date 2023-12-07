@@ -9,7 +9,7 @@ Alpine.start();
 
 // Constants
 const sidebarWidth = "250px";
-const autoCloseSidebarWidth = 1430;
+const autoCloseSidebarWidth = 1330;
 const mobileWidth = 768;
 
 // App
@@ -96,7 +96,7 @@ window.checkIfMobile = function() {
 window.autoCloseSidebar = function() {
     console.log("Sidebar closed automatically\n");
 
-    sidebar.style.width = "0";
+    sidebar.classList.remove("sidebar-expanded");
     navbar.style.marginLeft = "0";
     headerWrapper.style.marginLeft = "0";
     app.style.marginLeft = "0";
@@ -108,7 +108,7 @@ window.autoOpenSidebar = function() {
     console.log("Sidebar opened automatically\n");
 
     if (!sidebarCollapsed) {
-        sidebar.style.width = sidebarWidth;
+        sidebar.classList.add("sidebar-expanded");
         navbar.style.marginLeft = sidebarWidth;
         headerWrapper.style.marginLeft = sidebarWidth;
         app.style.marginLeft = sidebarWidth;
@@ -147,14 +147,14 @@ if (checkIfMobile()) {
 } else if(window.innerWidth < autoCloseSidebarWidth) {
     autoCloseSidebar();
 } else if (sidebarCollapsed === 'true' || sidebarCollapsed === true) {
-    sidebar.style.width = "0";
+    sidebar.classList.remove("sidebar-expanded");
     navbar.style.marginLeft = "0";
     headerWrapper.style.marginLeft = "0";
     app.style.marginLeft = "0";
     sidebarButton.style.display = "flex";
     pinSidebarTooltip.innerHTML = "Pin Sidebar";
 } else {
-    sidebar.style.width = sidebarWidth;
+    sidebar.classList.add("sidebar-expanded");
     navbar.style.marginLeft = sidebarWidth;
     headerWrapper.style.marginLeft = sidebarWidth;
     app.style.marginLeft = sidebarWidth;
@@ -164,7 +164,7 @@ if (checkIfMobile()) {
 
 sidebarButton.addEventListener("mouseover", function(event) {
     if (sidebarCollapsed || window.innerWidth < autoCloseSidebarWidth) {
-        sidebar.style.width = sidebarWidth;
+        sidebar.classList.add("sidebar-expanded");
         sidebarButton.style.display = "none";
     }
 });
@@ -177,7 +177,7 @@ sidebar.addEventListener("mouseover", function(event) {
 
 sidebar.addEventListener("mouseleave", function(event) {
     if (sidebarCollapsed || window.innerWidth < autoCloseSidebarWidth) {
-        sidebar.style.width = "0";
+        sidebar.classList.remove("sidebar-expanded");
         sidebarButton.style.display = "flex";
     }
     pinSidebarBtn.classList.add("hidden");
@@ -187,7 +187,7 @@ window.pinSidebar = function() {
     console.log("Sidebar collapsed: " + sidebarCollapsed + " -> " + !sidebarCollapsed + "\n");
 
     if (sidebarCollapsed) {
-        sidebar.style.width = sidebarWidth;
+        sidebar.classList.add("sidebar-expanded");
         navbar.style.marginLeft = sidebarWidth;
         headerWrapper.style.marginLeft = sidebarWidth;
         app.style.marginLeft = sidebarWidth;
@@ -256,6 +256,8 @@ window.expandSearchbar = function() {
     body.classList.add("prevent-scroll");
     searchResultsList.classList.remove("search-results-list-active")
     searchRecentExpenses.classList.remove("search-recent-expenses-inactive");
+    navbar.classList.add("navbar-content-solid");
+    header.classList.remove("header-content-scrolling");
     searchInputContainer.classList.add("search-input-active");
     searchIconBtn.classList.add("search-icon-active");
     searchIcon.classList.add("search-icon-disabled");
@@ -267,6 +269,10 @@ window.expandSearchbar = function() {
 
 window.closeSearchbar = function() {
     body.classList.remove("prevent-scroll");
+    if (window.scrollY > 0) {
+        navbar.classList.remove("navbar-content-solid");
+        header.classList.add("header-content-scrolling");
+    }
     searchInputContainer.classList.remove("search-input-active");
     searchIconBtn.classList.remove("search-icon-active");
     searchResults.classList.remove("search-results-active");

@@ -1,16 +1,14 @@
 @props(['class' => '', 'id' => null, 'name' => null, 'disabled' => false])
 
-<div>
-    <label for="remember_me" class="checkbox-label">
-        <input {{ $attributes->merge([
-            'id' => $id,
-            'type' => 'checkbox',
-            'class' => 'checkbox ' . $class,
-            'name' => $name
-        ]) }} {{ $disabled ? 'disabled' : '' }}>
-        <span class="checkbox-label-text">{{ $slot }}</span>
-    </label>
-</div>
+<label for="remember_me" class="checkbox-label">
+    <input {{ $attributes->merge([
+        'id' => $id,
+        'type' => 'checkbox',
+        'class' => 'checkbox ' . $class,
+        'name' => $name
+    ]) }} {{ $disabled ? 'disabled' : '' }}>
+    <span class="checkbox-label-text">{{ $slot }}</span>
+</label>
 
 <style>
     .checkbox {

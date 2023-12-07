@@ -13,6 +13,14 @@
 
         <!-- Scripts & Styling-->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        @if (isset($styles)) 
+            {{ $styles }}
+        @endif
+
+        @if (isset($scripts))
+            {{ $scripts }}
+        @endif
     </head>
 
     <body>
