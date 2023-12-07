@@ -9,12 +9,8 @@
         </div>
     
         <div class="btn-container-end">
-            <a href="{{ route('login') }}">
-                <x-secondary-button class="no-focus">{{ __('Log in') }}</x-primary-button>
-            </a>
-            <a href="{{ route('register') }}">
-                <x-primary-button class="no-focus primary-color-btn">{{ __('Register') }}</x-primary-button>
-            </a>
+            <x-secondary-button route="login">{{ __('Log in') }}</x-primary-button>
+            <x-primary-button class="primary-color-btn" route="register">{{ __('Register') }}</x-primary-button>
         </div>
     </div>
 </x-guest-layout>

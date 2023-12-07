@@ -209,14 +209,11 @@
                         </div>
                     </li>
                     <li>
-                        <a href="{{ route('profile.edit') }}">
-                            <x-topnav-button icon="fa-solid fa-user fa-sm icon">Profile</x-topnav-button>
-                        </a>
+                        <x-topnav-button icon="fa-solid fa-user fa-sm icon" route="profile.edit">Profile</x-topnav-button>
                     </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <!--<button type="submit">Log Out</button>-->
                             <x-topnav-button type="submit" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">Log Out</x-topnav-button>
                         </form>
                     </li>

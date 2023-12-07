@@ -48,7 +48,7 @@
                 <div class="btn-container-end">
                     <x-link-button route="login">{{ __('Already registered?') }}</x-link-button>
                     
-                    <x-primary-button type="submit" class="no-focus">{{ __('Register') }}</x-primary-button>
+                    <x-primary-button type="submit">{{ __('Register') }}</x-primary-button>
                 </div>
             </div>
         </form>

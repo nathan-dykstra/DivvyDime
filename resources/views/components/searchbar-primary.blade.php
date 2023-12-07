@@ -1,6 +1,11 @@
 @props(['type' => 'search', 'class' => '', 'placeholder' => 'Search...', 'autocomplete' => 'off'])
 
-<input {{ $attributes->merge(['type' => $type, 'class' => 'search-input-primary ' . $class, 'placeholder' => $placeholder, 'autocomplete' => $autocomplete]) }}>
+<input {{ $attributes->merge([
+    'type' => $type,
+    'class' => 'search-input-primary ' . $class,
+    'placeholder' => $placeholder,
+    'autocomplete' => $autocomplete
+]) }}>
     {{ $slot }}
 
 <style>
@@ -21,5 +26,9 @@
         border: none !important;
         outline: none !important;
         box-shadow: none !important;
+    }
+
+    .search-input-primary::placeholder {
+        color: var(--text-shy);
     }
 </style>

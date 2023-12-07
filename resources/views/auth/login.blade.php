@@ -1,6 +1,4 @@
 <x-guest-layout>
-    
-
     <div class="container">
         <div class="guest-app-logo margin-bottom-lg">
             <h1>DivvyDime</h1>
@@ -9,39 +7,32 @@
         <!-- Session Status -->
         <x-auth-session-status :status="session('status')" />
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('login') }}" class="space-bottom-sm">
             @csrf
 
-            <div class="space-bottom-sm">
-                <!-- Email Address -->
-                <div>
-                    <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                </div>
+            <!-- Email Address -->
+            <div>
+                <x-input-label for="email" :value="__('Email')" />
+                <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                <x-input-error :messages="$errors->get('email')" />
+            </div>
 
-                <!-- Password -->
-                <div class="mt-4">
-                    <x-input-label for="password" :value="__('Password')" />
-                
-                    <x-text-input id="password" class="block mt-1 w-full"
-                                    type="password"
-                                    name="password"
-                                    required autocomplete="current-password" />
+            <!-- Password -->
+            <div>
+                <x-input-label for="password" :value="__('Password')" />
+                <x-text-input id="password" type="password" name="password" required autocomplete="current-password" />
+                <x-input-error :messages="$errors->get('password')" />
+            </div>
 
-                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                </div>
+            <!-- Remember Me -->
+            <x-checkbox id="remember_me" name="remember">{{ __('Remember me') }}</x-checkbox>
 
-                <!-- Remember Me -->
-                <x-checkbox id="remember_me" name="remember">{{ __('Remember me') }}</x-checkbox>
+            <div class="btn-container-end">
+                @if (Route::has('password.request'))
+                    <x-link-button route="password.request">{{ __('Forgot your password?') }}</x-link-button>
+                @endif
 
-                <div class="btn-container-end">
-                    @if (Route::has('password.request'))
-                        <x-link-button route="password.request">{{ __('Forgot your password?') }}</x-link-button>
-                    @endif
-    
-                    <x-primary-button type="submit" class="no-focus">{{ __('Log in') }}</x-primary-button>
-                </div>
+                <x-primary-button type="submit">{{ __('Log in') }}</x-primary-button>
             </div>
         </form>
     </div>

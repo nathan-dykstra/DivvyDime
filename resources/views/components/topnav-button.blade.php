@@ -1,11 +1,20 @@
-@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => '', 'iconId' => null, 'onclick' => ''])
+@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'onclick' => null, 'route' => null])
 
-<button {{ $attributes->merge(['type' => $type, 'class' => 'topnav-btn ' . $class, 'id' => $id, 'onclick' => $onclick]) }}>
-    @if ($icon)
-        <i class="{{ $icon }}" id="{{ $iconId }}"></i>
-    @endif
-    {{ $slot }}
-</button>
+@if ($route)
+    <a {{ $attributes->merge(['class' => 'topnav-btn ' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => route($route)]) }}>
+        @if ($icon)
+            <i class="{{ $icon }}" id="{{ $iconId }}"></i>
+        @endif
+        {{ $slot }}
+    </a>
+@else
+    <button {{ $attributes->merge(['type' => $type, 'class' => 'topnav-btn ' . $class, 'id' => $id, 'onclick' => $onclick]) }}>
+        @if ($icon)
+            <i class="{{ $icon }}" id="{{ $iconId }}"></i>
+        @endif
+        {{ $slot }}
+    </button>
+@endif
 
 <style>
     .topnav-btn {

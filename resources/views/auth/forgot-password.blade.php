@@ -23,7 +23,7 @@
                 </div>
 
                 <div class="btn-container-end">
-                    <x-primary-button type="submit" class="no-focus">{{ __('Email Password Reset Link') }}</x-primary-button>
+                    <x-primary-button type="submit">{{ __('Email Password Reset Link') }}</x-primary-button>
                 </div>
             </div>
         </form>

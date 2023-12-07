@@ -1,7 +1,13 @@
-@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => '', 'iconId' => null, 'form' => '', 'onclick' => null])
+@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'form' => null, 'route' => null, 'onclick' => null])
 
-
-@if ($form) 
+@if ($route)
+    <a {{ $attributes->merge(['class' => 'primary-btn ' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => route($route)]) }}>
+        @if ($icon)
+            <i class="{{ $icon }}" id="{{ $iconId }}"></i>
+        @endif
+        {{ $slot }}
+    </a>
+@elseif ($form) 
     <button {{ $attributes->merge(['class' => 'primary-btn ' . $class, 'id' => $id, 'form' => $form]) }}>
         @if ($icon) 
             <i class="{{ $icon }}" id="{{ $iconId }}"></i>
@@ -45,9 +51,9 @@
     }
 
     .primary-btn:focus {
-        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
         outline-offset: 1px;
-        border: 1px solid var(--primary-grey-hover);
+        border: 1px solid var(--border-grey-hover);
         border-radius: var(--border-radius);
         box-shadow: none;
     }

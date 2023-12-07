@@ -1,11 +1,12 @@
-@props(['type' => 'text', 'class' => '', 'id' => null, 'name' => null, 'disabled' => false, 'autocomplete' => 'off'])
+@props(['type' => 'text', 'class' => '', 'id' => null, 'name' => null, 'disabled' => false, 'autocomplete' => 'off', 'placeholder' => null])
 
 <input {{ $attributes->merge([
     'type' => $type,
     'class' => 'text-input ' . $class,
     'id' => $id,
     'name' => $name,
-    'autocomplete' => $autocomplete
+    'autocomplete' => $autocomplete,
+    'placeholder' => $placeholder
 ]) }} {{ $disabled ? 'disabled' : '' }}>
 
 <style>
@@ -25,5 +26,9 @@
         border-radius: var(--border-radius);
         border: 1px solid var(--background);
         box-shadow: none;
+    }
+
+    .text-input::placeholder {
+        color: var(--text-shy);
     }
 </style>

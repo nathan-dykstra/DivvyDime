@@ -22,4 +22,8 @@
         outline: none !important;
         box-shadow: none !important;
     }
+
+    .mobile-search-input-primary::placeholder {
+        color: var(--text-shy);
+    }
 </style>

@@ -41,7 +41,7 @@
             @endif
         </div>
 
-        <div>
+        <div class="btn-container-start">
             <x-primary-button type="submit">{{ __('Save') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
