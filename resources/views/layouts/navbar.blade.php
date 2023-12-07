@@ -90,6 +90,12 @@
                 </ul>
             </div>
         </div>
+
+        @if (false)
+            <div class="no-search-results text-center">
+                <p>There are no results matching your search!</p>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -188,6 +194,16 @@
                                             </li>
                                         </ul>
                                     </div>
+                                </div>
+
+                                @if (false)
+                                    <div class="no-search-results text-center">
+                                        <p>There are no results matching your search!</p>
+                                    </div>
+                                @endif
+
+                                <div class="search-hint text-center">
+                                    <p class="text-shy">Tip: Press <span class="key-symbol">Ctrl</span> + <span class="key-symbol">Shift</span> + <span class="key-symbol">S</span> to search!</p>
                                 </div>
                             </div>
                         </div>

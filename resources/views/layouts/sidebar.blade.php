@@ -7,7 +7,7 @@
     <!-- Sidebar Navigation Menu -->
 
     <div class="sidebar" id="sidebar">
-        <div class="pin-sidebar-btn-container">
+        <div class="pin-sidebar-btn-container-end">
             <div class="tooltip tooltip-left pin-sidebar-tooltip">
                 <x-icon-button class="hidden" icon="fa-solid fa-thumbtack pin-sidebar-icon" id="pin-sidebar-icon" onclick="animateSidebarIcon(), pinSidebar()"></x-icon-button>
                 <span class="tooltip-text" id="pin-sidebar-tooltip">Pin Sidebar</span>

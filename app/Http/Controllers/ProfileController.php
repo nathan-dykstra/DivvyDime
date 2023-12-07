@@ -39,6 +39,8 @@ class ProfileController extends Controller
 
     /**
      * Delete the user's account.
+     * TODO: This will need to be updated to delete records tied to this user by foreign ID
+     *       Consider created a "User Deleted" user to update any expenses, groups, etc. so they are still visible rather than deleteing those too
      */
     public function destroy(Request $request): RedirectResponse
     {

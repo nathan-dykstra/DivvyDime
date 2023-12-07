@@ -1,3 +1,51 @@
-<button {{ $attributes->merge(['type' => 'button', 'class' => 'inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150']) }}>
-    {{ $slot }}
-</button>
+@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => '', 'iconId' => null, 'form' => '', 'onclick' => null])
+
+@if ($form) 
+    <button {{ $attributes->merge(['class' => 'secondary-btn ' . $class, 'id' => $id, 'form' => $form]) }}>
+        @if ($icon)
+            <i class="{{ $icon }}" id="{{ $iconId }}"></i>
+        @endif
+        {{ $slot }}
+    </button>
+@else
+    <button {{ $attributes->merge(['type' => $type, 'class' => 'secondary-btn ' . $class, 'id' => $id, 'onclick' => $onclick]) }}>
+        @if ($icon)
+            <i class="{{ $icon }}" id="{{ $iconId }}"></i>
+        @endif
+        {{ $slot }}
+    </button>
+@endif
+
+<style>
+    .secondary-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        
+        border: 1px solid var(--icon-grey);
+        border-radius: var(--border-radius);
+        padding: 8px 16px;
+        transition: border 0.3s, background-color 0.3s ease-in-out, outline 0.1s ease-in-out, outline-offset 0.1s;
+
+        font-size: 0.8em;
+        font-weight: 700;
+        color: var(--text-heading);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+
+        outline: none;
+    }
+
+    .secondary-btn:hover {
+        background-color: var(--primary-grey-hover);
+        cursor: pointer;
+    }
+
+    .secondary-btn:focus {
+        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+        outline-offset: 1px;
+        border: 1px solid var(--primary-grey-hover);
+        border-radius: var(--border-radius);
+        box-shadow: none;
+    }
+</style>
