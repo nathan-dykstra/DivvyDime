@@ -4,8 +4,6 @@
             <h1>DivvyDime</h1>
         </div>
 
-
-    
         <!-- Session Status -->
         <x-auth-session-status :status="session('status')" />
     

@@ -1,11 +1,13 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    
 
     <div class="container">
         <div class="guest-app-logo margin-bottom-lg">
             <h1>DivvyDime</h1>
         </div>
+
+        <!-- Session Status -->
+        <x-auth-session-status :status="session('status')" />
 
         <form method="POST" action="{{ route('login') }}">
             @csrf

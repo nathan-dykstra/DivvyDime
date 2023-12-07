@@ -1,6 +1,12 @@
-@props(['type' => 'text', 'class' => '', 'disabled' => false])
+@props(['type' => 'text', 'class' => '', 'id' => null, 'name' => null, 'disabled' => false, 'autocomplete' => 'off'])
 
-<input {{ $attributes->merge(['type' => $type, 'class' => 'text-input ' . $class]) }} {{ $disabled ? 'disabled' : '' }}>
+<input {{ $attributes->merge([
+    'type' => $type,
+    'class' => 'text-input ' . $class,
+    'id' => $id,
+    'name' => $name,
+    'autocomplete' => $autocomplete
+]) }} {{ $disabled ? 'disabled' : '' }}>
 
 <style>
     .text-input {
@@ -9,6 +15,7 @@
         border: 1px solid var(--border-grey);
         border-radius: var(--border-radius);
         width: 100%;
+        margin-top: 4px;
         transition: 0.1s ease-in-out;
     }
 
