@@ -9,52 +9,6 @@
 
 
 :root {
-    --background: #000;
-    --background-blur-color: rgba(22, 22, 023, 0.8);
-    --background-blur-filter: saturate(180%) blur(20px);
-    --primary-grey: #131415; /* To adjust */
-    --primary-grey-hover: #30363d;
-    --secondary-grey: #1c1b20; /*#1c1c1e;*/
-    --border-grey: #30363d;
-    --border-grey-hover: #8b949e;
-    --icon-grey: #7d8590;
-    --blue-hover: #2f81f7;
-    --primary-color: ;
-    --primary-color-hover: ;
-    --secondary-color: ;
-    --accent-color: #7d8590;
-    --text-heading: #e6edf3; /*#f5f5f7*/
-    --text-primary: #e6edf3;
-    --text-opposite: #1f2328;
-    --text-shy: #7d8590;
-    --text-success: #68dfaf;
-    --text-warning: #ed726c;
-    --box-shadow: 0 5px 20px 4px rgba(0, 0, 0, 0.4);
-    --scrollbar-color: #1c1b20;
-    --scrollbar-color-hover: #30363d;
-
-
-    --danger: rgba(220, 38, 38, 1);
-    --danger-hover: rgba(239, 68, 68, 1);
-    --text-white: #fff;
-    --text-black: #000;
-
-    --main-content-width: 1000px;
-    --container-padding: 32px;
-    --container-small-padding: 16px;
-    --searchbar-primary-height: 32px;
-    --searchbar-primary-width: 400px;
-    --navbar-height: 50px;
-    --border-radius: 0.5rem;
-    --scrollbar-width: 14px;
-    --scrollbar-border: 3px;
-    --scrollbar-border-radius: 7px;
-
-    --mobile-screen-width: 768px;
-    --mobile-navigation-height: 75px;
-}
-
-.light-mode {
     --background: #fff;
     --background-blur-color: rgba(246, 246, 248, 0.8);
     --background-blur-filter: saturate(180%) blur(20px);
@@ -79,9 +33,29 @@
     --scrollbar-color: #d0d7de;
     --scrollbar-color-hover: #bec3ca;
     --mobile-nav-blur-color: rgba(246, 248, 250, 0.8);
+
+
+    --danger: rgba(220, 38, 38, 1);
+    --danger-hover: rgba(239, 68, 68, 1);
+    --text-white: #fff;
+    --text-black: #000;
+
+    --main-content-width: 1000px;
+    --container-padding: 32px;
+    --container-small-padding: 16px;
+    --searchbar-primary-height: 32px;
+    --searchbar-primary-width: 400px;
+    --navbar-height: 50px;
+    --border-radius: 0.5rem;
+    --scrollbar-width: 14px;
+    --scrollbar-border: 3px;
+    --scrollbar-border-radius: 7px;
+
+    --mobile-screen-width: 768px;
+    --mobile-navigation-height: 75px;
 }
 
-.dark-mode {
+.dark {
     --background: #000;
     --background-blur-color: rgba(22, 22, 023, 0.8);
     --background-blur-filter: saturate(180%) blur(20px);
@@ -106,6 +80,35 @@
     --scrollbar-color: #1c1b20;
     --scrollbar-color-hover: #30363d;
     --mobile-nav-blur-color: rgba(19, 20, 21, 0.8); /* To adjust */
+}
+
+@media (prefers-color-scheme: dark) {
+    .system {
+        --background: #000;
+        --background-blur-color: rgba(22, 22, 023, 0.8);
+        --background-blur-filter: saturate(180%) blur(20px);
+        --primary-grey: #131415; /* To adjust */
+        --primary-grey-hover: #30363d;
+        --secondary-grey: #1c1b20; /*#1c1c1e;*/
+        --border-grey: #30363d;
+        --border-grey-hover: #8b949e;
+        --icon-grey: #7d8590;
+        --blue-hover: #2f81f7;
+        --primary-color: ;
+        --primary-color-hover: ;
+        --secondary-color: ;
+        --accent-color: #7d8590;
+        --text-heading: #e6edf3; /*#f5f5f7*/
+        --text-primary: #e6edf3;
+        --text-opposite: #1f2328;
+        --text-shy: #7d8590;
+        --text-success: #68dfaf;
+        --text-warning: #ed726c;
+        --box-shadow: 0 5px 20px 4px rgba(0, 0, 0, 0.4); /* To adjust */
+        --scrollbar-color: #1c1b20;
+        --scrollbar-color-hover: #30363d;
+        --mobile-nav-blur-color: rgba(19, 20, 21, 0.8); /* To adjust */
+    }
 }
 
 
@@ -266,7 +269,7 @@ p {
 .btn-container-end {
     display: flex;
     flex-direction: row;
-    justify-content: end;
+    justify-content: flex-end;
     align-items: center;
     gap: 10px;
 }
@@ -487,7 +490,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 .navbar-content {
     display: flex;
-    justify-content: end;
+    justify-content: flex-end;
     align-items: center;
     height: var(--navbar-height);
     background-color: var(--background-blur-color);
@@ -888,7 +891,7 @@ body::-webkit-scrollbar-thumb:hover {
     height: var(--navbar-height);
     display: flex;
     flex-direction: row;
-    justify-content: end;
+    justify-content: flex-end;
     align-items: center;
     margin-right: 1em;
 }
@@ -925,7 +928,7 @@ body::-webkit-scrollbar-thumb:hover {
 .sidebar {
     height: 100%;
     position: fixed;
-    z-index: 1;
+    z-index: 2;
     top: 0;
     left: 0;
     background-color: var(--primary-grey);

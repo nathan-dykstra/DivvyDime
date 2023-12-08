@@ -12,6 +12,12 @@
 
         <div class="container">
             <div class="restrict-max-width">
+                @include('profile.partials.update-preferences-form')
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="restrict-max-width">
                 @include('profile.partials.update-password-form')
             </div>
         </div>

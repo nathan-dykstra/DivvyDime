@@ -13,39 +13,82 @@
 
         <!-- Scripts & Styling-->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-        @if (isset($styles)) 
-            {{ $styles }}
-        @endif
-
-        @if (isset($scripts))
-            {{ $scripts }}
-        @endif
     </head>
 
     <body>
-        <div class="app">
-            @include('layouts.navbar')
+        <!-- Set app theme before the content loads -->
+        <script>
+            const availableThemes = ["system", "light", "dark"];
+            const theme = window.localStorage.getItem('theme');
+            if (availableThemes.includes(theme)) {
+                availableThemes.forEach((availableTheme) => {
+                    document.body.classList.remove(availableTheme);
+                });
+                document.body.classList.add(theme);
+            }
+        </script>
 
-            @include('layouts.sidebar')
+        @include('layouts.sidebar')
 
-            <div class="app-wrapper" id="app-wrapper">
-                <!-- Page Heading -->
-                @if (isset($header))
-                    <header class="page-header" id="page-header">
-                        <div class="header-content-wrapper" id="header-content-wrapper">
-                            <div class="header-content" id="header-content">
-                                {{ $header }}
-                            </div>
-                        </div>
-                    </header>
-                @endif
+        @include('layouts.navbar')
 
-                <!-- Page Content -->
-                <main class="main-content" >
-                    {{ $slot }}
-                </main>
-            </div>
+        <!-- Page Heading -->
+        @if (isset($header))
+            <header class="page-header" id="page-header">
+                <div class="header-wrapper" id="header-wrapper">
+                    <div class="header-content">
+                        {{ $header }}
+                    </div>
+                </div>
+            </header>
+        @endif
+        
+        <div class="main-content-wrapper" id="main-content-wrapper">
+            <!-- Set sidebar state before content loads -->
+            <script>
+                const isCollapsed = localStorage.getItem('sidebarCollapsed');
+                const sidebarWidth = "250px";
+                const autoCloseSidebarWidth = 1330;
+                const mobileWidth = 768;
+                const body = document.body;
+                const mainContentWrapper = document.getElementById("main-content-wrapper");
+                const navbar = document.getElementById("navbar-content");
+                const headerWrapper = document.getElementById("header-wrapper");
+                const sidebar = document.getElementById("sidebar");
+                const sidebarButton = document.getElementById("show-sidebar-btn");
+                const pinSidebarTooltip = document.getElementById("pin-sidebar-tooltip");
+                const pinSidebarBtn = document.getElementById("pin-sidebar-icon");
+
+                if (window.innerWidth <= mobileWidth) {
+                    // No need to adjust sidebar when it's hidden for mobile
+                } else if (window.innerWidth < autoCloseSidebarWidth) {
+                    sidebar.classList.remove("sidebar-expanded");
+                    navbar.style.marginLeft = "0";
+                    headerWrapper.style.marginLeft = "0";
+                    mainContentWrapper.style.marginLeft = "0";
+                    sidebarButton.classList.remove("hidden");
+                    pinSidebarBtn.classList.add("hidden");
+                } else if (isCollapsed === 'true' || isCollapsed === true) {
+                    sidebar.classList.remove("sidebar-expanded");
+                    navbar.style.marginLeft = "0";
+                    headerWrapper.style.marginLeft = "0";
+                    mainContentWrapper.style.marginLeft = "0";
+                    sidebarButton.classList.remove("hidden");
+                    pinSidebarTooltip.innerHTML = "Pin Sidebar";
+                } else {
+                    sidebar.classList.add("sidebar-expanded");
+                    navbar.style.marginLeft = sidebarWidth;
+                    headerWrapper.style.marginLeft = sidebarWidth;
+                    mainContentWrapper.style.marginLeft = sidebarWidth;
+                    sidebarButton.classList.add("hidden");
+                    pinSidebarTooltip.innerHTML = "Unpin Sidebar";
+                }
+            </script>
+
+            <!-- Page Content -->
+            <main class="main-content">
+                {{ $slot }}
+            </main>
         </div>
     </body>
 </html>

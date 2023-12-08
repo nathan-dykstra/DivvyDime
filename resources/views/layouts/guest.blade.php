@@ -24,6 +24,18 @@
     </head>
 
     <body>
+        <!-- Set app theme before the content loads -->
+        <script>
+            const availableThemes = ["system", "light", "dark"];
+            const theme = window.localStorage.getItem('theme');
+            if (availableThemes.includes(theme)) {
+                availableThemes.forEach((availableTheme) => {
+                    document.body.classList.remove(availableTheme);
+                });
+                document.body.classList.add(theme);
+            }
+        </script>
+        
         <div class="guest-app">
             <main class="guest-main-content" >
                 {{ $slot }}

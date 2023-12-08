@@ -12,27 +12,16 @@ const sidebarWidth = "250px";
 const autoCloseSidebarWidth = 1330;
 const mobileWidth = 768;
 
-// App
-const app = document.getElementById("app-wrapper");
-const mainContent = document.getElementById("main-content");
+// Document elements
 const body = document.body;
-
-// Sidebar
+const navbar = document.getElementById("navbar-content");
+const headerWrapper = document.getElementById("header-wrapper");
+const mainContentWrapper = document.getElementById("main-content-wrapper");
 const sidebar = document.getElementById("sidebar");
 const sidebarButton = document.getElementById("show-sidebar-btn");
 const pinSidebarTooltip = document.getElementById("pin-sidebar-tooltip");
 const pinSidebarBtn = document.getElementById("pin-sidebar-icon");
-const sidebarItems = document.getElementById("sidebar-items");
-
-// Navbar
-const navbar = document.getElementById("navbar-content");
-
-// Header
 const header = document.getElementById("page-header");
-const headerContent = document.getElementById("header-content");
-const headerWrapper = document.getElementById("header-content-wrapper");
-
-// Search
 const searchIcon = document.getElementById("search-icon");
 const searchClose = document.getElementById("search-close");
 const searchIconBtn = document.getElementById("search-icon-btn");
@@ -42,77 +31,52 @@ const searchResults = document.getElementById("search-results");
 const searchResultsList = document.getElementById("search-results-list");
 const searchRecentExpenses = document.getElementById("search-recent-expenses");
 
-
-// Mobile Constants
-
-// App
-
-// Sidebar
-
-// Navbar
+// Mobile document element
 const mobileNavbar = document.getElementById("mobile-navbar-content");
-const mobileProfileBtn = document.getElementById("mobile-profile-btn");
-const mobileLogOutBtn = document.getElementById("mobile-log-out-btn");
-
-// Header
-
-// Search
 const mobileSearchWrapper = document.getElementById("mobile-search-wrapper");
-const mobileSearchIcon = document.getElementById("mobile-search-icon");
-const mobileSearchClose = document.getElementById("mobile-search-close");
-const mobileSearchIconBtn = document.getElementById("mobile-search-icon-btn");
-const mobileSearchInputContainer = document.getElementById("mobile-search-input-container");
 const mobileSearchInput = document.getElementById("mobile-search-input");
-const mobileSearchResults = document.getElementById("mobile-search-results");
 const mobileSearchResultsList = document.getElementById("mobile-search-results-list");
 const mobileSearchRecentExpenses = document.getElementById("mobile-search-recent-expenses");
 const mobileSearchbarContainer = document.getElementById("mobile-searchbar-container");
 
 
-// Web responsiveness
+// Load/set app theme
 
 
-// Save sidebar state to local storage
-window.saveSidebarState = function(isCollapsed) {
-    localStorage.setItem('sidebarCollapsed', isCollapsed);
+window.setTheme = function(element, themeToSet) {
+    if (!availableThemes.includes(themeToSet)) {
+        return;
+    }
+    localStorage.setItem('theme', themeToSet);
+    availableThemes.forEach((theme) => {
+        if (theme !== themeToSet && body.classList.contains(theme)) {
+            body.classList.remove(theme)
+        }
+    });
+    if (!body.classList.contains(themeToSet)) {
+        body.classList.add(themeToSet);
+    }
+
+    const themeBtns = Array.from(element.parentNode.children);
+    themeBtns.forEach(btn => {
+        btn.classList.remove("theme-setting-active");
+    });
+    element.classList.add("theme-setting-active");
 }
 
-// Retrieve sidebar state from local storage
-window.loadSidebarState = function() {
-    const isCollapsed = localStorage.getItem('sidebarCollapsed');
-    return isCollapsed === 'true'; // Return true if 'sidebarCollapsed' is 'true', otherwise false
+window.loadTheme = function() {
+    const theme = window.localStorage.getItem('theme');
 }
 
-var sidebarCollapsed = loadSidebarState();
+
+// Responsiveness
+
 
 window.checkIfMobile = function() {
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= mobileWidth) {
         return true;
     } else {
         return false;
-    }
-}
-
-window.autoCloseSidebar = function() {
-    console.log("Sidebar closed automatically\n");
-
-    sidebar.classList.remove("sidebar-expanded");
-    navbar.style.marginLeft = "0";
-    headerWrapper.style.marginLeft = "0";
-    app.style.marginLeft = "0";
-    sidebarButton.style.display = "flex";
-    pinSidebarBtn.classList.add("hidden");
-}
-
-window.autoOpenSidebar = function() {
-    console.log("Sidebar opened automatically\n");
-
-    if (!sidebarCollapsed) {
-        sidebar.classList.add("sidebar-expanded");
-        navbar.style.marginLeft = sidebarWidth;
-        headerWrapper.style.marginLeft = sidebarWidth;
-        app.style.marginLeft = sidebarWidth;
-        sidebarButton.style.display = "none";
     }
 }
 
@@ -139,33 +103,40 @@ window.addEventListener("resize", function() {
 // Sidebar
 
 
-// Set initial sidebar state
-console.log("Initial sidebar collapsed: " + sidebarCollapsed);
+window.saveSidebarState = function(isCollapsed) {
+    localStorage.setItem('sidebarCollapsed', isCollapsed);
+}
 
-if (checkIfMobile()) {
-    // No need to adjust sidebar when it's hidden for mobile
-} else if(window.innerWidth < autoCloseSidebarWidth) {
-    autoCloseSidebar();
-} else if (sidebarCollapsed === 'true' || sidebarCollapsed === true) {
+window.loadSidebarState = function() {
+    const isCollapsed = localStorage.getItem('sidebarCollapsed');
+    return isCollapsed === 'true'; // Return true if 'sidebarCollapsed' is 'true', otherwise false
+}
+
+var sidebarCollapsed = loadSidebarState();
+
+window.autoCloseSidebar = function() {
     sidebar.classList.remove("sidebar-expanded");
     navbar.style.marginLeft = "0";
     headerWrapper.style.marginLeft = "0";
-    app.style.marginLeft = "0";
-    sidebarButton.style.display = "flex";
-    pinSidebarTooltip.innerHTML = "Pin Sidebar";
-} else {
-    sidebar.classList.add("sidebar-expanded");
-    navbar.style.marginLeft = sidebarWidth;
-    headerWrapper.style.marginLeft = sidebarWidth;
-    app.style.marginLeft = sidebarWidth;
-    sidebarButton.style.display = "none";
-    pinSidebarTooltip.innerHTML = "Unpin Sidebar";
+    mainContentWrapper.style.marginLeft = "0";
+    sidebarButton.classList.remove("hidden");
+    pinSidebarBtn.classList.add("hidden");
+}
+
+window.autoOpenSidebar = function() {
+    if (!sidebarCollapsed) {
+        sidebar.classList.add("sidebar-expanded");
+        navbar.style.marginLeft = sidebarWidth;
+        headerWrapper.style.marginLeft = sidebarWidth;
+        mainContentWrapper.style.marginLeft = sidebarWidth;
+        sidebarButton.classList.add("hidden");
+    }
 }
 
 sidebarButton.addEventListener("mouseover", function(event) {
     if (sidebarCollapsed || window.innerWidth < autoCloseSidebarWidth) {
         sidebar.classList.add("sidebar-expanded");
-        sidebarButton.style.display = "none";
+        sidebarButton.classList.add("hidden");
     }
 });
 
@@ -178,24 +149,23 @@ sidebar.addEventListener("mouseover", function(event) {
 sidebar.addEventListener("mouseleave", function(event) {
     if (sidebarCollapsed || window.innerWidth < autoCloseSidebarWidth) {
         sidebar.classList.remove("sidebar-expanded");
-        sidebarButton.style.display = "flex";
+        sidebarButton.classList.remove("hidden");
     }
     pinSidebarBtn.classList.add("hidden");
 });
 
-window.pinSidebar = function() {
-    console.log("Sidebar collapsed: " + sidebarCollapsed + " -> " + !sidebarCollapsed + "\n");
-
+window.toggleSidebar = function() {
     if (sidebarCollapsed) {
         sidebar.classList.add("sidebar-expanded");
         navbar.style.marginLeft = sidebarWidth;
         headerWrapper.style.marginLeft = sidebarWidth;
-        app.style.marginLeft = sidebarWidth;
+        mainContentWrapper.style.marginLeft = sidebarWidth;
         pinSidebarTooltip.innerHTML = "Unpin Sidebar";
+        sidebarButton.classList.add("hidden");
     } else {
         navbar.style.marginLeft = "0";
         headerWrapper.style.marginLeft = "0";
-        app.style.marginLeft = "0";
+        mainContentWrapper.style.marginLeft = "0";
         pinSidebarTooltip.innerHTML = "Pin Sidebar";
     }
 
