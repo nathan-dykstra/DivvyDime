@@ -1,4 +1,4 @@
-@props(['type' => 'search', 'class' => '', 'placeholder' => 'Search...', 'autocomplete' => 'off'])
+@props(['type' => 'search', 'class' => '', 'placeholder' => 'Search', 'autocomplete' => 'off'])
 
 <input {{ $attributes->merge(['type' => $type, 'class' => 'mobile-search-input-primary ' . $class, 'placeholder' => $placeholder, 'autocomplete' => $autocomplete]) }}>
     {{ $slot }}

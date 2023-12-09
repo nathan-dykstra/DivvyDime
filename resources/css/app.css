@@ -1,4 +1,5 @@
 @import "@fortawesome/fontawesome-free/css/all.css";
+@import "/node_modules/select2/dist/css/select2.css";
 
 @tailwind base;
 @tailwind components;
@@ -26,6 +27,7 @@
     --text-heading: #1f2328;
     --text-primary: #1f2328;
     --text-opposite: #e6edf3;
+    --text-primary-highlight: #000;
     --text-shy: #656d76;
     --text-success: #17bc7a;
     --text-warning: #dc564f;
@@ -73,6 +75,7 @@
     --text-heading: #e6edf3; /*#f5f5f7*/
     --text-primary: #e6edf3;
     --text-opposite: #1f2328;
+    --text-primary-highlight: #fff;
     --text-shy: #7d8590;
     --text-success: #68dfaf;
     --text-warning: #ed726c;
@@ -101,6 +104,7 @@
         --text-heading: #e6edf3; /*#f5f5f7*/
         --text-primary: #e6edf3;
         --text-opposite: #1f2328;
+        --text-primary-highlight: #fff;
         --text-shy: #7d8590;
         --text-success: #68dfaf;
         --text-warning: #ed726c;
@@ -485,7 +489,7 @@ body::-webkit-scrollbar-thumb:hover {
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 1;
+    z-index: 5;
 }
 
 .navbar-content {
@@ -581,7 +585,7 @@ body::-webkit-scrollbar-thumb:hover {
 .search-results {
     position: absolute;
     top: calc(100% + 20px);
-    z-index: 4;
+    z-index: 10;
     background-color: var(--secondary-grey);
     opacity: 0;
     color: var(--text-primary);
@@ -669,7 +673,7 @@ body::-webkit-scrollbar-thumb:hover {
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 1;
+    z-index: 5;
 }
 
 @media (max-width: 768px) {
@@ -709,7 +713,7 @@ body::-webkit-scrollbar-thumb:hover {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 5;
+    z-index: 10;
     opacity: 1;
     overflow-y: auto;
     padding-bottom: var(--mobile-navigation-height);
@@ -831,7 +835,7 @@ body::-webkit-scrollbar-thumb:hover {
     top: var(--navbar-height);
     left: 0;
     width: 100%;
-    z-index: 0;
+    z-index: 4;
     background-color: var(--background);
     transition: transform 0.3s ease-in-out, background-color 0.3s;
 }
@@ -928,7 +932,7 @@ body::-webkit-scrollbar-thumb:hover {
 .sidebar {
     height: 100%;
     position: fixed;
-    z-index: 2;
+    z-index: 10;
     top: 0;
     left: 0;
     background-color: var(--primary-grey);

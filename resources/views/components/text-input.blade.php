@@ -17,7 +17,7 @@
         border-radius: var(--border-radius);
         width: 100%;
         margin-top: 4px;
-        transition: 0.1s ease-in-out;
+        transition: border 0.3s;
     }
 
     .text-input:focus {

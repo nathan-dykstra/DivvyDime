@@ -5,7 +5,7 @@
 <div class="mobile-search-wrapper" id="mobile-search-wrapper">
     <div class="mobile-searchbar-container" id="mobile-searchbar-container">
         <div class="mobile-search-input-container" id="mobile-search-input-container">
-            <x-mobile-searchbar-primary type="text" class="mobile-search-input" id="mobile-search-input" placeholder="Search..."></x-searchbar-primary>
+            <x-mobile-searchbar-primary type="text" class="mobile-search-input" id="mobile-search-input"></x-searchbar-primary>
         </div>
 
         <div class="mobile-search-icon-btn" id="mobile-search-icon-btn">
@@ -16,7 +16,7 @@
 
     <div class="mobile-search-results" id="mobile-search-results">
         <div class="mobile-search-recent-expenses" id="mobile-search-recent-expenses">
-            <h3 class="mobile-search-header">Recent Expenses</h3>
+            <h3 class="mobile-search-header">{{ __('Recent Expenses') }}</h3>
             <div class="mobile-search-section">
                 <ul>
                     <li>
@@ -30,7 +30,7 @@
         </div>
 
         <div class="mobile-search-results-list" id="mobile-search-results-list">
-            <h3 class="mobile-search-header">Friends</h3>
+            <h3 class="mobile-search-header">{{ __('Friends') }}</h3>
             <div class="mobile-search-section">
                 <ul>
                     <li>
@@ -54,7 +54,7 @@
                 </ul>
             </div>
 
-            <h3 class="mobile-search-header">Groups</h3>
+            <h3 class="mobile-search-header">{{ __('Groups') }}</h3>
             <div class="mobile-search-section">
                 <ul>
                     <li>
@@ -69,7 +69,7 @@
                 </ul>
             </div>
 
-            <h3 class="mobile-search-header">Expenses</h3>
+            <h3 class="mobile-search-header">{{ __('Expenses') }}</h3>
             <div class="mobile-search-section">
                 <ul>
                     <li>
@@ -93,7 +93,7 @@
 
         @if (false)
             <div class="no-search-results text-center">
-                <p>There are no results matching your search!</p>
+                <p>{{ __('There are no results matching your search!') }}</p>
             </div>
         @endif
     </div>
@@ -109,19 +109,17 @@
                     <li>
                         <div class="searchbar" id="searchbar">
                             <div class="search-input-container" id="search-input-container">
-                                <x-searchbar-primary type="text" class="search-input" id="search-input" placeholder="Search Expenses, Groups, and Friends..."></x-searchbar-primary>
+                                <x-searchbar-primary type="text" class="search-input" id="search-input" placeholder="{{ __('Search Expenses, Groups, and Friends') }}"></x-searchbar-primary>
                             </div>
 
                             <div class="search-icon-btn" id="search-icon-btn">
                                 <i class="fa-solid fa-xmark fa-sm search-close" id="search-close" onclick="closeSearchbar()"></i>
                                 <x-topnav-button icon="fa-solid fa-magnifying-glass fa-sm search-icon" iconId="search-icon" onclick="animateSearchIcon(this), expandSearchbar()"></x-topnav-button>
-
-                                <!--<i class="fa-solid fa-magnifying-glass fa-sm search-icon" id="search-icon" onclick="animateSearchIcon(this), expandSearchbar()"></i>-->
                             </div>
 
                             <div class="search-results" id="search-results">
                                 <div class="search-recent-expenses" id="search-recent-expenses">
-                                    <h3 class="search-header">Recent Expenses</h3>
+                                    <h3 class="search-header">{{ __('Recent Expenses') }}</h3>
                                     <div class="search-section">
                                         <ul>
                                             <li>
@@ -135,7 +133,7 @@
                                 </div>
 
                                 <div class="search-results-list" id="search-results-list">
-                                    <h3 class="search-header">Friends</h3>
+                                    <h3 class="search-header">{{ __('Friends') }}</h3>
                                     <div class="search-section">
                                         <ul>
                                             <li>
@@ -159,7 +157,7 @@
                                         </ul>
                                     </div>
 
-                                    <h3 class="search-header">Groups</h3>
+                                    <h3 class="search-header">{{ __('Groups') }}</h3>
                                     <div class="search-section">
                                         <ul>
                                             <li>
@@ -174,7 +172,7 @@
                                         </ul>
                                     </div>
 
-                                    <h3 class="search-header">Expenses</h3>
+                                    <h3 class="search-header">{{ __('Expenses') }}</h3>
                                     <div class="search-section">
                                         <ul>
                                             <li>
@@ -198,7 +196,7 @@
 
                                 @if (false)
                                     <div class="no-search-results text-center">
-                                        <p>There are no results matching your search!</p>
+                                        <p>{{ __('There are no results matching your search!') }}</p>
                                     </div>
                                 @endif
 
@@ -209,12 +207,12 @@
                         </div>
                     </li>
                     <li>
-                        <x-topnav-button icon="fa-solid fa-user fa-sm icon" route="profile.edit">Profile</x-topnav-button>
+                        <x-topnav-button icon="fa-solid fa-user fa-sm icon" route="profile.edit">{{ __('Profile') }}</x-topnav-button>
                     </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <x-topnav-button type="submit" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">Log Out</x-topnav-button>
+                            <x-topnav-button type="submit" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">{{ __('Log Out') }}</x-topnav-button>
                         </form>
                     </li>
                 </ul>
@@ -232,20 +230,17 @@
                     <li>
                         <div class="open-mobile-search-btn" id="open-mobile-search-btn">
                             <x-topnav-button icon="fa-solid fa-magnifying-glass fa-sm search-icon" iconId="mobile-open-search-icon" onclick="openMobileSearch()"></x-topnav-button>
-
-                            <!--<i class="fa-solid fa-magnifying-glass fa-sm search-icon" id="mobile-open-search-icon" onclick="openMobileSearch()"></i>-->
                         </div>
                     </li>
                     <li>
                         <a href="{{ route('profile.edit') }}">
-                            <x-topnav-button id="mobile-profile-btn" icon="fa-solid fa-user fa-sm icon">Profile</x-topnav-button>
+                            <x-topnav-button id="mobile-profile-btn" icon="fa-solid fa-user fa-sm icon">{{ __('Profile') }}</x-topnav-button>
                         </a>
                     </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <!--<button type="submit">Log Out</button>-->
-                            <x-topnav-button type="submit" id="mobile-log-out-btn" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">Log Out</x-topnav-button>
+                            <x-topnav-button type="submit" id="mobile-log-out-btn" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">{{ __('Log Out') }}</x-topnav-button>
                         </form>
                     </li>
                 </ul>

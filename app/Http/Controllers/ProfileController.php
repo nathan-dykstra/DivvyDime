@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\EmailPreferenceType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,8 +17,16 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $email_preference_options = [
+            EmailPreferenceType::WEEKLY => 'Weekly',
+            EmailPreferenceType::BIWEEKLY => 'Biweekly',
+            EmailPreferenceType::MONTHLY => 'Monthly',
+            EmailPreferenceType::NEVER => 'Never'
+        ];
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $request->user()->load('preference'),
+            'email_preference_options' => $email_preference_options,
         ]);
     }
 
