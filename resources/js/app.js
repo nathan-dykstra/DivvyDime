@@ -192,7 +192,7 @@ window.animateSidebarIcon = function() {
 
 
 window.openMobileSearch = function() {
-    body.classList.add("prevent-scroll");
+    body.classList.add("overflow-y-hidden");
     mobileSearchInput.value = "";
     mobileSearchWrapper.classList.add("mobile-search-wrapper-active");
     mobileSearchResultsList.classList.remove("mobile-search-results-list-active")
@@ -201,7 +201,7 @@ window.openMobileSearch = function() {
 }
 
 window.closeMobileSearch = function() {
-    body.classList.remove("prevent-scroll");
+    body.classList.remove("overflow-y-hidden");
     mobileSearchWrapper.classList.remove("mobile-search-wrapper-active");
     mobileSearchInput.blur();
 }

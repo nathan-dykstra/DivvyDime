@@ -34,8 +34,6 @@
     class="modal-container"
     style="display: {{ $show ? 'block' : 'none' }};"
 >
-    <!-- Note: Currently using Tailwind transfrom classes for the modal animations -->
-
     <div
         x-show="show"
         class="transform modal-transparent-container"

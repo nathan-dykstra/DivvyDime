@@ -697,26 +697,26 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .mobile-search-wrapper {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0;
     height: 0;
-    width: 0;
+    width: 100%;
     z-index: 0;
     overflow: hidden;
     background-color: var(--background);
     color: var(--text-primary);
-    opacity: 1;
-    transition: height 0.5s ease, opacity 0.5s;
+    transition: height 0.3s ease-in-out, opacity 0.3s;
 }
 
 .mobile-search-wrapper-active {
-    height: 100%;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
     z-index: 10;
     opacity: 1;
+    height: 100%;
     overflow-y: auto;
-    padding-bottom: var(--mobile-navigation-height);
 }
 
 .mobile-search-wrapper-active::-webkit-scrollbar {
@@ -733,7 +733,6 @@ body::-webkit-scrollbar-thumb:hover {
     background-color: var(--border-grey);
     border-radius: var(--scrollbar-border-radius);
     border: solid var(--scrollbar-border) var(--background);
-    margin: var(--navbar-height) 0 var(--mobile-navigation-height);
 }
 
 .mobile-search-wrapper-active::-webkit-scrollbar-thumb:hover {
@@ -748,20 +747,12 @@ body::-webkit-scrollbar-thumb:hover {
     display: flex;
     align-items: center;
     height: var(--navbar-height);
-    height: 0;
     width: 100%;
     overflow: hidden;
     padding: 0 var(--container-small-padding);
-    transition: background-color 0.3s;
-}
-
-.mobile-search-wrapper-active .mobile-searchbar-container {
-    height: var(--navbar-height) !important;
 }
 
 .mobile-searchbar-container-scrolling {
-    background-color: var(--background-blur-color);
-    backdrop-filter: var(--background-blur-filter);
     border-bottom: 1px solid var(--border-grey);
 }
 
@@ -981,7 +972,7 @@ body::-webkit-scrollbar-thumb:hover {
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 5;
+    z-index: 15;
     height: var(--mobile-navigation-height);
     width: 100%;
     padding: var(--container-small-padding);

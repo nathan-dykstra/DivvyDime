@@ -11,7 +11,7 @@
 <script type="module">
     $(document).ready(function() {
         $(".select-input").select2();
-        
+
         $(".select-input-multi").select2({
             closeOnSelect: false
         });
@@ -226,6 +226,8 @@
     .select2-results__options::-webkit-scrollbar-thumb:hover {
         background-color: var(--scrollbar-color-hover);
     }
+
+    /* Conditional */
 
     @if ($multiple)
         .select2-container .select2-dropdown .select2-results ul {

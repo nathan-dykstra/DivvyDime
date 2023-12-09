@@ -15,8 +15,6 @@ class UserPreferenceController extends Controller
      */
     public function update(PreferenceUpdateRequest $request): RedirectResponse 
     {
-        Log::info($request);
-
         $user_preference = $request->user()->preference()->firstOrCreate([]);
         $user_preference->fill($request->validated());
         $user_preference->save();
