@@ -4,7 +4,7 @@
             <h1>DivvyDime</h1>
         </div>
 
-        <form method="POST" action="{{ route('register') }}">
+        <form method="POST" action="{{ route('register.storefrominvite', $invite->token) }}">
             @csrf
 
             <div class="space-bottom-sm">
@@ -18,7 +18,8 @@
                 <!-- Email Address -->
                 <div>
                     <x-input-label for="email" :value="__('Email')" />
-                    <x-text-input id="email" type="email" name="email" :value="old('email')" required autocomplete="username" />
+                    <x-text-input id="email" :value="$invite->email" required disabled />
+                    <x-text-input type="email" name="email" :value="$invite->email" hidden />
                     <x-input-error :messages="$errors->get('email')" />
                 </div>
 

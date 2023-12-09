@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\EmailPreferenceType;
+use App\Models\Friend;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -61,9 +62,13 @@ class ProfileController extends Controller
 
         Auth::logout();
 
+        // Delete the user's prferences
         if ($user->preference) {
             $user->preference->delete();
         }
+
+        // Delete the user's friends
+        Friend::where('user1_id', $user->id)->orWhere('user2_id', $user->id)->delete();
 
         $user->delete();
 

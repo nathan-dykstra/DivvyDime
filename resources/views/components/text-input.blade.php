@@ -28,6 +28,10 @@
         box-shadow: none;
     }
 
+    .text-input:disabled {
+        background-color: var(--primary-grey);
+    }
+
     .text-input::placeholder {
         color: var(--text-shy);
     }
