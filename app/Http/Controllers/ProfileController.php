@@ -26,7 +26,7 @@ class ProfileController extends Controller
         ];
 
         return view('profile.edit', [
-            'user' => $request->user()->load('preference'),
+            'user' => $request->user()->load('preferences'),
             'email_preference_options' => $email_preference_options,
         ]);
     }
@@ -63,8 +63,8 @@ class ProfileController extends Controller
         Auth::logout();
 
         // Delete the user's prferences
-        if ($user->preference) {
-            $user->preference->delete();
+        if ($user->preferences) {
+            $user->preferences->delete();
         }
 
         // Delete the user's friends

@@ -43,16 +43,6 @@
 
         <div class="btn-container-start">
             <x-primary-button type="submit">{{ __('Save') }}</x-primary-button>
-
-            @if (session('status') === 'profile-updated')
-                <p 
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-success"
-                >{{ __('Saved.') }}</p>
-            @endif
         </div>
     </form>
 </section>

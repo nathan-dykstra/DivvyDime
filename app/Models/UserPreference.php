@@ -9,6 +9,9 @@ class UserPreference extends Model
 {
     use HasFactory;
 
+    /**
+     * Defines the UserPreference to User relationship.
+     */
     public function user()
     {
         return $this->belongsTo(User::class);

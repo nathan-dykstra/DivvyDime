@@ -1,6 +1,9 @@
 @php
     $sidebar = config('sidebar');
-    $mobile_nav = config('mobilenav')
+    $mobile_nav = config('mobilenav');
+    $current_route = Route::current();
+    $current_route_name = $current_route->getName();
+    $route_requires_parameters = count($current_route->parameters()) > 0;
 @endphp
 
 <nav>
@@ -8,7 +11,7 @@
 
     <div class="sidebar" id="sidebar">
         <div class="pin-sidebar-btn-container-end">
-            <div class="tooltip tooltip-left pin-sidebar-tooltip">
+            <div class="tooltip tooltip-left">
                 <x-icon-button class="hidden" icon="fa-solid fa-bars pin-sidebar-icon" id="pin-sidebar-icon" onclick="animateSidebarIcon(), toggleSidebar()"></x-icon-button>
                 <span class="tooltip-text" id="pin-sidebar-tooltip">Pin Sidebar</span>
             </div>
@@ -50,7 +53,7 @@
 
 <script>
     function highlightSidebarItem() {
-        const currentRoute = '{{ route(Route::currentRouteName()) }}';
+        const currentRoute = '{{ $route_requires_parameters ? '' : route($current_route_name) }}';
 
         const sidebarItems = document.querySelectorAll(".sidebar-items li");
 
@@ -60,15 +63,13 @@
             const href = anchor.getAttribute('href');
 
             if (href === currentRoute) {
-                console.log(currentRoute);
-                console.log(href);
                 item.querySelector('.sidebar-item').classList.add('sidebar-item-active');
             }
         });
     }
 
     function mobileHighlightNavSelection() {
-        const currentRoute = '{{ route(Route::currentRouteName()) }}';
+        const currentRoute = '{{ $route_requires_parameters ? '' : route($current_route_name) }}';
 
         const sidebarItems = document.querySelectorAll(".mobile-navigation li");
 
@@ -78,8 +79,6 @@
             const href = anchor.getAttribute('href');
 
             if (href === currentRoute) {
-                console.log(currentRoute);
-                console.log(href);
                 item.querySelector('.mobile-navigation-item').classList.add('mobile-nav-item-active');
             }
         });

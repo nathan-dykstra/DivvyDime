@@ -32,23 +32,13 @@
         <div>
             <x-input-label for="email_preference_type_id" :value="__('Email Preference')" />
             <x-select2-input id="email_preference_type_id" name="email_preference_type_id">
-                <x-select-options :options="$email_preference_options"  :selected="old('email_preference_type_id', $user->preference->email_preference_type_id)"/>
+                <x-select-options :options="$email_preference_options"  :selected="old('email_preference_type_id', $user->preferences->email_preference_type_id)"/>
             </x-select2-input>
             <x-input-error :messages="$errors->get('email_preference')" />
         </div>
 
         <div class="btn-container-start">
             <x-primary-button type="submit">{{ __('Save') }}</x-primary-button>
-
-            @if (session('status') === 'preferences-updated')
-                <p 
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-success"
-                >{{ __('Saved.') }}</p>
-            @endif
         </div>
     </form>
 </section>

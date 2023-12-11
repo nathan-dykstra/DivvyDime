@@ -17,7 +17,7 @@
             <div>
                 <h3>{{ __('Are you sure you want to delete your account?') }}</h3>
                 <p class="text-shy">
-                    {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Any Groups or Expenses that you participated in will be updated to show a "Deleted User". Please enter your password to confirm you would like to permanently delete your account.') }}
+                    {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Any Groups or Expenses that you participated in will be updated to show a "DivvyDime User". Please enter your password to confirm you would like to permanently delete your account.') }}
                 </p>
             </div>
 

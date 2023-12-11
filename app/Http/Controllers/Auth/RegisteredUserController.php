@@ -56,7 +56,7 @@ class RegisteredUserController extends Controller
 
         // Create user_preferences record for the new user
         $user_preference = new UserPreference();
-        $user->preference()->save($user_preference);
+        $user->preferences()->save($user_preference);
 
         event(new Registered($user));
 
@@ -95,7 +95,7 @@ class RegisteredUserController extends Controller
 
         // Create user_preferences record for the new user
         $user_preference = new UserPreference();
-        $user->preference()->save($user_preference);
+        $user->preferences()->save($user_preference);
 
         event(new Registered($user));
 

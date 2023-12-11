@@ -133,6 +133,7 @@ h2 {
     font-size: 1.5em;
     font-weight: 700;
     color: var(--text-heading);
+    width: 100%;
 }
 
 h3 {
@@ -199,8 +200,32 @@ p {
     font-size: 0.8em;
 }
 
+.dot {
+    vertical-align: middle;
+}
+
 .sidebar-icon {
     margin-right: 0.5em;
+}
+
+.session-status {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    border: 1px solid var(--border-grey);
+    border-radius: var(--border-radius);
+    background-color: var(--secondary-grey);
+    max-width: 400px;
+    word-wrap: break-word;
+    text-align: center;
+    padding: 8px 16px;
+    box-shadow: var(--box-shadow);
+}
+
+.session-status > p {
+    margin-top: 0 !important;
 }
 
 .hidden {
@@ -288,6 +313,12 @@ p {
     width: 100%;
 }
 
+.section-search {
+    width: 100%;
+    padding-bottom: 1em;
+    border-bottom: 1px solid var(--border-grey);
+}
+
 .primary-color-btn {
     background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-color */
     border: none !important;
@@ -363,6 +394,13 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 /* Top tooltip (bottom arrow) */
+
+.tooltip-top .tooltip-text {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(100% + 10px);
+}
+
 .tooltip-top .tooltip-text::after {
     content: " ";
     position: absolute;
@@ -375,6 +413,13 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 /* Bottom tooltip (top arrow) */
+
+.tooltip-bottom .tooltip-text {
+    left: 50%;
+    transform: translateX(-50%);
+    top: calc(100% + 10px);
+}
+
 .tooltip-bottom .tooltip-text::after {
     content: " ";
     position: absolute;
@@ -387,6 +432,13 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 /* Right tooltip (left arrow) */
+
+.tooltip-right .tooltip-text {
+    top: 50%;
+    transform: translateY(-50%);
+    left: calc(100% + 10px);
+}
+
 .tooltip-right .tooltip-text::after {
     content: " ";
     position: absolute;
@@ -399,6 +451,13 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 /* Left tooltip (right arrow) */
+
+.tooltip-left .tooltip-text {
+    top: 50%;
+    transform: translateY(-50%);
+    right: calc(100% + 10px);
+}
+
 .tooltip-left .tooltip-text::after {
     content: " ";
     position: absolute;
@@ -903,11 +962,6 @@ body::-webkit-scrollbar-thumb:hover {
     color: var(--blue-hover);
 }
 
-.pin-sidebar-tooltip .tooltip-text {
-    top: -5px;
-    right: calc(100% + 10px);
-}
-
 @keyframes scaleSidebarIcon {
     0% { transform: scaleX(1); }
     50% { transform: scaleX(0.7); }
@@ -994,4 +1048,70 @@ body::-webkit-scrollbar-thumb:hover {
 
 .mobile-nav-item-active {
     color: var(--accent-color); /* TODO: Change this to --primary-color */
+}
+
+
+
+
+/* Activity List */
+
+.notification {
+    color: var(--text-primary);
+    padding: var(--container-small-padding) var(--container-padding);
+    border-bottom: 1px solid var(--border-grey);
+    transition: background-color 0.1s ease-in-out;
+}
+
+.notification:hover {
+    background-color: var(--primary-grey);
+}
+
+.notification-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.notification-username {
+    color: var(--text-primary-highlight);
+    font-weight: 600;
+}
+
+.notification-grid {
+    display: grid;
+    grid-template-columns: auto 5%;
+}
+
+.delete-notification-btn-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+}
+
+.delete-notification-btn {
+    color: var(--icon-grey);
+    transition: color 0.3s ease-in-out;
+}
+
+.delete-notification-btn:hover {
+    color: var(--blue-hover);
+    cursor: pointer;
+}
+
+
+/* Friends List */
+
+.friend {
+    display: flex;
+    flex-direction: column;
+    color: var(--text-primary);
+    padding: var(--container-small-padding) var(--container-padding);
+    border-bottom: 1px solid var(--border-grey);
+    transition: background-color 0.1s ease-in-out;
+}
+
+.friend:hover {
+    background-color: var(--primary-grey);
 }

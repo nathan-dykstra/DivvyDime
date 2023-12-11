@@ -12,7 +12,10 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    public function preference()
+    /**
+     * Defines the User to UserPreference relationship.
+     */
+    public function preferences()
     {
         return $this->hasOne(UserPreference::class);
     }

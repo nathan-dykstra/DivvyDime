@@ -14,4 +14,8 @@ class Invite extends Model
         'inviter',
         'token'
     ];
+
+    protected $casts = [
+        'inviter' => 'int',
+    ];
 }
