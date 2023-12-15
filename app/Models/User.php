@@ -21,6 +21,32 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Defines the User to Group relationship.
+     */
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_members', 'user_id', 'group_id');
+    }
+
+    /**
+     * Returns the user's friends.
+     */
+    public function friends()
+    {
+        $friend_ids = Friend::select('user2_id AS friend_id')
+            ->where('user1_id', $this->id)
+            ->union(
+                Friend::select('user1_id AS friend_id')
+                    ->where('user2_id', $this->id)
+            )
+            ->get()->toArray();
+
+        $friends = User::whereIn('id', $friend_ids);
+
+        return $friends;
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

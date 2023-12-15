@@ -123,7 +123,7 @@ var sidebarCollapsed = loadSidebarState();
 window.autoCloseSidebar = function() {
     sidebar.classList.remove("sidebar-expanded");
     navbar.style.marginLeft = "0";
-    headerWrapper.style.marginLeft = "0";
+    if (headerWrapper) headerWrapper.style.marginLeft = "0";
     mainContentWrapper.style.marginLeft = "0";
     sidebarButton.classList.remove("hidden");
     pinSidebarBtn.classList.add("hidden");
@@ -133,7 +133,7 @@ window.autoOpenSidebar = function() {
     if (!sidebarCollapsed) {
         sidebar.classList.add("sidebar-expanded");
         navbar.style.marginLeft = sidebarWidth;
-        headerWrapper.style.marginLeft = sidebarWidth;
+        if (headerWrapper) headerWrapper.style.marginLeft = sidebarWidth;
         mainContentWrapper.style.marginLeft = sidebarWidth;
         sidebarButton.classList.add("hidden");
     }
@@ -164,13 +164,13 @@ window.toggleSidebar = function() {
     if (sidebarCollapsed) {
         sidebar.classList.add("sidebar-expanded");
         navbar.style.marginLeft = sidebarWidth;
-        headerWrapper.style.marginLeft = sidebarWidth;
+        if (headerWrapper) headerWrapper.style.marginLeft = sidebarWidth;
         mainContentWrapper.style.marginLeft = sidebarWidth;
         pinSidebarTooltip.innerHTML = "Unpin Sidebar";
         sidebarButton.classList.add("hidden");
     } else {
         navbar.style.marginLeft = "0";
-        headerWrapper.style.marginLeft = "0";
+        if (headerWrapper) headerWrapper.style.marginLeft = "0";
         mainContentWrapper.style.marginLeft = "0";
         pinSidebarTooltip.innerHTML = "Pin Sidebar";
     }

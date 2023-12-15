@@ -26,15 +26,7 @@ class FriendsController extends Controller
     {
         $current_user = auth()->user();
 
-        $friend_ids = Friend::select('user2_id AS friend_id')
-            ->where('user1_id', $current_user->id)
-            ->union(
-                Friend::select('user1_id AS friend_id')
-                    ->where('user2_id', $current_user->id)
-            )
-            ->get()->toArray();
-
-        $friends = User::whereIn('id', $friend_ids)->orderBy('username', 'asc')->get();
+        $friends = $current_user->friends()->orderBy('username', 'asc')->get();
 
         return view('friends.friends-list', [
             'friends' => $friends,
@@ -46,7 +38,15 @@ class FriendsController extends Controller
      */
     public function show($friend_id): View
     {
+        $current_user = auth()->user();
+
         $friend = User::where('id', $friend_id)->first();
+
+        if ($friend === null) {
+            return view('friends.does-not-exist');
+        } else if (!in_array($current_user->id, $friend->friends()->pluck('id')->toArray())) {
+            return view('friends.not-allowed');
+        }
 
         return view('friends.friend-profile', [
             'friend' => $friend,

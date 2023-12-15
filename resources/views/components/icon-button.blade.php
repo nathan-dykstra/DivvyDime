@@ -1,4 +1,4 @@
-@props(['type' => 'button', 'class' => '', 'id' => '', 'icon' => '', 'iconId' => '', 'onclick' => ''])
+@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'onclick' => null])
 
 <button {{ $attributes->merge(['type' => $type, 'class' => 'icon-btn ' . $class, 'id' => $id, 'onclick' => $onclick]) }}>
     <i class="{{ $icon }}" id="{{ $iconId }}"></i>

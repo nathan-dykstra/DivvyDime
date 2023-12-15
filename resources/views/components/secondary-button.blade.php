@@ -1,7 +1,7 @@
-@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'form' => null, 'route' => null, 'onclick' => null])
+@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'form' => null, 'href' => null, 'onclick' => null])
 
-@if ($route)
-    <a {{ $attributes->merge(['class' => 'secondary-btn ' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => route($route)]) }}>
+@if ($href)
+    <a {{ $attributes->merge(['class' => 'secondary-btn ' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => $href]) }}>
         @if ($icon)
             <i class="{{ $icon }}" id="{{ $iconId }}"></i>
         @endif

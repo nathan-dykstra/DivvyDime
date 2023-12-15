@@ -9,8 +9,8 @@
         </div>
     
         <div class="btn-container-end">
-            <x-secondary-button route="login">{{ __('Log in') }}</x-primary-button>
-            <x-primary-button class="primary-color-btn" route="register">{{ __('Register') }}</x-primary-button>
+            <x-secondary-button :href="route('login')">{{ __('Log in') }}</x-secondary-button>
+            <x-primary-button class="primary-color-btn" :href="route('register')">{{ __('Register') }}</x-primary-button>
         </div>
     </div>
 </x-guest-layout>

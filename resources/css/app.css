@@ -161,6 +161,12 @@ p {
     color: var(--text-shy);
 }
 
+.text-primary {
+    font-size: 1em;
+    font-weight: 400;
+    color: var(--text-primary);
+}
+
 .text-warning {
     color: var(--text-warning);
 }
@@ -263,6 +269,10 @@ p {
     margin-top: 32px;
 }
 
+.space-top-xs > :not([hidden]):not(:first-child) {
+    margin-top: 8px;
+}
+
 .space-top-sm > :not([hidden]):not(:first-child) {
     margin-top: 16px;
 }
@@ -277,6 +287,11 @@ p {
 
 .space-bottom-lg > :not([hidden]):not(:last-child) {
     margin-bottom: 32px;
+}
+
+.vertical-center {
+    display: flex;
+    align-items: center;
 }
 
 .container {
@@ -1114,4 +1129,72 @@ body::-webkit-scrollbar-thumb:hover {
 
 .friend:hover {
     background-color: var(--primary-grey);
+}
+
+/* Groups List */
+
+.group {
+    color: var(--text-primary);
+    display: grid;
+    grid-template-columns: 30% auto;
+    gap: 2em;
+    padding: var(--container-small-padding) var(--container-padding);
+    border-bottom: 1px solid var(--border-grey);
+    transition: background-color 0.1s ease-in-out;
+}
+
+.group:hover {
+    background-color: var(--primary-grey);
+}
+
+.group-img {
+    border: 1px solid var(--border-grey);
+    border-radius: var(--border-radius);
+    height: 120px;
+}
+
+
+/* Group Settings */
+
+.group-settings-member {
+    display: flex;
+    justify-content: space-between;
+}
+
+.invited-emails-container {
+    display: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    background-color: var(--background);
+    border: 1px solid var(--border-grey);
+    border-radius: var(--border-radius);
+    padding: 8px 12px;
+    width: 100%;
+}
+
+.invite-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-shy);
+    background-color: var(--secondary-grey);
+    border-radius: 0.25rem;
+    padding: 0 6px;
+}
+
+.add-friend-icon {
+    color: var(--icon-grey);
+    transition: color 0.3s ease-in-out;
+}
+
+.add-friend-icon:hover {
+    color: var(--blue-hover);
+    cursor: pointer;
+}
+
+.friend-added-icon {
+    color: var(--text-success);
 }

@@ -1,7 +1,7 @@
-@props(['type' => null, 'class' => '', 'id' => null, 'onclick' => null, 'route' => '', 'form' => ''])
+@props(['type' => null, 'class' => '', 'id' => null, 'onclick' => null, 'href' => $href, 'form' => ''])
 
-@if ($route)
-    <a {{ $attributes->merge(['class' => 'link-btn no-focus' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => route($route)]) }}>
+@if ($href)
+    <a {{ $attributes->merge(['class' => 'link-btn no-focus' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => $href]) }}>
         {{ $slot }}
     </a>
 @elseif ($form) 

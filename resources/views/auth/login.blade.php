@@ -29,7 +29,7 @@
 
             <div class="btn-container-end">
                 @if (Route::has('password.request'))
-                    <x-link-button route="password.request">{{ __('Forgot your password?') }}</x-link-button>
+                    <x-link-button :href="route('password.request')">{{ __('Forgot your password?') }}</x-link-button>
                 @endif
 
                 <x-primary-button type="submit">{{ __('Log in') }}</x-primary-button>

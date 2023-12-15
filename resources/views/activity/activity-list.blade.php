@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2>Activity</h2>
+        <h2>{{ __('Activity') }}</h2>
     </x-slot>
 
     <div class="section-search">

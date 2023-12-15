@@ -9,8 +9,8 @@
         </div>
 
         <div class="mobile-search-icon-btn" id="mobile-search-icon-btn">
-            <i class="fa-solid fa-xmark fa-sm mobile-search-close" id="mobile-search-close" onclick="closeMobileSearch()"></i>
-            <i class="fa-solid fa-magnifying-glass fa-sm mobile-search-icon-open" id="mobile-search-icon"></i>
+            <i class="fa-solid fa-xmark mobile-search-close" id="mobile-search-close" onclick="closeMobileSearch()"></i>
+            <i class="fa-solid fa-magnifying-glass mobile-search-icon-open" id="mobile-search-icon"></i>
         </div>
     </div>
 
@@ -113,8 +113,8 @@
                             </div>
 
                             <div class="search-icon-btn" id="search-icon-btn">
-                                <i class="fa-solid fa-xmark fa-sm search-close" id="search-close" onclick="closeSearchbar()"></i>
-                                <x-topnav-button icon="fa-solid fa-magnifying-glass fa-sm search-icon" iconId="search-icon" onclick="animateSearchIcon(this), expandSearchbar()"></x-topnav-button>
+                                <i class="fa-solid fa-xmark search-close" id="search-close" onclick="closeSearchbar()"></i>
+                                <x-topnav-button icon="fa-solid fa-magnifying-glass search-icon" iconId="search-icon" onclick="animateSearchIcon(this), expandSearchbar()"></x-topnav-button>
                             </div>
 
                             <div class="search-results" id="search-results">
@@ -207,12 +207,12 @@
                         </div>
                     </li>
                     <li>
-                        <x-topnav-button icon="fa-solid fa-user fa-sm icon" route="profile.edit">{{ __('Profile') }}</x-topnav-button>
+                        <x-topnav-button icon="fa-solid fa-circle-user icon" :href="route('profile.edit')">{{ __('Profile') }}</x-topnav-button>
                     </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <x-topnav-button type="submit" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">{{ __('Log Out') }}</x-topnav-button>
+                            <x-topnav-button type="submit" icon="fa-solid fa-right-from-bracket icon">{{ __('Log Out') }}</x-topnav-button>
                         </form>
                     </li>
                 </ul>
@@ -229,18 +229,18 @@
                 <ul>
                     <li>
                         <div class="open-mobile-search-btn" id="open-mobile-search-btn">
-                            <x-topnav-button icon="fa-solid fa-magnifying-glass fa-sm search-icon" iconId="mobile-open-search-icon" onclick="openMobileSearch()"></x-topnav-button>
+                            <x-topnav-button icon="fa-solid fa-magnifying-glass search-icon" iconId="mobile-open-search-icon" onclick="openMobileSearch()"></x-topnav-button>
                         </div>
                     </li>
                     <li>
                         <a href="{{ route('profile.edit') }}">
-                            <x-topnav-button id="mobile-profile-btn" icon="fa-solid fa-user fa-sm icon">{{ __('Profile') }}</x-topnav-button>
+                            <x-topnav-button id="mobile-profile-btn" icon="fa-solid fa-circle-user icon">{{ __('Profile') }}</x-topnav-button>
                         </a>
                     </li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <x-topnav-button type="submit" id="mobile-log-out-btn" icon="fa-solid fa-arrow-right-from-bracket fa-sm icon">{{ __('Log Out') }}</x-topnav-button>
+                            <x-topnav-button type="submit" id="mobile-log-out-btn" icon="fa-solid fa-right-from-bracket icon">{{ __('Log Out') }}</x-topnav-button>
                         </form>
                     </li>
                 </ul>

@@ -64,21 +64,21 @@
                 } else if (window.innerWidth < autoCloseSidebarWidth) {
                     sidebar.classList.remove("sidebar-expanded");
                     navbar.style.marginLeft = "0";
-                    headerWrapper.style.marginLeft = "0";
+                    if (headerWrapper) headerWrapper.style.marginLeft = "0";
                     mainContentWrapper.style.marginLeft = "0";
                     sidebarButton.classList.remove("hidden");
                     pinSidebarBtn.classList.add("hidden");
                 } else if (isCollapsed === 'true' || isCollapsed === true) {
                     sidebar.classList.remove("sidebar-expanded");
                     navbar.style.marginLeft = "0";
-                    headerWrapper.style.marginLeft = "0";
+                    if (headerWrapper) headerWrapper.style.marginLeft = "0";
                     mainContentWrapper.style.marginLeft = "0";
                     sidebarButton.classList.remove("hidden");
                     pinSidebarTooltip.innerHTML = "Pin Sidebar";
                 } else {
                     sidebar.classList.add("sidebar-expanded");
                     navbar.style.marginLeft = sidebarWidth;
-                    headerWrapper.style.marginLeft = sidebarWidth;
+                    if (headerWrapper) headerWrapper.style.marginLeft = sidebarWidth;
                     mainContentWrapper.style.marginLeft = sidebarWidth;
                     sidebarButton.classList.add("hidden");
                     pinSidebarTooltip.innerHTML = "Unpin Sidebar";
