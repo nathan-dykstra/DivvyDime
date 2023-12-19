@@ -15,12 +15,12 @@ return new class extends Migration
         Schema::create('notification_attributes', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('notification_id')->unique();
-            //$table->unsignedBigInteger('group_id')->nullable();
+            $table->unsignedBigInteger('group_id')->nullable();
             //$table->unsignedBigInteger('expense_id')->nullable();
             //$table->unsignedBigInteger('payment_id')->nullable();
 
             $table->foreign('notification_id')->references('id')->on('notifications');
-            //$table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
             //$table->foreign('expense_id')->references('id')->on('expenses')->onDelete('cascade');
             //$table->foreign('payment_id')->references('id')->on('payments')->onDelete('cascade');
         });

@@ -9,8 +9,11 @@
                     <p class="text-shy">{{ __("Give your group a name, and upload an image if you would like.") }}</p>   
                 @endif
             </header>
-            <form method="post" action="{{ route('groups.store') }}" class="space-top-sm">
+            <form method="post" action="{{ $group  ? route('groups.update', $group) : route('groups.store') }}" class="space-top-sm">
                 @csrf
+                @if ($group)
+                    @method('patch')
+                @endif
 
                 <div>
                     <x-input-label for="group_name" :value="__('Name')" />

@@ -21,7 +21,7 @@ class NotificationAttribute extends Model
 
     protected $fillable = [
         'notification_id',
-        //'group_id',
+        'group_id',
         //'expense_id',
         //'payment_id',
 
@@ -29,7 +29,7 @@ class NotificationAttribute extends Model
 
     protected $casts = [
         'notification_id' => 'int',
-        //'group_id' => 'int',
+        'group_id' => 'int',
         //'expense_id' => 'int',
         //'payment_id' => 'int',
     ];

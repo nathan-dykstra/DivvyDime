@@ -5,11 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateGroupRequest;
 use App\Models\Group;
 use App\Models\GroupMember;
+use App\Models\Notification as ModelsNotification;
+use App\Models\NotificationAttribute;
+use App\Models\NotificationType;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 
 class GroupsController extends Controller
 {
@@ -66,22 +72,227 @@ class GroupsController extends Controller
         ]);
     }
 
+    /**
+     * Displays the group settings.
+     */
     public function settings(Group $group): View
     {
+        $friends = auth()->user()->friends()->orderBy('username', 'asc')->get();
+
         return view('groups.group-settings', [
             'group' => $group,
+            'friends' => $friends,
         ]);
     }
 
-    public function invite(Request $request, $group_id): RedirectResponse
+    /**
+     * Updates the group detauls.
+     */
+    public function update(CreateGroupRequest $request, Group $group): RedirectResponse
     {
-        /*$request->validateWithBag('groupInvite', [
-            'user_email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
+        $group->update($request->validated());
+
+        return Redirect::route('groups.settings', $group->id)->with('status', 'group-updated');
+    }
+
+    /**
+     * Filters the friends list on the "Add Members" modal.
+     */
+    public function searchFriendsToInvite(Request $request, Group $group): View
+    {
+        $search_string = $request->input('search_string');
+
+        $friends = auth()->user()->friends()
+            ->where(function ($query) use ($search_string) {
+                $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
+                    ->orWhereRaw('users.email LIKE ?', ["%$search_string%"]);
+            })
+            ->orderBy('username', 'asc')
+            ->get();
+
+        return view('groups.partials.friends-to-invite', [
+            'group' => $group,
+            'friends' => $friends,
+        ]);
+    }
+
+    /**
+     * Send an invite to a group.
+     */
+    public function invite(Request $request, Group $group)
+    {
+        $inviter = $request->user();
+
+        $user_emails = $request->input('emails');
+
+        //Log::info($user_emails);
+
+        $invite_errors = 0;
+
+        $rules = [
+            'email' => ['string', 'lowercase', 'email', 'max:255']
+        ];
+
+        foreach ($user_emails as $email) {
+            $validator = Validator::make(['email' => $email], $rules);
+
+            if ($validator->fails()) {
+                return back()->withErrors($validator);
+            }
+
+            $existing_user = User::where('email', $email)->first();
+
+            if ($existing_user) {
+                // Check if the user is already in the group or if a pending invite exists.
+
+                $self_request = $existing_user->id === $inviter->id;
+
+                if ($self_request) {
+                    $invite_errors++;
+                    continue;
+                }
+
+                $existing_member = in_array($existing_user->id, $group->members()->pluck('users.id')->toArray());
+
+                if ($existing_member) {
+                    $invite_errors++;
+                    continue;
+                }
+
+                $existing_group_invite = ModelsNotification::where('notification_type_id', NotificationType::INVITED_TO_GROUP)
+                    ->where('creator', $inviter->id)
+                    ->where('recipient', $existing_user->id)
+                    ->exists();
+
+                if ($existing_group_invite) {
+                    $invite_errors++;
+                    continue;
+                }
+
+                // Create Group Invite notifications for both parties
+
+                $group_invite_sender = ModelsNotification::create([
+                    'notification_type_id' => NotificationType::INVITED_TO_GROUP,
+                    'creator' => $inviter->id,
+                    'sender' => $existing_user->id,
+                    'recipient' => $inviter->id,
+                ]);
+
+                $group_invite_attributes_sender = NotificationAttribute::create([
+                    'notification_id' => $group_invite_sender->id,
+                    'group_id' => $group->id,
+                ]);
+
+                $group_invite_recipient = ModelsNotification::create([
+                    'notification_type_id' => NotificationType::INVITED_TO_GROUP,
+                    'creator' => $inviter->id,
+                    'sender' => $inviter->id,
+                    'recipient' => $existing_user->id,
+                ]);
+
+                $group_invite_attributes_recipient = NotificationAttribute::create([
+                    'notification_id' => $group_invite_recipient->id,
+                    'group_id' => $group->id,
+                ]);
+            } else {
+                // TODO: create email invite to app (creating account through the link automatically joins group)
+            }
+        }
+
+        if ($invite_errors === 0) {
+            Session::flash('status', 'invite-sent');
+        } else if ($invite_errors === count($user_emails)) {
+            Session::flash('status', 'invite-errors');
+        } else {
+            Session::flash('status', 'invite-sent-with-errors');
+        }
+
+        return response()->json([
+            'message' => 'Invite sent successfully!',
+            'redirect' => route('groups.settings', $group),
+        ]);
+    }
+
+    /**
+     * Accept a group invite.
+     */
+    public function accept(Request $request)
+    {
+        $notification_id = $request->input('notification_id');
+        $group_id = $request->input('group_id');
+
+        $recipient_notification = ModelsNotification::where('id', $notification_id)->first();
+
+        $sender_id = $recipient_notification->sender;
+        $recipient_id = $recipient_notification->recipient;
+
+        $group = Group::where('id', $group_id)->first();
+
+        /*$friends = Friend::create([
+            'user1_id' => $user1_id,
+            'user2_id' => $user2_id,
         ]);*/
 
-        $inviter = $request->user();
-    
-        return Redirect::route('groups.settings', $group_id)->with('status', 'invite-sent');
+        foreach ($group->members()->get() as $group_member) {
+            // Add member friends (if necessary)
+        }
+
+        $new_member = GroupMember::firstOrCreate([
+            'group_id' => $group_id,
+            'user_id' => $recipient_id,
+        ]);
+
+        $sender_notification = ModelsNotification::where('notification_type_id', NotificationType::INVITED_TO_GROUP)
+            ->where('sender', $recipient_id)
+            ->where('recipient', $sender_id)
+            ->first();
+
+        $recipient_notification_update = $recipient_notification->update([
+            'notification_type_id' => NotificationType::JOINED_GROUP,
+        ]);
+
+        $sender_notification_update = $sender_notification->update([
+            'notification_type_id' => NotificationType::JOINED_GROUP,
+        ]);
+
+        if ($new_member && $recipient_notification_update && $sender_notification_update) {
+            return response()->json([
+                'message' => 'Friend request accepted!',
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Error occured!',
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject a group invite.
+     */
+    public function reject(Request $request)
+    {
+        $notification_id = $request->input('notification_id');
+
+        $recipient_notification = ModelsNotification::where('id', $notification_id)->first();
+        $recipient_notification_attributes = NotificationAttribute::where('notification_id', $notification_id)->first();
+
+        $sender_id = $recipient_notification->sender;
+        $recipient_id = $recipient_notification->recipient;
+
+        $sender_notification = ModelsNotification::where('notification_type_id', NotificationType::INVITED_TO_GROUP)
+            ->where('sender', $recipient_id)
+            ->where('recipient', $sender_id)
+            ->first();
+        $sender_notification_attributes = NotificationAttribute::where('notification_id', $sender_notification->id)->first();
+
+        $recipient_notification_attributes->delete();
+        $recipient_notification->delete();
+        $sender_notification_attributes->delete();
+        $sender_notification->delete();
+
+        return response()->json([
+            'message' => 'Friend request denied!',
+        ]);
     }
 
     /**

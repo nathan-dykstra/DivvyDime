@@ -11,7 +11,6 @@ use App\Notifications\InviteNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
@@ -75,13 +74,7 @@ class FriendsController extends Controller
                 return Redirect::route('friends')->with('status', 'self-request');
             }
 
-            $existing_friend = Friend::where(function ($query) use ($inviter, $existing_user) {
-                    $query->where('user1_id', $inviter->id)
-                        ->where('user2_id', $existing_user->id);
-                })->orWhere(function ($query) use ($inviter, $existing_user) {
-                    $query->where('user1_id', $existing_user->id)
-                        ->where('user2_id', $inviter->id);
-                })->exists();
+            $existing_friend = in_array($existing_user->id, $inviter->friends()->pluck('users.id')->toArray());
 
             if ($existing_friend) {
                 return Redirect::route('friends')->with('status', 'existing-friend');

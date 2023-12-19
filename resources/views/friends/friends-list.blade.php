@@ -85,9 +85,9 @@
             </div>
 
             <div>
-                <x-input-label for="friend_email" value="{{ __('Password') }}" class="screen-reader-only" />
+                <x-input-label for="friend_email" value="{{ __('Email') }}" class="screen-reader-only" />
                 <x-text-input id="friend_email" name="friend_email" type="email" placeholder="{{ __('Email') }}" required />
-                <x-input-error :messages="$errors->userDeletion->get('friend_email')" />
+                <x-input-error :messages="$errors->friendInvite->get('friend_email')" />
             </div>
 
             <div class="btn-container-end">

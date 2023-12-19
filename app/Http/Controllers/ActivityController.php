@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Group;
 use App\Models\Notification;
+use App\Models\NotificationAttribute;
 use App\Models\NotificationType;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ActivityController extends Controller
 {
@@ -39,14 +42,7 @@ class ActivityController extends Controller
             ->orderBy('notifications.updated_at', 'desc')
             ->get();
 
-        $notifications = $notifications->map(function ($notification) {
-            $notification->formatted_date = Carbon::parse($notification->updated_at)->isAfter(Carbon::now()->subWeek())
-                ? Carbon::parse($notification->updated_at)->diffForHumans()
-                : Carbon::parse($notification->updated_at)->format('M d');
-            $notification->formatted_time = Carbon::parse($notification->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
-        
-            return $notification;
-        });
+        $notifications = $this->augmentNotifications($notifications);
 
         return view('activity.activity-list', [
             'notifications' => $notifications,
@@ -59,6 +55,7 @@ class ActivityController extends Controller
      */
     public function delete(Request $request, $notification_id) 
     {
+        NotificationAttribute::where('notification_id', $notification_id)->delete();
         Notification::where('id', $notification_id)->delete();
 
         return response()->json([
@@ -86,7 +83,7 @@ class ActivityController extends Controller
             ->orderBy('notifications.updated_at', 'desc')
             ->get();
 
-        $notifications = $this->adjustNotificationDatetime($notifications);
+        $notifications = $this->augmentNotifications($notifications);
 
         return view('activity.partials.notifications', [
             'notification_types' => self::NOTIFICATION_TYPES,
@@ -107,14 +104,7 @@ class ActivityController extends Controller
             ->orderBy('notifications.updated_at', 'desc')
             ->get();
 
-        $notifications = $notifications->map(function ($notification) {
-            $notification->formatted_date = Carbon::parse($notification->updated_at)->isAfter(Carbon::now()->subWeek())
-                ? Carbon::parse($notification->updated_at)->diffForHumans()
-                : Carbon::parse($notification->updated_at)->format('M d');
-            $notification->formatted_time = Carbon::parse($notification->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
-        
-            return $notification;
-        });
+        $notifications = $this->augmentNotifications($notifications);
 
         return view('activity.partials.notifications', [
             'notification_types' => self::NOTIFICATION_TYPES,
@@ -123,14 +113,16 @@ class ActivityController extends Controller
     }
 
     /**
-     * Adds date and time formatting to notifications.
+     * Add datetime formatting and notification attributes to the notifications.
      */
-    protected function adjustNotificationDatetime($notifications) {
+    protected function augmentNotifications($notifications) {
         $notifications = $notifications->map(function ($notification) {
             $notification->formatted_date = Carbon::parse($notification->updated_at)->isAfter(Carbon::now()->subWeek())
                 ? Carbon::parse($notification->updated_at)->diffForHumans()
                 : Carbon::parse($notification->updated_at)->format('M d');
             $notification->formatted_time = Carbon::parse($notification->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
+
+            $notification->group = Group::where('id', $notification->attributes->group_id)->first();
         
             return $notification;
         });

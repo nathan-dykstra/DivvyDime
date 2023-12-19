@@ -87,6 +87,56 @@
         })
     }
 
+    function acceptGroupInvite(notificationId, groupId) {
+        $.ajax({
+            url: "{{ route('groups.accept') }}",
+            method: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'notification_id': notificationId,
+                'group_id': groupId,
+            },
+            success: function(response) {
+                notifications = $('.notifications');
+
+                $.ajax({
+                    url: "{{ route('activity.get-updated-notifications') }}",
+                    method: 'GET',
+                    data: {
+                        '_token': '{{ csrf_token() }}',
+                    },
+                    success: function(html) {
+                        notifications.replaceWith(html);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        })
+    }
+
+    function rejectGroupInvite(rejectBtn, notificationId) {
+        $.ajax({
+            url: "{{ route('groups.reject') }}",
+            method: 'DELETE',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'notification_id': notificationId,
+            },
+            success: function(response) {
+                notificationElement = rejectBtn.closest('.notification');
+                $(notificationElement).remove();
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        })
+    }
+
     function deleteNotification(deleteBtn, notificationId) {
         $.ajax({
             url: '/activity/' + notificationId + '/delete',

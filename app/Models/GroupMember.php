@@ -26,3 +26,4 @@ class GroupMember extends Model
         'user_id' => 'int',
     ];
 }
+// TODO: Add a unique index on (group_id, user_id)

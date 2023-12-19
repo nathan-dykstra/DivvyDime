@@ -18,9 +18,9 @@
             @elseif ($notification->notification_type_id === $notification_types['friend_request_accepted'])
                 @include('activity.partials.friend-request-accepted')
             @elseif ($notification->notification_type_id === $notification_types['invited_to_group'])
-
+                @include('activity.partials.group-invite')
             @elseif ($notification->notification_type_id === $notification_types['joined_group'])
-
+                @include('activity.partials.joined-group')
             @elseif ($notification->notification_type_id === $notification_types['left_group'])
 
             @elseif ($notification->notification_type_id === $notification_types['removed_from_group'])
