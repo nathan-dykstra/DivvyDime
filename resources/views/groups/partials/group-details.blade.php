@@ -6,7 +6,7 @@
                     <h3>{{ __('Details') }}</h3>
                     <p class="text-shy">{{ __("Update your group name and image.") }}</p>                    
                 @else
-                    <p class="text-shy">{{ __("Give your group a name, and upload an image if you would like.") }}</p>   
+                    <p class="text-shy">{{ __("Give your group a name and an image.") }}</p>   
                 @endif
             </header>
             <form method="post" action="{{ $group  ? route('groups.update', $group) : route('groups.store') }}" class="space-top-sm">

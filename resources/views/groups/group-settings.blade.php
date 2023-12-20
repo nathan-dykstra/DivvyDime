@@ -3,9 +3,9 @@
         <div class="btn-container-apart">
             <h2>{{ __('Group settings') }}</h2>
             <div class="btn-container-end">
-                <x-primary-button icon="fa-solid fa-right-from-bracket icon">{{ __('Leave') }}</x-primary-button>
+                <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')" icon="fa-solid fa-right-from-bracket icon">{{ __('Leave') }}</x-primary-button>
                 @if (auth()->user()->id === $group->owner)
-                    <x-danger-button icon="fa-solid fa-trash-can icon">{{ __('Delete') }}</x-primary-button>
+                    <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-group')" icon="fa-solid fa-trash-can icon">{{ __('Delete') }}</x-primary-button>
                 @endif
             </div>
         </div>
@@ -67,7 +67,7 @@
                     @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
                         <div class="vertical-center">
                             <div class="tooltip tooltip-left">
-                                <x-icon-button icon="fa-solid fa-user-minus icon" onclick="" />
+                                <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'remove-member')" icon="fa-solid fa-user-minus icon" /> <!-- TODO: Add modal parameter to accept php variables as array to be used in the modal -->
                                 <span class="tooltip-text" id="pin-sidebar-tooltip">{{ __('Remove ') . $member->username }}</span>
                             </div>
                         </div>
@@ -77,9 +77,48 @@
         </section>
     </div>
 
+    <!-- Group Settings Modals -->
+
+    <x-modal name="leave-group" focusable>
+        <div class="space-bottom-sm">
+            <div>
+                <h3>{{ __('Leave group') }}</h3>
+                <p class="text-shy">
+                    @if (auth()->user()->id === $group->owner && count($group->members()->get()) > 1)
+                        {{ __('Are you sure you want to leave this group? You are currently the group owner. If you leave, ownership will be transferred to another member. This action cannot be undone.') }}
+                    @elseif (auth()->user()->id === $group->owner)
+                        {{ __('Are you sure you want to leave this group? You are the only member. If you leave, the group (along with any group expenses) will be deleted. This action cannot be undone.') }}
+                    @else
+                        {{ __('Are you sure you want to leave this group?') }}
+                    @endif
+                </p>
+            </div>
+
+            <div class="btn-container-end">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                <x-primary-button class="primary-color-btn" icon="fa-solid fa-right-from-bracket icon" onclick="leaveGroup()">{{ __('Leave') }}</x-primary-button>
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal name="delete-group" focusable>
+        <div class="space-bottom-sm">
+            <div>
+                <h3>{{ __('Delete group') }}</h3>
+                <p class="text-shy">
+                    {{ __('Are you sure you want to delete this group? Any group expenses will be deleted with the group. This action cannot be undone.') }}
+                </p>
+            </div>
+
+            <div class="btn-container-end">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                <x-danger-button icon="fa-solid fa-trash-can icon" onclick="deleteGroup()">{{ __('Delete') }}</x-danger-button>
+            </div>
+        </div>
+    </x-modal>
+
     <x-modal name="send-group-invite" :show="$errors->isNotEmpty()" focusable>
         <div class="space-bottom-sm">
-
             <div>
                 <h3>{{ __('Invite to group') }}</h3>
                 <p class="text-shy">
@@ -112,7 +151,29 @@
 
             <div class="btn-container-end">
                 <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                <x-primary-button class="primary-color-btn" onclick="sendInvite()">{{ __('Send Invite') }}</x-danger-button>
+                <x-primary-button class="primary-color-btn" onclick="sendInvite()">{{ __('Send Invite') }}</x-primary-button>
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal name="remove-member" focusable>
+        <div class="space-bottom-sm">
+            <div>
+                <h3>{{ __('Remove member') }}</h3>
+                <p class="text-shy">
+                    @if (true) <!-- TODO: handle logic for preventing removing user with outstanding balances -->
+                        {{ __('Are you sure you want to remove this member from the group? Any group expenses involving this member will be updated to show a "DivvyDime User". This action cannot be undone.') }}
+                    @else
+                        {{ __('This user must settle all their balances in this group before they can be removed.') }}
+                    @endif
+                </p>
+            </div>
+
+            <div class="btn-container-end">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                @if  (true)
+                    <x-danger-button icon="fa-solid fa-user-minus icon" onclick="removeMember()">{{ __('Remove') }}</x-danger-button>
+                @endif
             </div>
         </div>
     </x-modal>
@@ -142,7 +203,7 @@
                     emails.push(chip.textContent.trim());
                 });
 
-                $('#invite-friends-container').children().each(function() {
+                $('#friends-to-invite').children().each(function() {
                     let friendEmail = $(this).find('.text-shy:not(.existing-member)').text().trim();
                 
                     if (emails.includes(friendEmail)) {
@@ -186,7 +247,7 @@
                 inviteChip.find('div').text(inputValue);
                 $(inviteChipContainer).append(inviteChip);
 
-                $('#invite-friends-container').children().each(function() {
+                $('#friends-to-invite').children().each(function() {
                     let emailValue = $(this).find('.text-shy:not(.existing-member)').text().trim();
                 
                     if (emailValue === inputValue) {
@@ -213,7 +274,7 @@
         inviteChip = btn.closest('.invite-chip');
         inviteChipEmail = $(btn).prev('.invite-chip-text').text().trim();
 
-        $('#invite-friends-container').children().each(function() {
+        $('#friends-to-invite').children().each(function() {
             let emailValue = $(this).find('.text-shy:not(.existing-member)').text().trim();
 
             if (emailValue === inviteChipEmail) {

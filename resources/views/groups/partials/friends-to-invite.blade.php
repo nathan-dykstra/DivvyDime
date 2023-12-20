@@ -7,7 +7,7 @@
                     <div class="text-shy">{{ $friend->email }}</div>
                 </div>
                 <div class="vertical-center">
-                    <i class="fa-solid fa-user-plus add-friend-icon" onclick="addFriendEmail(event)" ></i>
+                    <i class="fa-solid fa-user-plus add-friend-icon" onclick="addFriendEmail(event)"></i>
                 </div>
             @else
                 <div>

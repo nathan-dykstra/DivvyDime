@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateGroupRequest;
+use App\Models\Friend;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Notification as ModelsNotification;
@@ -125,10 +126,9 @@ class GroupsController extends Controller
 
         $user_emails = $request->input('emails');
 
-        //Log::info($user_emails);
-
         $invite_errors = 0;
 
+        // TODO: email validation fix
         $rules = [
             'email' => ['string', 'lowercase', 'email', 'max:255']
         ];
@@ -227,14 +227,19 @@ class GroupsController extends Controller
         $recipient_id = $recipient_notification->recipient;
 
         $group = Group::where('id', $group_id)->first();
-
-        /*$friends = Friend::create([
-            'user1_id' => $user1_id,
-            'user2_id' => $user2_id,
-        ]);*/
+        $invited_user = User::where('id', $recipient_id)->first();
 
         foreach ($group->members()->get() as $group_member) {
             // Add member friends (if necessary)
+
+            $existing_friend = in_array($group_member->id, $invited_user->friends()->pluck('users.id')->toArray());
+
+            if (!$existing_friend) {
+                $new_friend = Friend::create([
+                    'user1_id' => $recipient_id,
+                    'user2_id' => $group_member->id,
+                ]);
+            }
         }
 
         $new_member = GroupMember::firstOrCreate([
