@@ -22,7 +22,7 @@
             @elseif ($notification->notification_type_id === $notification_types['joined_group'])
                 @include('activity.partials.joined-group')
             @elseif ($notification->notification_type_id === $notification_types['left_group'])
-
+                @include('activity.partials.left-group')
             @elseif ($notification->notification_type_id === $notification_types['removed_from_group'])
 
             @endif

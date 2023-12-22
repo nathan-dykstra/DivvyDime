@@ -14,10 +14,6 @@
     </div>
 </x-app-layout>
 
-<style>
-
-</style>
-
 <script>
     activitySearchbar = document.getElementById("search-activity");
     activitySearchbar.addEventListener('input', function(event) {

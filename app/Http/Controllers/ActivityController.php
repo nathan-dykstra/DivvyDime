@@ -6,10 +6,10 @@ use App\Models\Group;
 use App\Models\Notification;
 use App\Models\NotificationAttribute;
 use App\Models\NotificationType;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ActivityController extends Controller
 {

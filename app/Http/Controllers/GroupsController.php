@@ -34,11 +34,17 @@ class GroupsController extends Controller
         ]);
     }
 
+    /**
+     * Displays the create Group form.
+     */
     public function create(): View
     {
         return view('groups.create', ['group' => null]);
     }
 
+    /**
+     * Saves the new Group.
+     */
     public function store(CreateGroupRequest $request): RedirectResponse
     {
         $current_user = auth()->user();
@@ -56,6 +62,9 @@ class GroupsController extends Controller
         return Redirect::route('groups.show', $group->id)->with('status', 'group-created');
     }
 
+    /**
+     * Displays the Group.
+     */
     public function show($group_id): View
     {
         $current_user = auth()->user();
@@ -230,7 +239,7 @@ class GroupsController extends Controller
         $invited_user = User::where('id', $recipient_id)->first();
 
         foreach ($group->members()->get() as $group_member) {
-            // Add member friends (if necessary)
+            // Add group members as friends (if necessary)
 
             $existing_friend = in_array($group_member->id, $invited_user->friends()->pluck('users.id')->toArray());
 
@@ -297,6 +306,121 @@ class GroupsController extends Controller
 
         return response()->json([
             'message' => 'Friend request denied!',
+        ]);
+    }
+
+    /**
+     * Remove a member from the Group.
+     */
+    public function removeMember(Request $request, Group $group)
+    {
+        $member_id = $request->input('member_id');
+
+        // TODO: Change all member's group expenses to "DivvyDime User"
+
+        GroupMember::where('group_id', $group->id)->where('user_id', $member_id)->delete();
+
+        Session::flash('status', 'member-removed');
+
+        return response()->json([
+            'message' => 'Member removed successfully!',
+            'redirect' => route('groups.settings', $group),
+        ]);
+    }
+
+    /**
+     * Removes the current user from the Group.
+     */
+    public function leaveGroup(Request $request, Group $group)
+    {
+        $current_user = auth()->user();
+
+        // TODO: Change all of the current user's group expenses to "DivvyDime User"
+
+        if ($group->owner === $current_user->id) {
+            // Group ownership needs to change
+            if ($group->members()->count() > 1 ) {
+                // Group owner can be assigned to another member
+
+                $new_owner = GroupMember::where('group_id', $group->id)
+                    ->whereNot('user_id', $current_user->id)
+                    ->orderBy('created_at', 'asc')
+                    ->pluck('user_id')
+                    ->first();
+
+                $group->owner = $new_owner;
+                $group->save();
+
+                foreach ($group->members()->pluck('users.id')->toArray() as $member_id) {
+                    $left_group_notification = ModelsNotification::create([
+                        'notification_type_id' => NotificationType::LEFT_GROUP,
+                        'creator' => $current_user->id,
+                        'sender' => $current_user->id,
+                        'recipient' => $member_id,
+                    ]);
+
+                    $left_group_notification_attributes = NotificationAttribute::create([
+                        'notification_id' => $left_group_notification->id,
+                        'group_id' => $group->id,
+                    ]);
+                }
+
+                GroupMember::where('group_id', $group->id)->where('user_id', $current_user->id)->delete();
+            } else {
+                // Current user is the only member, group is deleted
+
+                // TODO: Delete all group expenses, notifications
+
+                // TODO: Create group deleted notification ?
+
+                foreach ($group->members()->pluck('users.id')->toArray() as $member_id) {
+                    $left_group_notification = ModelsNotification::create([
+                        'notification_type_id' => NotificationType::LEFT_GROUP,
+                        'creator' => $current_user->id,
+                        'sender' => $current_user->id,
+                        'recipient' => $member_id,
+                    ]);
+
+                    $left_group_notification_attributes = NotificationAttribute::create([
+                        'notification_id' => $left_group_notification->id,
+                        'group_id' => $group->id,
+                    ]);
+                }
+
+                GroupMember::where('group_id', $group->id)->delete();
+
+                $group->delete();
+            }
+        } else {
+            GroupMember::where('group_id', $group->id)->where('user_id', $current_user->id)->delete();
+        }
+
+        Session::flash('status', 'left-group');
+
+        return response()->json([
+            'message' => 'Left group successfully!',
+            'redirect' => route('groups'),
+        ]);
+    }
+
+    /**
+     * Deletes the Group.
+     */
+    public function destroy(Request $request, Group $group)
+    {
+        // TODO: Delete all group expenses, notifications
+
+        // TODO: Create group deleted notification ?
+
+        GroupMember::where('group_id', $group->id)->delete();
+
+        $group->delete();
+
+        Session::flash('status', 'group-deleted');
+
+        return response()->json([
+            'message' => 'Group deleted successfully!',
+            'redirect' => route('groups'),
         ]);
     }
 

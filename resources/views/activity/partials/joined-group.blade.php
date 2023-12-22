@@ -1,9 +1,9 @@
 <a>
-    @if ($notification->creator === $notification->recipient) <!-- Current User sent the friend request -->
+    @if ($notification->creator === $notification->recipient) <!-- Current User sent the invite that was accepted -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div><span class="notification-username">{{ $notification->username }}</span> joined <span class="notification-username">{{ $notification->group->name }}</span>.</div> <!-- TODO: Show user profile image in notification, link to user profile -->
+                    <div><span class="notification-username">{{ $notification->username }}</span> joined <span class="notification-username">{{ $notification->group->name }}</span>.</div>
                     <div class="text-shy">{{ $notification->formatted_date }}, {{ $notification->formatted_time }}</div>
                 </div>
             </div>
@@ -15,11 +15,11 @@
                 </div>
             </div>
         </div>
-    @else <!-- Current User receiving the friend request -->
+    @else <!-- Current User accepted the invite (joined the Group) -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div>You joined <span class="notification-username">{{ $notification->group->name }}</span>.</div> <!-- TODO: Show user profile image in notification, link to user profile -->
+                    <div>You joined <span class="notification-username">{{ $notification->group->name }}</span>.</div>
                     <div class="text-shy">{{ $notification->formatted_date }}, {{ $notification->formatted_time }}</div>
                 </div>
             </div>

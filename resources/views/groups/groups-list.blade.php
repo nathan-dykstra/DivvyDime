@@ -8,6 +8,28 @@
         </div>
     </x-slot>
 
+    @if (session('status') === 'left-group')
+        <div
+            x-data="{ show: true }"
+            x-show="show"
+            x-transition
+            x-init="setTimeout(() => show = false, 4000)"
+            class="session-status"
+        >
+            <p class="text-success">{{ __('Left group.') }}</p>
+        </div>
+    @elseif (session('status') === 'group-deleted')
+        <div
+            x-data="{ show: true }"
+            x-show="show"
+            x-transition
+            x-init="setTimeout(() => show = false, 4000)"
+            class="session-status"
+        >
+            <p class="text-success">{{ __('Group deleted.') }}</p>
+        </div>
+    @endif
+
     <div class="section-search">
         <div class="restrict-max-width">
             <x-searchbar-secondary placeholder="Search Groups" id="search-groups"></x-searchbar-secondary>

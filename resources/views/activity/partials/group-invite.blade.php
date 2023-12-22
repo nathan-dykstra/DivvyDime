@@ -11,7 +11,7 @@
 
             <div class="delete-notification-btn-container">
                 <div class="tooltip tooltip-left">
-                    <i class="fa-solid fa-trash-can delete-notification-btn" onclick="deleteNotification($(this), {{ $notification->id }})"></i> <!-- TODO: modify delete notification to also delete the notification attributes (if they exist) -->
+                    <i class="fa-solid fa-trash-can delete-notification-btn" onclick="deleteNotification($(this), {{ $notification->id }})"></i>
                     <span class="tooltip-text">{{ __('Delete Notification') }}</span>
                 </div>
             </div>

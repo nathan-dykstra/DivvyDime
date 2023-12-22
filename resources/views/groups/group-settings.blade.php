@@ -41,6 +41,16 @@
         >
             <p class="text-warning">{{ __('There were issues with all of the emails in your invite!') }}</p>
         </div>
+    @elseif (session('status') === 'member-removed')
+        <div
+            x-data="{ show: true }"
+            x-show="show"
+            x-transition
+            x-init="setTimeout(() => show = false, 4000)"
+            class="session-status"
+        >
+            <p class="text-success">{{ __('Member removed.') }}</p>
+        </div>
     @endif
 
     @if (auth()->user()->id === $group->owner)
@@ -67,12 +77,35 @@
                     @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
                         <div class="vertical-center">
                             <div class="tooltip tooltip-left">
-                                <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'remove-member')" icon="fa-solid fa-user-minus icon" /> <!-- TODO: Add modal parameter to accept php variables as array to be used in the modal -->
+                                <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ 'remove-member-' . $member->id }}')" icon="fa-solid fa-user-minus icon" /> <!-- TODO: Add modal parameter to accept php variables as array to be used in the modal -->
                                 <span class="tooltip-text" id="pin-sidebar-tooltip">{{ __('Remove ') . $member->username }}</span>
                             </div>
                         </div>
                     @endif
                 </div>
+
+                <!-- Remove member modal -->
+                <x-modal :name="'remove-member-' . $member->id" focusable>
+                    <div class="space-bottom-sm">
+                        <div>
+                            <h3>{{ __('Remove ') . $member->username }}</h3>
+                            <p class="text-shy">
+                                @if (true) <!-- TODO: handle logic for preventing removing user with outstanding balances -->
+                                    {{ __('Are you sure you want to remove this member from the group? Any group expenses that they are involved in will be updated to show a "DivvyDime User". This action cannot be undone.') }}
+                                @else
+                                    {{ __('This user must settle all their balances in this group before they can be removed.') }}
+                                @endif
+                            </p>
+                        </div>
+            
+                        <div class="btn-container-end">
+                            <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                            @if  (true) <!-- TODO: hide button if user's group balances not settled -->
+                                <x-danger-button onclick="removeMember({{ $member->id }})">{{ __('Remove') }}</x-danger-button>
+                            @endif
+                        </div>
+                    </div>
+                </x-modal>
             @endforeach
         </section>
     </div>
@@ -96,7 +129,7 @@
 
             <div class="btn-container-end">
                 <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                <x-primary-button class="primary-color-btn" icon="fa-solid fa-right-from-bracket icon" onclick="leaveGroup()">{{ __('Leave') }}</x-primary-button>
+                <x-primary-button class="primary-color-btn" onclick="leaveGroup()">{{ __('Leave') }}</x-primary-button>
             </div>
         </div>
     </x-modal>
@@ -112,7 +145,7 @@
 
             <div class="btn-container-end">
                 <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                <x-danger-button icon="fa-solid fa-trash-can icon" onclick="deleteGroup()">{{ __('Delete') }}</x-danger-button>
+                <x-danger-button onclick="deleteGroup()">{{ __('Delete') }}</x-danger-button>
             </div>
         </div>
     </x-modal>
@@ -152,28 +185,6 @@
             <div class="btn-container-end">
                 <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
                 <x-primary-button class="primary-color-btn" onclick="sendInvite()">{{ __('Send Invite') }}</x-primary-button>
-            </div>
-        </div>
-    </x-modal>
-
-    <x-modal name="remove-member" focusable>
-        <div class="space-bottom-sm">
-            <div>
-                <h3>{{ __('Remove member') }}</h3>
-                <p class="text-shy">
-                    @if (true) <!-- TODO: handle logic for preventing removing user with outstanding balances -->
-                        {{ __('Are you sure you want to remove this member from the group? Any group expenses involving this member will be updated to show a "DivvyDime User". This action cannot be undone.') }}
-                    @else
-                        {{ __('This user must settle all their balances in this group before they can be removed.') }}
-                    @endif
-                </p>
-            </div>
-
-            <div class="btn-container-end">
-                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                @if  (true)
-                    <x-danger-button icon="fa-solid fa-user-minus icon" onclick="removeMember()">{{ __('Remove') }}</x-danger-button>
-                @endif
             </div>
         </div>
     </x-modal>
@@ -349,6 +360,55 @@
             data: {
                 '_token': '{{ csrf_token() }}',
                 'emails': emails,
+            },
+            success: function(response) {
+                window.location.href = response.redirect;
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function removeMember(memberId) {
+        $.ajax({
+            url: "{{ route('groups.remove-member', $group) }}",
+            method: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'member_id': memberId,
+            },
+            success: function(response) {
+                window.location.href = response.redirect;
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function leaveGroup() {
+        $.ajax({
+            url: "{{ route('groups.leave-group', $group) }}",
+            method: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+            },
+            success: function(response) {
+                window.location.href = response.redirect;
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function deleteGroup() {
+        $.ajax({
+            url: "{{ route('groups.destroy', $group) }}",
+            method: 'DELETE',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
             },
             success: function(response) {
                 window.location.href = response.redirect;
