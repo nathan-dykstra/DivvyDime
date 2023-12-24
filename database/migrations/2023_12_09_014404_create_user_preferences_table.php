@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('user_preferences', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedBigInteger('email_preference_type_id')->default(3);
-            $table->foreign('email_preference_type_id')->references('id')->on('email_preference_types');
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('email_preference_type_id')->references('id')->on('email_preference_types');
         });
     }
 

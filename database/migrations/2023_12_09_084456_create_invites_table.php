@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('email');
             $table->unsignedBigInteger('inviter');
-            $table->foreign('inviter')->references('id')->on('users');
             $table->string('token', 20)->unique();
             $table->timestamps();
+
+            $table->foreign('inviter')->references('id')->on('users');
         });
     }
 

@@ -19,6 +19,7 @@ return new class extends Migration
 
             $table->foreign('group_id')->references('id')->on('groups');
             $table->foreign('user_id')->references('id')->on('users');
+            $table->unique(['group_id', 'user_id']);
         });
     }
 

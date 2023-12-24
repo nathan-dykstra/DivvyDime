@@ -20,9 +20,9 @@ return new class extends Migration
             //$table->unsignedBigInteger('payment_id')->nullable();
 
             $table->foreign('notification_id')->references('id')->on('notifications');
-            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
-            //$table->foreign('expense_id')->references('id')->on('expenses')->onDelete('cascade');
-            //$table->foreign('payment_id')->references('id')->on('payments')->onDelete('cascade');
+            $table->foreign('group_id')->references('id')->on('groups');
+            //$table->foreign('expense_id')->references('id')->on('expenses');
+            //$table->foreign('payment_id')->references('id')->on('payments');
         });
     }
 
