@@ -367,9 +367,7 @@ class GroupsController extends Controller
 
                 GroupMember::where('group_id', $group->id)->where('user_id', $current_user->id)->delete();
             } else {
-                // Current user is the only member, group is deleted
-
-                // TODO: Delete all group expenses, notifications
+                // Current user is the only member so the group is deleted
 
                 // TODO: Create group deleted notification ?
 
@@ -386,8 +384,6 @@ class GroupsController extends Controller
                         'group_id' => $group->id,
                     ]);
                 }
-
-                GroupMember::where('group_id', $group->id)->delete();
 
                 $group->delete();
             }
@@ -408,12 +404,6 @@ class GroupsController extends Controller
      */
     public function destroy(Request $request, Group $group)
     {
-        // TODO: Delete all group expenses, notifications
-
-        // TODO: Create group deleted notification ?
-
-        GroupMember::where('group_id', $group->id)->delete();
-
         $group->delete();
 
         Session::flash('status', 'group-deleted');

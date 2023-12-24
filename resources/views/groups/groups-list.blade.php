@@ -8,7 +8,7 @@
         </div>
     </x-slot>
 
-    @if (session('status') === 'left-group')
+    @if (session('status') === 'left-group') <!-- TODO: Make session status message a component -->
         <div
             x-data="{ show: true }"
             x-show="show"
@@ -40,10 +40,6 @@
         @include('groups.partials.groups')
     </div>
 </x-app-layout>
-
-<style>
-
-</style>
 
 <script>
     groupsSearchbar = document.getElementById("search-groups");

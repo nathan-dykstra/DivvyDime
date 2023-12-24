@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\GroupDeleting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,5 +28,9 @@ class Group extends Model
 
     protected $casts = [
         'owner' => 'int',
+    ];
+
+    protected $dispatchesEvents = [
+        'deleting' => GroupDeleting::class,
     ];
 }

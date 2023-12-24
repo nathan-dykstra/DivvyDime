@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\NotificationDeleting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,5 +30,9 @@ class Notification extends Model
         'creator' => 'int',
         'sender' => 'int',
         'recipient' => 'int',
+    ];
+
+    protected $dispatchesEvents = [
+        'deleting' => NotificationDeleting::class,
     ];
 }
