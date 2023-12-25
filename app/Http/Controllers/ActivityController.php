@@ -55,7 +55,6 @@ class ActivityController extends Controller
      */
     public function delete(Request $request, $notification_id) 
     {
-        NotificationAttribute::where('notification_id', $notification_id)->delete();
         Notification::where('id', $notification_id)->delete();
 
         return response()->json([
@@ -74,11 +73,14 @@ class ActivityController extends Controller
         $notifications = Notification::select('notifications.*', 'users.username')
             ->join('users', 'notifications.sender', 'users.id')
             ->join('notification_types', 'notifications.notification_type_id', 'notification_types.id')
+            ->join('notification_attributes', 'notifications.id', 'notification_attributes.notification_id')
+            ->join('groups', 'notification_attributes.group_id', 'groups.id')
             ->where('notifications.recipient', $current_user->id)
             // Filter the results further based on the search
             ->where(function ($query) use ($search_string) {
-                $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
-                    ->orWhereRaw('notification_types.type LIKE ?', ["%$search_string%"]);
+                $query->whereRaw('users.username LIKE ? AND notifications.notification_type_id != ?', ["%$search_string%", NotificationType::JOINED_GROUP])
+                    ->orWhereRaw('notification_types.type LIKE ?', ["%$search_string%"])
+                    ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"]);
                 })
             ->orderBy('notifications.updated_at', 'desc')
             ->get();

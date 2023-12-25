@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Events\GroupDeleting;
 use App\Events\NotificationDeleting;
+use App\Events\UserDeleting;
 use App\Listeners\DeleteGroupDependents;
 use App\Listeners\DeleteNotificationDependents;
+use App\Listeners\DeleteUserDependents;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -27,6 +29,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         NotificationDeleting::class => [
             DeleteNotificationDependents::class,
+        ],
+        UserDeleting::class => [
+            DeleteUserDependents::class,
         ],
     ];
 
