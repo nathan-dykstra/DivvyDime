@@ -958,7 +958,7 @@ body::-webkit-scrollbar-thumb:hover {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 2;
+    z-index: 10;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1017,11 +1017,11 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .sidebar-item {
-    font-size: 14pt;
+    font-size: 1.2em;
     color: var(--text-heading);
-    padding: 0.3em 1em;
+    padding: 0.5em 1em;
     border-radius: 0.75rem;
-    margin: 0.5em 0.5em;
+    margin: 0.4em 0.5em;
     text-wrap: nowrap;
     transition: background-color 0.1s ease;
 }
@@ -1038,8 +1038,18 @@ body::-webkit-scrollbar-thumb:hover {
     background-color: var(--accent-color); /* TODO: add a hover color for this */
 }
 
+.sidebar-item-content {
+    width: fit-content;
+    transition: transform 0.2s;
+}
+
+.sidebar-item:hover > .sidebar-item-content, .sidebar-item-active:hover > .sidebar-item-content {
+    transform: scale(1.13);
+}
+
 
 /* Mobile Navigation */
+
 
 .mobile-navigation {
     display: none;
@@ -1071,9 +1081,8 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 
-
-
 /* Activity List */
+
 
 .notification {
     color: var(--text-primary);
@@ -1123,6 +1132,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 /* Friends List */
 
+
 .friend {
     display: flex;
     flex-direction: column;
@@ -1136,7 +1146,9 @@ body::-webkit-scrollbar-thumb:hover {
     background-color: var(--primary-grey);
 }
 
+
 /* Groups List */
+
 
 .group {
     color: var(--text-primary);
@@ -1160,6 +1172,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 
 /* Group Settings */
+
 
 .group-settings-member {
     display: flex;
