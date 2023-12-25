@@ -12,45 +12,13 @@
     </x-slot>
 
     @if (session('status') === 'invite-sent')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Invite sent.') }}</p>
-        </div>
+        <x-session-status>{{ __('Invite sent.') }}</x-session-status>
     @elseif (session('status') === 'invite-sent-with-errors')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Invite sent. There were issues with some of the emails in your invite.') }}</p>
-        </div>
+        <x-session-status>{{ __('Invite sent. There were issues with some of the emails in your invite.') }}</x-session-status>
     @elseif (session('status') === 'invite-errors')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-warning">{{ __('There were issues with all of the emails in your invite!') }}</p>
-        </div>
+        <x-session-status innerClass="text-warning">{{ __('There were issues with all of the emails in your invite!') }}</x-session-status>
     @elseif (session('status') === 'member-removed')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Member removed.') }}</p>
-        </div>
+        <x-session-status>{{ __('Member removed.') }}</x-session-status>
     @endif
 
     @if (auth()->user()->id === $group->owner)

@@ -13,7 +13,7 @@
             <x-input-label :value="__('Theme')" />
             <div class="theme-container" id="theme-container">
                 <div class="theme-setting" id="light-setting" data-theme="system" onclick="setTheme(this, 'system')">
-                    <i class="fa-solid fa-gear" id="dark-setting-icon"></i>
+                    <i class="fa-solid fa-circle-half-stroke" id="dark-setting-icon"></i>
                     {{ __('System') }}
                 </div>
                 <div class="theme-setting-gap"></div>

@@ -9,25 +9,9 @@
     </x-slot>
 
     @if (session('status') === 'left-group') <!-- TODO: Make session status message a component -->
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Left group.') }}</p>
-        </div>
+        <x-session-status>{{ __('Left group.') }}</x-session-status>
     @elseif (session('status') === 'group-deleted')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Group deleted.') }}</p>
-        </div>
+        <x-session-status>{{ __('Group deleted.') }}</x-session-status>
     @endif
 
     <div class="section-search">

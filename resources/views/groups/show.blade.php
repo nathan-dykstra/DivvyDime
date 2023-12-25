@@ -9,15 +9,7 @@
     </x-slot>
 
     @if (session('status') === 'group-created')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Group created.') }}</p>
-        </div>
+        <x-session-status>{{ __('Group created.') }}</x-session-status>
     @endif
 
     <p>Hello World! This is a group.</p>

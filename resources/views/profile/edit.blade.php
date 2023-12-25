@@ -4,35 +4,11 @@
     </x-slot>
 
     @if (session('status') === 'profile-updated')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Profile updated.') }}</p>
-        </div>
+        <x-session-status>{{ __('Profile updated.') }}</x-session-status>
     @elseif (session('status') === 'preferences-updated')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Preferences updated.') }}</p>
-        </div>
+        <x-session-status>{{ __('Preferences updated.') }}</x-session-status>
     @elseif (session('status') === 'password-updated')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Password updated.') }}</p>
-        </div>
+        <x-session-status>{{ __('Password updated.') }}</x-session-status>
     @endif
 
     <div class="space-bottom-lg">

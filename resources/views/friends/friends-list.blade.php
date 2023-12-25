@@ -9,55 +9,15 @@
     </x-slot>
 
     @if (session('status') === 'invite-sent')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-success">{{ __('Friend request sent.') }}</p>
-        </div>
+        <x-session-status>{{ __('Friend request sent.') }}</x-session-status>
     @elseif (session('status') === 'self-request')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-warning">{{ __('You can\'t send yourself a friend request!') }}</p>
-        </div>
+        <x-session-status innerClass="text-warning">{{ __('You can\'t send yourself a friend request!') }}</x-session-status>
     @elseif (session('status') === 'existing-friend')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-warning">{{ __('You\'re already friends with that user!') }}</p>
-        </div>
+        <x-session-status innerClass="text-warning">{{ __('You\'re already friends with that user!') }}</x-session-status>
     @elseif (session('status') === 'existing-request')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-warning">{{ __('You already sent that user a friend request!') }}</p>
-        </div>
+        <x-session-status innerClass="text-warning">{{ __('You already sent that user a friend request!') }}</x-session-status>
     @elseif (session('status') === 'pending-request')
-        <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-transition
-            x-init="setTimeout(() => show = false, 4000)"
-            class="session-status"
-        >
-            <p class="text-warning">{{ __('You have a pending friend request from that user!') }}</p>
-        </div>
+        <x-session-status innerClass="text-warning">{{ __('You have a pending friend request from that user!') }}</x-session-status>
     @endif
 
     <div class="section-search">

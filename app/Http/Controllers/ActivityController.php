@@ -55,7 +55,7 @@ class ActivityController extends Controller
      */
     public function delete(Request $request, $notification_id) 
     {
-        Notification::where('id', $notification_id)->delete();
+        Notification::where('id', $notification_id)->first()->delete();
 
         return response()->json([
             'message' => 'Notification deleted!',
