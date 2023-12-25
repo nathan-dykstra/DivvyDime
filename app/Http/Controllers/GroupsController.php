@@ -227,57 +227,81 @@ class GroupsController extends Controller
      */
     public function accept(Request $request)
     {
-        $notification_id = $request->input('notification_id');
+        $invitee_notification_id = $request->input('notification_id');
+        $invitee_notification = ModelsNotification::where('id', $invitee_notification_id)->first();
+
         $group_id = $request->input('group_id');
-
-        $recipient_notification = ModelsNotification::where('id', $notification_id)->first();
-
-        $sender_id = $recipient_notification->sender;
-        $recipient_id = $recipient_notification->recipient;
-
         $group = Group::where('id', $group_id)->first();
-        $invited_user = User::where('id', $recipient_id)->first();
+
+        $inviter_id = $invitee_notification->sender;
+        $invitee_id = $invitee_notification->recipient;
+        $invitee = User::where('id', $invitee_id)->first();
 
         foreach ($group->members()->get() as $group_member) {
-            // Add group members as friends (if necessary)
+            // Add group member as a friend (if necessary)
 
-            $existing_friend = in_array($group_member->id, $invited_user->friends()->pluck('users.id')->toArray());
+            $existing_friend = in_array($group_member->id, $invitee->friends()->pluck('users.id')->toArray());
 
             if (!$existing_friend) {
-                $new_friend = Friend::create([
-                    'user1_id' => $recipient_id,
+                Friend::create([
+                    'user1_id' => $invitee_id,
                     'user2_id' => $group_member->id,
+                ]);
+            }
+
+            // Send group member a notification that the invitee joined the group
+
+            if ($group_member->id !== $inviter_id) {
+                $member_notification = ModelsNotification::create([
+                    'notification_type_id' => NotificationType::JOINED_GROUP,
+                    'creator' => $invitee_id,
+                    'sender' => $invitee_id,
+                    'recipient' => $group_member->id,
+                ]);
+
+                NotificationAttribute::create([
+                    'notification_id' => $member_notification->id,
+                    'group_id' => $group_id,
                 ]);
             }
         }
 
-        $new_member = GroupMember::firstOrCreate([
+        // Update the inviter's and invitee's notifications
+
+        $inviter_notification_update = ModelsNotification::updateOrCreate(
+                [
+                    'notification_type_id' => NotificationType::INVITED_TO_GROUP,
+                    'creator' => $inviter_id,
+                    'sender' => $invitee_id,
+                    'recipient' => $inviter_id,
+                ],
+                [
+                    'notification_type_id' => NotificationType::JOINED_GROUP,
+                    'creator' => $invitee_id,
+                ],
+            );
+
+        NotificationAttribute::firstOrCreate(
+            [
+                'notification_id' => $inviter_notification_update->id,
+                'group_id' => $group->id,
+            ]
+        );
+
+        $invitee_notification->update([
+            'notification_type_id' => NotificationType::JOINED_GROUP,
+            'creator' => $invitee_id,
+        ]);
+
+        // Add invitee to group
+        GroupMember::firstOrCreate([
             'group_id' => $group_id,
-            'user_id' => $recipient_id,
+            'user_id' => $invitee_id,
         ]);
 
-        $sender_notification = ModelsNotification::where('notification_type_id', NotificationType::INVITED_TO_GROUP)
-            ->where('sender', $recipient_id)
-            ->where('recipient', $sender_id)
-            ->first();
-
-        $recipient_notification_update = $recipient_notification->update([
-            'notification_type_id' => NotificationType::JOINED_GROUP,
+        return response()->json([
+            'message' => 'Friend request accepted!',
         ]);
-
-        $sender_notification_update = $sender_notification->update([
-            'notification_type_id' => NotificationType::JOINED_GROUP,
-        ]);
-
-        if ($new_member && $recipient_notification_update && $sender_notification_update) {
-            return response()->json([
-                'message' => 'Friend request accepted!',
-            ]);
-        } else {
-            return response()->json([
-                'message' => 'Error occured!',
-            ], 500);
-        }
     }
 
     /**
@@ -285,24 +309,24 @@ class GroupsController extends Controller
      */
     public function reject(Request $request)
     {
-        $notification_id = $request->input('notification_id');
+        // Delete inviter's and invitee's notifications
 
-        $recipient_notification = ModelsNotification::where('id', $notification_id)->first();
-        $recipient_notification_attributes = NotificationAttribute::where('notification_id', $notification_id)->first();
+        $invitee_notification_id = $request->input('notification_id');
+        $invitee_notification = ModelsNotification::where('id', $invitee_notification_id)->first();
 
-        $sender_id = $recipient_notification->sender;
-        $recipient_id = $recipient_notification->recipient;
+        $inviter_id = $invitee_notification->sender;
+        $invitee_id = $invitee_notification->recipient;
 
-        $sender_notification = ModelsNotification::where('notification_type_id', NotificationType::INVITED_TO_GROUP)
-            ->where('sender', $recipient_id)
-            ->where('recipient', $sender_id)
+        $inviter_notification = ModelsNotification::where('notification_type_id', NotificationType::INVITED_TO_GROUP)
+            ->where('sender', $invitee_id)
+            ->where('recipient', $inviter_id)
             ->first();
-        $sender_notification_attributes = NotificationAttribute::where('notification_id', $sender_notification->id)->first();
 
-        $recipient_notification_attributes->delete();
-        $recipient_notification->delete();
-        $sender_notification_attributes->delete();
-        $sender_notification->delete();
+        $invitee_notification->delete();
+
+        if ($inviter_notification) {
+            $inviter_notification->delete();
+        }
 
         return response()->json([
             'message' => 'Friend request denied!',
@@ -351,6 +375,7 @@ class GroupsController extends Controller
                 $group->owner = $new_owner;
                 $group->save();
 
+                // Send Group members a "user left group" notification
                 foreach ($group->members()->pluck('users.id')->toArray() as $member_id) {
                     $left_group_notification = ModelsNotification::create([
                         'notification_type_id' => NotificationType::LEFT_GROUP,
@@ -359,7 +384,7 @@ class GroupsController extends Controller
                         'recipient' => $member_id,
                     ]);
 
-                    $left_group_notification_attributes = NotificationAttribute::create([
+                    NotificationAttribute::create([
                         'notification_id' => $left_group_notification->id,
                         'group_id' => $group->id,
                     ]);
@@ -371,23 +396,24 @@ class GroupsController extends Controller
 
                 // TODO: Create group deleted notification ?
 
-                foreach ($group->members()->pluck('users.id')->toArray() as $member_id) {
-                    $left_group_notification = ModelsNotification::create([
-                        'notification_type_id' => NotificationType::LEFT_GROUP,
-                        'creator' => $current_user->id,
-                        'sender' => $current_user->id,
-                        'recipient' => $member_id,
-                    ]);
-
-                    $left_group_notification_attributes = NotificationAttribute::create([
-                        'notification_id' => $left_group_notification->id,
-                        'group_id' => $group->id,
-                    ]);
-                }
-
                 $group->delete();
             }
         } else {
+            // Send Group members a "user left group" notification
+            foreach ($group->members()->pluck('users.id')->toArray() as $member_id) {
+                $left_group_notification = ModelsNotification::create([
+                    'notification_type_id' => NotificationType::LEFT_GROUP,
+                    'creator' => $current_user->id,
+                    'sender' => $current_user->id,
+                    'recipient' => $member_id,
+                ]);
+
+                NotificationAttribute::create([
+                    'notification_id' => $left_group_notification->id,
+                    'group_id' => $group->id,
+                ]);
+            }
+
             GroupMember::where('group_id', $group->id)->where('user_id', $current_user->id)->delete();
         }
 

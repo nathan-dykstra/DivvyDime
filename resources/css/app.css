@@ -1044,7 +1044,7 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .sidebar-item:hover > .sidebar-item-content, .sidebar-item-active:hover > .sidebar-item-content {
-    transform: scale(1.13);
+    transform: scale(1.12);
 }
 
 

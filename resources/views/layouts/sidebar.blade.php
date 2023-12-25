@@ -22,7 +22,7 @@
             @foreach($sidebar as $item)
                 <li>
                     <a href="{{ route($item['route']) }}" >
-                        <div class="sidebar-item"><div class="sidebar-item-content"><i class="{{ $item['icon'] }} sidebar-icon"></i>{{ $item['text'] }}</div></div>
+                        <div class="sidebar-item"><div class="sidebar-item-content"><i class="{{ $item['icon'] }} sidebar-icon"></i>{{ __($item['text']) }}</div></div>
                     </a>
                 </li>
             @endforeach

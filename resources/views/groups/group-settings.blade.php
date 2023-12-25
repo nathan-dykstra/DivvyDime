@@ -123,7 +123,7 @@
             <div>
                 <h3>{{ __('Invite to group') }}</h3>
                 <p class="text-shy">
-                    {{ __('Existing users will receive a notification in the "Activity" section with your invite. New users will be sent an email inviting them to the app. Anyone who accepts your invite will automatically become friends with you on the DivvyDime.') }}
+                    {{ __('Existing users will receive a notification in the "Activity" section with your invite. New users will be sent an email inviting them to the app. Anyone who accepts your invite will automatically become friends with you on DivvyDime.') }}
                 </p>
             </div>
 

@@ -1,9 +1,9 @@
 <a>
-    @if ($notification->creator === $notification->recipient) <!-- Current User sent the invite that was accepted -->
+    @if ($notification->creator === $notification->recipient) <!-- Current User accepted the invite (joined the Group) -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div><span class="notification-username">{{ $notification->username }}</span> joined <span class="notification-username">{{ $notification->group->name }}</span>.</div>
+                    <div>You joined <span class="notification-username">{{ $notification->group->name }}</span>.</div>
                     <div class="text-shy">{{ $notification->formatted_date }}, {{ $notification->formatted_time }}</div>
                 </div>
             </div>
@@ -15,11 +15,11 @@
                 </div>
             </div>
         </div>
-    @else <!-- Current User accepted the invite (joined the Group) -->
+    @else <!-- A new member joined the current User's group -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div>You joined <span class="notification-username">{{ $notification->group->name }}</span>.</div>
+                    <div><span class="notification-username">{{ $notification->username }}</span> joined <span class="notification-username">{{ $notification->group->name }}</span>.</div>
                     <div class="text-shy">{{ $notification->formatted_date }}, {{ $notification->formatted_time }}</div>
                 </div>
             </div>
