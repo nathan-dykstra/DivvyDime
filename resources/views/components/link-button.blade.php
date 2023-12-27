@@ -1,4 +1,4 @@
-@props(['type' => null, 'class' => '', 'id' => null, 'onclick' => null, 'href' => $href, 'form' => ''])
+@props(['type' => null, 'class' => '', 'id' => null, 'onclick' => null, 'href' => null, 'form' => null])
 
 @if ($href)
     <a {{ $attributes->merge(['class' => 'link-btn no-focus' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => $href]) }}>

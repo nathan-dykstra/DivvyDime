@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\UserDeleting;
+use App\Models\Friend;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Notification;
@@ -43,12 +44,15 @@ class DeleteUserDependents
         // Change all sent notifications involving the User to "DivvyDime User"
 
         Notification::where('sender', $event->user->id)->update([
-            'sender' => null,
+            'sender' => 1, // TODO: Change this from "1" to "DivvyDime User"
         ]);
 
         Notification::where('creator', $event->user->id)->update([
-            'creator' => null,
+            'creator' => 1, // TODO: Change this from "1" to "DivvyDime User"
         ]);
+
+        // Delete User's friendships
+        Friend::where('user1_id', $event->user->id)->orWhere('user2_id', $event->user->id)->delete();
 
         // Remove User from Groups
 
@@ -67,9 +71,7 @@ class DeleteUserDependents
                     $group->save();
                 }
 
-                // TODO: Send "DivvyDime User" left group notification ?
-
-                GroupMember::where('group_id', $group_id)->where('user_id', $event->user->id)->delete();
+                GroupMember::where('group_id', $group_id)->where('user_id', $event->user->id)->delete(); // TODO: create event listener for GroupMember deleting to send remaining members a "left group" notification
             } else {
                 $group->delete();
             }

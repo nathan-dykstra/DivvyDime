@@ -112,6 +112,8 @@ class FriendsController extends Controller
                 'recipient' => $invitee->id,
             ]);
         } else {
+            // Send an invite to app email
+
             do {
                 $token = Str::random(20);
             } while (Invite::where('token', $token)->first());

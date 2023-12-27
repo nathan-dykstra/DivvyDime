@@ -4,7 +4,7 @@
             <h1>DivvyDime</h1>
         </div>
 
-        <form method="POST" action="{{ route('register.storefrominvite', $invite->token) }}">
+        <form method="POST" action="{{ $invite->group_id !== null ? route('register.store-from-group-invite', $invite->token) : route('register.storefrominvite', $invite->token) }}">
             @csrf
 
             <div class="space-bottom-sm">

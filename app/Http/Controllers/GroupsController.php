@@ -5,18 +5,22 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateGroupRequest;
 use App\Models\Friend;
 use App\Models\Group;
+use App\Models\GroupInvite;
 use App\Models\GroupMember;
 use App\Models\Notification as ModelsNotification;
 use App\Models\NotificationAttribute;
 use App\Models\NotificationType;
 use App\Models\User;
+use App\Notifications\GroupInviteNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class GroupsController extends Controller
 {
@@ -180,31 +184,47 @@ class GroupsController extends Controller
 
                 // Create Group Invite notifications for both parties
 
-                $group_invite_sender = ModelsNotification::create([
+                $inviter_notification = ModelsNotification::create([
                     'notification_type_id' => NotificationType::INVITED_TO_GROUP,
                     'creator' => $inviter->id,
                     'sender' => $existing_user->id,
                     'recipient' => $inviter->id,
                 ]);
 
-                $group_invite_attributes_sender = NotificationAttribute::create([
-                    'notification_id' => $group_invite_sender->id,
+                NotificationAttribute::create([
+                    'notification_id' => $inviter_notification->id,
                     'group_id' => $group->id,
                 ]);
 
-                $group_invite_recipient = ModelsNotification::create([
+                $invitee_notification = ModelsNotification::create([
                     'notification_type_id' => NotificationType::INVITED_TO_GROUP,
                     'creator' => $inviter->id,
                     'sender' => $inviter->id,
                     'recipient' => $existing_user->id,
                 ]);
 
-                $group_invite_attributes_recipient = NotificationAttribute::create([
-                    'notification_id' => $group_invite_recipient->id,
+                NotificationAttribute::create([
+                    'notification_id' => $invitee_notification->id,
                     'group_id' => $group->id,
                 ]);
             } else {
-                // TODO: create email invite to app (creating account through the link automatically joins group)
+                // Send an invite to app email
+
+                do {
+                    $token = Str::random(20);
+                } while (GroupInvite::where('token', $token)->first());
+
+                GroupInvite::create([
+                    'token' => $token,
+                    'email' => $email,
+                    'group_id' => $group->id,
+                ]);
+
+                $url = URL::temporarySignedRoute(
+                    'register.from-group-invite', now()->addMinutes(300), ['token' => $token]
+                );
+
+                Notification::route('mail', $email)->notify(new GroupInviteNotification($url, $inviter->username, $group->name));
             }
         }
 
