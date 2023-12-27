@@ -124,7 +124,7 @@ class ActivityController extends Controller
                 : Carbon::parse($notification->updated_at)->format('M d');
             $notification->formatted_time = Carbon::parse($notification->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
 
-            $notification->group = Group::where('id', $notification->attributes->group_id)->first();
+            $notification->group = Group::where('id', $notification->attributes?->group_id)->first(); // TODO: Better handling for case where notification attributes are not set
         
             return $notification;
         });

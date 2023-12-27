@@ -63,18 +63,18 @@ class FriendsController extends Controller
 
         $inviter = $request->user();
 
-        $existing_user = User::where('email', $request->input('friend_email'))->first();
+        $invitee = User::where('email', $request->input('friend_email'))->first();
 
-        if ($existing_user) {
+        if ($invitee) {
             // Check if the users are already friends or if a pending request already exists
 
-            $self_request = $existing_user->id === $inviter->id;
+            $self_request = $invitee->id === $inviter->id;
 
             if ($self_request) {
                 return Redirect::route('friends')->with('status', 'self-request');
             }
 
-            $existing_friend = in_array($existing_user->id, $inviter->friends()->pluck('users.id')->toArray());
+            $existing_friend = in_array($invitee->id, $inviter->friends()->pluck('users.id')->toArray());
 
             if ($existing_friend) {
                 return Redirect::route('friends')->with('status', 'existing-friend');
@@ -89,7 +89,7 @@ class FriendsController extends Controller
             }
 
             $pending_friend_request = ModelsNotification::where('notification_type_id', NotificationType::FRIEND_REQUEST)
-                ->where('creator', $existing_user->id)
+                ->where('creator', $invitee->id)
                 ->exists();
 
             if ($pending_friend_request) {
@@ -98,18 +98,18 @@ class FriendsController extends Controller
 
             // Create Friend Request notifications for both parties
 
-            $friend_request_sender = ModelsNotification::create([
+            ModelsNotification::create([
                 'notification_type_id' => NotificationType::FRIEND_REQUEST,
                 'creator' => $inviter->id,
-                'sender' => $existing_user->id,
+                'sender' => $invitee->id,
                 'recipient' => $inviter->id,
             ]);
 
-            $friend_request_recipient = ModelsNotification::create([
+            ModelsNotification::create([
                 'notification_type_id' => NotificationType::FRIEND_REQUEST,
                 'creator' => $inviter->id,
                 'sender' => $inviter->id,
-                'recipient' => $existing_user->id,
+                'recipient' => $invitee->id,
             ]);
         } else {
             do {
@@ -137,38 +137,39 @@ class FriendsController extends Controller
      */
     public function accept(Request $request, $notification_id)
     {
-        $recipient_notification = ModelsNotification::where('id', $notification_id)->first();
+        $invitee_notification = ModelsNotification::where('id', $notification_id)->first();
 
-        $user1_id = $recipient_notification->sender;
-        $user2_id = $recipient_notification->recipient;
+        $inviter_id = $invitee_notification->sender;
+        $invitee_id = $invitee_notification->recipient;
 
-        $friends = Friend::create([
-            'user1_id' => $user1_id,
-            'user2_id' => $user2_id,
+        Friend::create([
+            'user1_id' => $inviter_id,
+            'user2_id' => $invitee_id,
         ]);
 
-        $sender_notification = ModelsNotification::where('notification_type_id', NotificationType::FRIEND_REQUEST)
-            ->where('sender', $user2_id)
-            ->where('recipient', $user1_id)
-            ->first();
+        // Update the inviter's and invitee's notifications
 
-        $recipient_notification_update = $recipient_notification->update([
+        $invitee_notification->update([
             'notification_type_id' => NotificationType::FRIEND_REQUEST_ACCEPTED,
+            'creator' => $invitee_id
         ]);
 
-        $sender_notification_update = $sender_notification->update([
-            'notification_type_id' => NotificationType::FRIEND_REQUEST_ACCEPTED,
-        ]);
+        ModelsNotification::updateorCreate(
+            [
+                'notification_type_id' => NotificationType::FRIEND_REQUEST,
+                'creator' => $inviter_id,
+                'sender' => $invitee_id,
+                'recipient' => $inviter_id,
+            ],
+            [
+                'notification_type_id' => NotificationType::FRIEND_REQUEST_ACCEPTED,
+                'creator' => $invitee_id,
+            ],
+        );
 
-        if ($friends && $recipient_notification_update && $sender_notification_update) {
-            return response()->json([
-                'message' => 'Friend request accepted!',
-            ]);
-        } else {
-            return response()->json([
-                'message' => 'Error occured!',
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Friend request accepted!',
+        ]);
     }
 
     /**
@@ -176,18 +177,23 @@ class FriendsController extends Controller
      */
     public function deny(Request $request, $notification_id)
     {
-        $recipient_notification = ModelsNotification::where('id', $notification_id)->first();
+        $invitee_notification = ModelsNotification::where('id', $notification_id)->first();
 
-        $user1_id = $recipient_notification->sender;
-        $user2_id = $recipient_notification->recipient;
+        $inviter_id = $invitee_notification->sender;
+        $invitee_id = $invitee_notification->recipient;
 
-        $sender_notification = ModelsNotification::where('notification_type_id', NotificationType::FRIEND_REQUEST)
-            ->where('sender', $user2_id)
-            ->where('recipient', $user1_id)
+        $inviter_notification = ModelsNotification::where('notification_type_id', NotificationType::FRIEND_REQUEST)
+            ->where('sender', $invitee_id)
+            ->where('recipient', $inviter_id)
             ->first();
 
-        $recipient_notification->delete();
-        $sender_notification->delete();
+        // Delete inviter's and invitee's notifications
+
+        $invitee_notification->delete();
+
+        if ($inviter_notification) {
+            $inviter_notification->delete();
+        }
 
         return response()->json([
             'message' => 'Friend request denied!',
