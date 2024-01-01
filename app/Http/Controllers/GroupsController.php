@@ -139,12 +139,12 @@ class GroupsController extends Controller
 
         $user_emails = $request->input('emails');
 
-        $invite_errors = 0;
-
         // TODO: email validation fix
         $rules = [
             'email' => ['string', 'lowercase', 'email', 'max:255']
         ];
+
+        $invite_errors = 0;
 
         foreach ($user_emails as $email) {
             $validator = Validator::make(['email' => $email], $rules);

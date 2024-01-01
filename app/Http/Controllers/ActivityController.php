@@ -119,9 +119,10 @@ class ActivityController extends Controller
      */
     protected function augmentNotifications($notifications) {
         $notifications = $notifications->map(function ($notification) {
-            $notification->formatted_date = Carbon::parse($notification->updated_at)->isAfter(Carbon::now()->subWeek())
-                ? Carbon::parse($notification->updated_at)->diffForHumans()
-                : Carbon::parse($notification->updated_at)->format('M d');
+            $notification->formatted_date = Carbon::parse($notification->updated_at)->diffForHumans();
+
+            $notification->date = Carbon::parse($notification->updated_at)->format('M d, Y');
+            
             $notification->formatted_time = Carbon::parse($notification->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
 
             $notification->group = Group::where('id', $notification->attributes?->group_id)->first(); // TODO: Better handling for case where notification attributes are not set

@@ -39,7 +39,7 @@
             @foreach ($group->members()->orderBy('username', 'asc')->get() as $member)
                 <div class="group-settings-member">
                     <div>
-                        <div class="text-primary">{{ $member->username }}</div>
+                        <div class="text-primary">{{ $member->id === auth()->user()->id ? $member->username . __(' (You)') : $member->username }}</div>
                         <div class="text-shy">{{ $member->email }}</div>
                     </div>
                     @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
@@ -123,12 +123,12 @@
             <div>
                 <h3>{{ __('Invite to group') }}</h3>
                 <p class="text-shy">
-                    {{ __('Existing users will receive a notification in the "Activity" section with your invite. New users will be sent an email inviting them to the app. Anyone who accepts your invite will automatically become friends with you on DivvyDime.') }}
+                    {{ __('Existing users will receive a notification in the "Activity" section with your invite. New users will be sent an email inviting them to the app.') }}
                 </p>
             </div>
 
             <div>
-                <x-input-label for="user-email" value="{{ __('Type an email address and press Enter') }}" class="screen-reader-only" />
+                <x-input-label for="user-email" value="{{ __('Search friends or type email and press Enter') }}" class="screen-reader-only" />
                 <x-text-input id="user-email" name="user-email" type="email" placeholder="{{ __('Search friends or type email and press Enter') }}" />
                 <x-input-error :messages="$errors->get('email')" />
             </div>

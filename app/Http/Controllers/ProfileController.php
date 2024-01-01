@@ -62,14 +62,6 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        // Delete the user's prferences
-        if ($user->preferences) {
-            $user->preferences->delete();
-        }
-
-        // Delete the user's friends
-        Friend::where('user1_id', $user->id)->orWhere('user2_id', $user->id)->delete();
-
         $user->delete();
 
         $request->session()->invalidate();

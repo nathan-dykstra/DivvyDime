@@ -1,18 +1,20 @@
-<a>
+<div>
     @if ($notification->creator === $notification->recipient) <!-- You left the group -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
                     <div>You left <span class="notification-username">{{ $notification->group->name }}</span>.</div>
-                    <div class="text-shy">{{ $notification->formatted_date }}, {{ $notification->formatted_time }}</div>
+
+                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
+                        <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
+                    </x-tooltip>
                 </div>
             </div>
 
             <div class="delete-notification-btn-container">
-                <div class="tooltip tooltip-left">
+                <x-tooltip side="left" tooltip="{{ __('Delete Notification') }}">
                     <i class="fa-solid fa-trash-can delete-notification-btn" onclick="deleteNotification($(this), {{ $notification->id }})"></i>
-                    <span class="tooltip-text">{{ __('Delete Notification') }}</span>
-                </div>
+                </x-tooltip>
             </div>
         </div>
     @else <!-- Other member left the group -->
@@ -20,16 +22,18 @@
             <div class="notification-content">
                 <div>
                     <div><span class="notification-username">{{ $notification->username }}</span> left <span class="notification-username">{{ $notification->group->name }}</span>.</div>
-                    <div class="text-shy">{{ $notification->formatted_date }}, {{ $notification->formatted_time }}</div>
+
+                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
+                        <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
+                    </x-tooltip>
                 </div>
             </div>
 
             <div class="delete-notification-btn-container">
-                <div class="tooltip tooltip-left">
+                <x-tooltip side="left" tooltip="{{ __('Delete Notification') }}">
                     <i class="fa-solid fa-trash-can delete-notification-btn" onclick="deleteNotification($(this), {{ $notification->id }})"></i>
-                    <span class="tooltip-text">{{ __('Delete Notification') }}</span>
-                </div>
+                </x-tooltip>
             </div>
         </div>
     @endif
-</a>
+</div>

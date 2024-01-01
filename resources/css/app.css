@@ -245,6 +245,10 @@ p {
     overflow: hidden !important;
 }
 
+.width-content {
+    width: fit-content;
+}
+
 .screen-reader-only {
     position: absolute;
     width: 1px;
