@@ -29,6 +29,7 @@
         justify-content: center;
         align-items: center;
         
+        height: 36px;
         background-color: var(--primary-grey);
         border: 1px solid var(--border-grey);
         border-radius: var(--border-radius);

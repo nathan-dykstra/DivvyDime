@@ -16,6 +16,7 @@
     --primary-grey: #f6f8fa; /*#eaedf1*/
     --primary-grey-hover: #f3f4f6;
     --secondary-grey: #e7e8ea; /* #efeff0 */
+    --secondary-grey-hover: #d2d5d8;
     --border-grey: #d0d7de;
     --border-grey-hover: #bec3ca; /* ?? */
     --icon-grey: #656d76;
@@ -65,6 +66,7 @@
     --primary-grey: #131415; /* To adjust */
     --primary-grey-hover: #30363d;
     --secondary-grey: #1c1b20; /*#1c1c1e;*/
+    --secondary-grey-hover: #26252b;
     --border-grey: #30363d;
     --border-grey-hover: #8b949e;
     --icon-grey: #7d8590;
@@ -95,6 +97,7 @@
         --primary-grey: #131415; /* To adjust */
         --primary-grey-hover: #30363d;
         --secondary-grey: #1c1b20; /*#1c1c1e;*/
+        --secondary-grey-hover: #26252b;
         --border-grey: #30363d;
         --border-grey-hover: #8b949e;
         --icon-grey: #7d8590;
@@ -182,7 +185,7 @@ p {
     text-align: center;
 }
 
-.text-sm {
+.text-small {
     font-size: 0.9em;
 }
 
@@ -1154,6 +1157,78 @@ body::-webkit-scrollbar-thumb:hover {
 
 .friend:hover {
     background-color: var(--primary-grey);
+}
+
+
+/* Expenses */
+
+
+.expense {
+    display: grid;
+    grid-template-columns: auto 30%;
+    width: 100%;
+    width: 100%;
+    color: var(--text-primary);
+    padding: var(--container-small-padding) var(--container-padding);
+    border-bottom: 1px solid var(--border-grey);
+    transition: background-color 0.1s ease-in-out;
+}
+
+.expense:hover {
+    background-color: var(--primary-grey);
+}
+
+.user-amount {
+    text-align: end;
+}
+
+.user-amount-value {
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.expense-name {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75em;
+}
+
+@media screen and (max-width: 768px) {
+    .expense-name {
+        flex-direction: column;
+        gap: 0;
+        align-items: flex-start;
+    }
+}
+
+.expense-name-text {
+    max-width: 100%;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.expense-group {
+    font-weight: 400;
+    font-size: 0.9em;
+    line-height: 1em;
+
+    max-width: 150px;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    color: var(--text-shy);
+    border-radius: 0.3rem;
+    padding: 4px 6px;
+    background-color: var(--secondary-grey);
+    transition: background-color 0.3s ease;
+
+}
+
+.expense-group:hover {
+    background-color: var(--secondary-grey-hover);
 }
 
 

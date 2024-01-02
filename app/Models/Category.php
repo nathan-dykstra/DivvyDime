@@ -7,7 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
+    const DEFAULT_CATEGORY = 36;
+
     use HasFactory;
+
+    /**
+     * Defines the Category to Expense relationship.
+     */
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
 
     public $timestamps = false;
 

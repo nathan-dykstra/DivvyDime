@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ExpenseParticipant;
 use App\Models\Friend;
+use App\Models\Group;
 use App\Models\Invite;
 use App\Models\Notification as ModelsNotification;
 use App\Models\NotificationType;
 use App\Models\User;
 use App\Notifications\InviteNotification;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +21,8 @@ use Illuminate\Support\Str;
 
 class FriendsController extends Controller
 {
+    const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
+
     /**
      * Display the user's friends.
      */
@@ -47,8 +52,45 @@ class FriendsController extends Controller
             return view('friends.not-allowed');
         }
 
+        $expenses = $friend->expenses()
+            ->where(function ($query) use ($current_user) {
+                $query->where('payer', $current_user->id)
+                    ->orWhereHas('participants', function ($query) use ($current_user) {
+                        $query->where('users.id', $current_user->id);
+                    });
+            })
+            ->orderBy('date', 'DESC')
+            ->get();
+
+        $expenses = $expenses->map(function ($expense) use ($current_user) {
+            $expense->payer_user = User::where('id', $expense->payer)->first();
+
+            $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
+
+            $expense->date = Carbon::parse($expense->date)->format('M d, Y');
+
+            $expense->formatted_time = Carbon::parse($expense->date)->setTimezone(self::TIMEZONE)->format('g:i a');
+
+            $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
+                ->where('user_id', $current_user->id)
+                ->value('share');
+
+            if ($expense->payer === $current_user->id) {
+                $expense->lent = $expense->amount - $current_user_share;
+            }
+
+            if ($current_user_share) {
+                $expense->borrowed = $current_user_share;
+            }
+
+            $expense->group = Group::where('id', $expense->group_id)->first();
+
+            return $expense;
+        });
+
         return view('friends.friend-profile', [
             'friend' => $friend,
+            'expenses' => $expenses,
         ]); 
     }
 

@@ -13,11 +13,19 @@ class Group extends Model
     use HasFactory;
 
     /**
-     * Defines the Group to GroupMember relationship.
+     * Defines the Group to GroupMember (User) relationship.
      */
     public function members()
     {
         return $this->belongsToMany(User::class, 'group_members');
+    }
+
+    /**
+     * Defines the Group to Expense relationship.
+     */
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
     }
 
     protected $fillable = [

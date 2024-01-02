@@ -17,6 +17,14 @@ class ExpenseType extends Model
 
     use HasFactory;
 
+    /**
+     * Defines the ExpenseType to Expense relationship.
+     */
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+
     public $timestamps = false;
 
     protected $fillable = [

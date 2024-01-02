@@ -4,7 +4,7 @@
     <ul>
         @foreach ((array) $messages as $message)
             <li>
-                <p class="text-warning text-sm">{{ $message }}</p>
+                <p class="text-warning text-small">{{ $message }}</p>
             </li>
         @endforeach
     </ul>

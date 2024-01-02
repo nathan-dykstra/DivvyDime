@@ -20,6 +20,6 @@ class Balance extends Model
         'user_id' => 'int',
         'friend' => 'int',
         'group_id' => 'int',
-        'dollar_amount' => 'decimal:2',
+        'balance' => 'decimal:2',
     ];
 }

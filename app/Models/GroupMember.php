@@ -9,13 +9,6 @@ class GroupMember extends Model
 {
     use HasFactory;
 
-    /**
-     * Defines the GroupMember to Group relationship.
-     */
-    public function group() {
-        return $this->belongsTo(Group::class);
-    }
-
     protected $fillable = [
         'group_id',
         'user_id',

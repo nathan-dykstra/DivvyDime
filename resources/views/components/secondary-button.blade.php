@@ -29,6 +29,7 @@
         justify-content: center;
         align-items: center;
         
+        height: 36px;
         border: 1px solid var(--icon-grey);
         border-radius: var(--border-radius);
         padding: 8px 16px;
