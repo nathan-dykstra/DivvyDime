@@ -30,8 +30,6 @@ class DeleteUserDependents
         // TODO: Change all expenses involving the User to "DivvyDime User"
         // TODO: Delete any non-group expenses where the other User is already deleted (i.e. the other User is now "DivvyDime User")
 
-        $group_ids = GroupMember::where('user_id', $event->user->id)->pluck('group_id')->toArray();
-
         // Delete all received notifications involving the User
 
         $notifications_to_delete = Notification::where('recipient', $event->user->id)->get();
@@ -55,6 +53,8 @@ class DeleteUserDependents
         Friend::where('user1_id', $event->user->id)->orWhere('user2_id', $event->user->id)->delete();
 
         // Remove User from Groups
+
+        $group_ids = GroupMember::where('user_id', $event->user->id)->pluck('group_id')->toArray();
 
         foreach ($group_ids as $group_id) {
             $group = Group::where('id', $group_id)->first();

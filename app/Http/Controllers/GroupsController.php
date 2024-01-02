@@ -15,6 +15,7 @@ use App\Notifications\GroupInviteNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -31,7 +32,18 @@ class GroupsController extends Controller
     {
         $current_user = auth()->user();
 
-        $groups = $current_user->groups()->get();
+        $groups = $current_user->groups()
+            ->orderByRaw("
+                CASE
+                    WHEN groups.id = ? THEN 0
+                    ELSE 1
+                END, groups.name ASC
+            ", [Group::DEFAULT_GROUP])
+            ->get();
+
+        $groups = $this->augmentGroups($groups);
+
+        Log::info($groups);
 
         return view('groups.groups-list', [
             'groups' => $groups,
@@ -469,15 +481,46 @@ class GroupsController extends Controller
 
         $search_string = $request->input('search_string');
 
-        $groups = $current_user->groups()
-            ->join('users', 'group_members.user_id', 'users.id')
-            ->where(function ($query) use ($search_string) {
-                $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
-                    ->orWhereRaw('users.email LIKE ?', ["%$search_string%"])
-                    ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"]);
-            })
-            ->get();
+        $groups_query = $current_user->groups();
+
+        if ($search_string) {
+            $groups_query = $groups_query->select('groups.*')
+                ->join('group_members AS gm', 'groups.id', 'gm.group_id')
+                ->join('users', 'gm.user_id', 'users.id')
+                ->where(function ($query) use ($search_string) {
+                    $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
+                        ->orWhereRaw('users.email LIKE ?', ["%$search_string%"])
+                        ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"]);
+                })
+                ->distinct();
+        }
+
+        $groups = $groups_query->orderByRaw("
+            CASE
+                WHEN groups.id = ? THEN 0
+                ELSE 1
+            END, groups.name ASC
+        ", [Group::DEFAULT_GROUP])
+        ->get();
+
+        $groups = $this->augmentGroups($groups);
 
         return view('groups.partials.groups', ['groups' => $groups]);
     }
+
+    /**
+     * Add default Group information to the Groups.
+     */
+    protected function augmentGroups($groups)
+    {
+        $groups = $groups->map(function ($group) {
+            $group->is_default = $group->id === Group::DEFAULT_GROUP;
+
+            return $group;
+        });
+
+        return $groups;
+    }
 }
+
+

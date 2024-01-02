@@ -63,15 +63,8 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        // Create user_preferences record for the new user
-        $user_preference = new UserPreference();
-        $user->preferences()->save($user_preference);
+        // Create the new User
+        $user = $this->createUser($request);
 
         event(new Registered($user));
 
@@ -91,11 +84,8 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        // Create the new User
+        $user = $this->createUser($request);
 
         if ($token) {
             $invite = Invite::where('token', $token)->first();
@@ -124,10 +114,6 @@ class RegisteredUserController extends Controller
             $invite->delete();
         }
 
-        // Create user_preferences record for the new user
-        $user_preference = new UserPreference();
-        $user->preferences()->save($user_preference);
-
         event(new Registered($user));
 
         Auth::login($user);
@@ -146,11 +132,8 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        // Create the new User
+        $user = $this->createUser($request);
 
         if ($token) {
             $invite = GroupInvite::where('token', $token)->first();
@@ -203,14 +186,35 @@ class RegisteredUserController extends Controller
             $invite->delete();
         }
 
-        // Create user_preferences record for the new user
-        $user_preference = new UserPreference();
-        $user->preferences()->save($user_preference);
-
         event(new Registered($user));
 
         Auth::login($user);
 
         return redirect(RouteServiceProvider::HOME);
+    }
+
+    /**
+     * Creates a new User and initial User configurations
+     */
+    protected function createUser(Request $request): User
+    {
+        // Create the new User
+        $user = User::create([
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Create UserPreference for the new User
+        $user_preference = new UserPreference();
+        $user->preferences()->save($user_preference);
+
+        // Add the new User to the default Group
+        GroupMember::create([
+            'group_id' => Group::DEFAULT_GROUP,
+            'user_id' => $user->id,
+        ]);
+
+        return $user;
     }
 }

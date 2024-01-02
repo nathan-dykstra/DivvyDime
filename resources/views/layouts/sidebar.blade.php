@@ -10,7 +10,7 @@
         <div class="pin-sidebar-btn-container-end">
             <div class="tooltip tooltip-left">
                 <x-icon-button class="hidden" icon="fa-solid fa-bars pin-sidebar-icon" id="pin-sidebar-icon" onclick="animateSidebarIcon(), toggleSidebar()"></x-icon-button>
-                <span class="tooltip-text" id="pin-sidebar-tooltip">Pin Sidebar</span>
+                <span class="tooltip-text" id="pin-sidebar-tooltip"></span>
             </div>
         </div>
 

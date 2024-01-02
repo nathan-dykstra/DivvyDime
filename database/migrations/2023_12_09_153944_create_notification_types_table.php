@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('notification_types', function (Blueprint $table) {
             $table->id();
-            $table->string('type', 255);
+            $table->string('type', 100);
         });
 
         NotificationType::insert([

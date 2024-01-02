@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Group;
+use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -23,7 +24,11 @@ return new class extends Migration
         });
 
         Group::insert([
-            ['name' => 'Individual Expenses'],
+            [
+                'name' => 'Individual Expenses',
+                'created_at' => Carbon::now()->toDateTimeString(),
+                'updated_at' => Carbon::now()->toDateTimeString(),
+            ],
         ]);
     }
 

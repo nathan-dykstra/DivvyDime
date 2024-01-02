@@ -249,6 +249,12 @@ p {
     width: fit-content;
 }
 
+@media screen and (max-width: 768px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+}
+
 .screen-reader-only {
     position: absolute;
     width: 1px;
@@ -1172,6 +1178,13 @@ body::-webkit-scrollbar-thumb:hover {
     border: 1px solid var(--border-grey);
     border-radius: var(--border-radius);
     height: 120px;
+}
+
+.default-group-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
 }
 
 

@@ -94,7 +94,7 @@ class ActivityController extends Controller
     }
 
     /**
-     * Returns the activity/partials/notificaitons view.
+     * Returns the activity.partials.notifications view.
      */
     public function getUpdatedNotifications(Request $request): View
     {
