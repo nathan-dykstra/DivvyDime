@@ -1,6 +1,6 @@
 <div class="container margin-bottom-lg">
-    <div class="restrict-max-width space-bottom-lg">
-        <form method="post" action="{{ $expense ? route('expenses.update', $expense) : route('expenses.store') }}" class="space-top-sm">
+    <div class="restrict-max-width">
+        <form method="post" action="{{ $expense ? route('expenses.update', $expense) : route('expenses.store') }}" class="space-bottom-lg">
             @csrf
             <!--method('patch')-->
 
@@ -30,13 +30,43 @@
                         
                     </div>
                 </x-tooltip>
-                <div>
-                    <div class="expense-name-amount-container">
-                        <input id="expense-name" class="expense-name" name="name" type="text" placeholder="{{ __('Describe the expense') }}" autocomplete="off" />
+                <div class="expense-name-amount-container">
+                    <div class="expense-input-container">
+                        <input id="expense-name" class="expense-name" name="name" type="text" placeholder="{{ __('Describe the expense') }}" autocomplete="off" required />
                     </div>
 
-                    <div class="expense-name-amount-container">
-                        {{ __('$') }}<input id="expense-amount" class="expense-amount" name="amount" type="number" step="0.01" min="0" placeholder="{{ __('0.00') }}" autocomplete="off" />
+                    <div class="expense-input-container">
+                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-amount" name="amount" type="number" step="0.01" min="0" placeholder="{{ __('0.00') }}" autocomplete="off" required />
+                    </div>
+                </div>
+            </div>
+
+            <div class="expense-paid-split-container">
+                <div>
+                    <div class="expense-paid-split">
+                        {{ __('Who paid?') }}
+    
+                        <div class="expense-paid-split-btn" onclick="togglePaidDropdown()">
+                            {{ auth()->user()->username }}
+                        </div>
+                    </div>
+    
+                    <div class="expense-paid-dropdown" id="expense-paid-dropdown">
+                        <h4>{{ __('Who paid for this expense?') }}</h4>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="expense-paid-split">
+                        {{ __('How was it split?') }}
+    
+                        <div class="expense-paid-split-btn" onclick="toggleSplitDropdown()">
+                            {{ __('Equally') }}
+                        </div>
+                    </div>
+    
+                    <div class="expense-split-dropdown" id="expense-split-dropdown">
+                        <h4>{{ __('How should we divvy this up?') }}</h4>
                     </div>
                 </div>
             </div>
@@ -138,7 +168,7 @@
         gap: 8px;
         border: 1px solid var(--border-grey);
         background-color: var(--primary-grey);
-        transition: background-color 0.3s ease-in-out;
+        transition: border 0.3s, background-color 0.3s ease-in-out;
 
         color: var(--text-primary);
         height: 2em;
@@ -148,6 +178,7 @@
 
     .involved-chip-selected {
         background-color: var(--primary-grey-hover);
+        border: 1px solid var(--border-grey-hover);
     }
 
     .involved-chip-text {
@@ -182,8 +213,8 @@
     }
 
     .expense-category {
-        height: 75px;
-        width: 75px;
+        height: 80px;
+        width: 80px;
         background-color: var(--primary-grey);
         border: 1px solid var(--border-grey);
         border-radius: var(--border-radius);
@@ -217,11 +248,82 @@
     }
 
     .expense-name-amount-container {
+        width: 100%;
+    }
+
+    .expense-input-container {
         color: var(--text-primary);
         display: flex;
-        align-items: center;
         border-bottom: 1px solid var(--border-grey);
         margin-bottom: 8px;
+    }
+
+    .expense-name {
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .expense-currency {
+        padding: 4px 0 4px 8px;
+    }
+
+    .expense-amount {
+
+    }
+
+    .expense-paid-split-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 8px;
+        padding-bottom: 2em;
+        border-bottom: 1px solid var(--border-grey);
+    }
+
+    .expense-paid-split {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-shy);
+    }
+
+    .expense-paid-split-btn {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        /*gap: 8px;*/
+        border: 1px solid var(--border-grey);
+        background-color: var(--primary-grey);
+        transition: border 0.3s, background-color 0.3s ease-in-out;
+
+        color: var(--text-primary);
+        height: 2em;
+        border-radius: 1em;
+        padding: 0 10px;
+    }
+
+    .expense-paid-split-btn:hover {
+        background-color: var(--primary-grey-hover);
+        border: 1px solid var(--border-grey-hover);
+        cursor: pointer;
+    }
+
+    .expense-paid-dropdown, .expense-split-dropdown {
+        overflow: hidden;
+        width: 100%;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height 0.3s, padding 0.3s, margin 0.3s, opacity 0.3s;
+    }
+
+    .expense-paid-split-dropdown-open {
+        max-height: 500px !important;
+        border-top: 1px solid var(--border-grey);
+        border-bottom: 1px solid var(--border-grey);
+        margin: 16px 0;
+        padding: 16px 0;
+        opacity: 100%;
     }
 </style>
 
@@ -229,6 +331,8 @@
     const involvedFriendsInput = document.getElementById('expense-involved');
     const involvedChipsContainer = document.getElementById('involved-chips-container');
     const involvedDropdown = document.getElementById('expense-involved-dropdown');
+    const paidDropdown = document.getElementById('expense-paid-dropdown');
+    const splitDropdown = document.getElementById('expense-split-dropdown');
 
     var selectedDropdownItemIndex = 0;
 
@@ -416,4 +520,14 @@
             involvedDropdown.classList.add('hidden');
         }
     });
+
+    function togglePaidDropdown() {
+        splitDropdown.classList.remove('expense-paid-split-dropdown-open');
+        paidDropdown.classList.toggle('expense-paid-split-dropdown-open');
+    }
+
+    function toggleSplitDropdown() {
+        paidDropdown.classList.remove('expense-paid-split-dropdown-open');
+        splitDropdown.classList.toggle('expense-paid-split-dropdown-open');
+    }
 </script>
