@@ -1,5 +1,5 @@
 <div class="container margin-bottom-lg">
-    <div class="restrict-max-width space-bottom-sm">
+    <div class="restrict-max-width space-bottom-lg">
         <form method="post" action="{{ $expense ? route('expenses.update', $expense) : route('expenses.store') }}" class="space-top-sm">
             @csrf
             <!--method('patch')-->
@@ -22,6 +22,23 @@
                 </div>
 
                 <div class="expense-involved-dropdown hidden" id="expense-involved-dropdown"></div>
+            </div>
+
+            <div class="expense-name-amount-category-container">
+                <x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Add a category')">
+                    <div class="expense-category">
+                        
+                    </div>
+                </x-tooltip>
+                <div>
+                    <div class="expense-name-amount-container">
+                        <input id="expense-name" class="expense-name" name="name" type="text" placeholder="{{ __('Describe the expense') }}" autocomplete="off" />
+                    </div>
+
+                    <div class="expense-name-amount-container">
+                        {{ __('$') }}<input id="expense-amount" class="expense-amount" name="amount" type="number" step="0.01" min="0" placeholder="{{ __('0.00') }}" autocomplete="off" />
+                    </div>
+                </div>
             </div>
 
             <div class="btn-container-start">
@@ -156,6 +173,56 @@
         background-color: var(--primary-grey);
         color: var(--text-primary-highlight);
     }
+
+    .expense-name-amount-category-container {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 2em;
+    }
+
+    .expense-category {
+        height: 75px;
+        width: 75px;
+        background-color: var(--primary-grey);
+        border: 1px solid var(--border-grey);
+        border-radius: var(--border-radius);
+        transition: border 0.3s, background-color 0.3s ease-in-out;
+    }
+
+    .expense-category:hover {
+        background-color: var(--primary-grey-hover);
+        border: 1px solid var(--border-grey-hover);
+        cursor: pointer;
+    }
+
+    .expense-name, .expense-amount {
+        color: var(--text-primary);
+        border: none;
+        width: 100%;
+        padding: 4px 8px;
+        margin: 0;
+        background-color: var(--secondary-grey);
+    }
+
+    .expense-name:focus, .expense-amount:focus {
+        border: none !important;
+        outline: none !important;
+        outline-offset: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .expense-name::placeholder, .expense-amount::placeholder {
+        color: var(--text-shy);
+    }
+
+    .expense-name-amount-container {
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--border-grey);
+        margin-bottom: 8px;
+    }
 </style>
 
 <script>
@@ -219,6 +286,8 @@
 
                     dropdownItem.on('click', function() {
                         involvedDropdown.classList.add('hidden');
+                        involvedFriendsInput.value = '';
+                        involvedFriendsInput.focus();
                     });
                 } else { // This user has not been added as a chip
                     var dropdownItemNotInvolvedContent = $('#dropdown-item-not-involved-template').html();
@@ -291,6 +360,9 @@
         } else {
             $(involvedDropdown).find('.involved-dropdown-item-selected').removeClass('involved-dropdown-item-selected');
             $(item).addClass('involved-dropdown-item-selected');
+
+            const itemIndex = $(involvedDropdown).children().index($(item));
+            selectedDropdownItemIndex = itemIndex;
         }
     }
 
