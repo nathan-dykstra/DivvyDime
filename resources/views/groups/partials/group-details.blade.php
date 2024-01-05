@@ -17,8 +17,8 @@
                 @endif
 
                 <div>
-                    <x-input-label for="group_name" :value="__('Name')" />
-                    <x-text-input id="group_name" name="name" type="text" :value="old('name', $group?->name)" required autofocus />
+                    <x-input-label for="group-name" :value="__('Name')" />
+                    <x-text-input id="group-name" name="name" type="text" :value="old('name', $group?->name)" required autofocus />
                     <x-input-error :messages="$errors->get('name')" />
                 </div>
 

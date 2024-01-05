@@ -1176,6 +1176,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 .expense:hover {
     background-color: var(--primary-grey);
+    cursor: pointer;
 }
 
 .user-amount {

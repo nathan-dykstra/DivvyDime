@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateGroupRequest;
+use App\Models\ExpenseParticipant;
 use App\Models\Friend;
 use App\Models\Group;
 use App\Models\GroupInvite;
@@ -12,6 +13,7 @@ use App\Models\NotificationAttribute;
 use App\Models\NotificationType;
 use App\Models\User;
 use App\Notifications\GroupInviteNotification;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,10 +27,12 @@ use Illuminate\Support\Str;
 
 class GroupsController extends Controller
 {
+    const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
+
     /**
-     * Displays the user's Groups
+     * Displays the User's Groups.
      */
-    public function index()
+    public function index(): View
     {
         $current_user = auth()->user();
 
@@ -42,8 +46,6 @@ class GroupsController extends Controller
             ->get();
 
         $groups = $this->augmentGroups($groups);
-
-        Log::info($groups);
 
         return view('groups.groups-list', [
             'groups' => $groups,
@@ -93,8 +95,39 @@ class GroupsController extends Controller
             return view('groups.not-allowed');
         }
 
+        $expenses = $group->expenses()
+            ->orderBy('date', 'DESC')
+            ->get();
+
+        $expenses = $expenses->map(function ($expense) use ($current_user) {
+            $expense->payer_user = User::where('id', $expense->payer)->first();
+
+            $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
+
+            $expense->date = Carbon::parse($expense->date)->format('M d, Y');
+
+            $expense->formatted_time = Carbon::parse($expense->date)->setTimezone(self::TIMEZONE)->format('g:i a');
+
+            $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
+                ->where('user_id', $current_user->id)
+                ->value('share');
+
+            if ($expense->payer === $current_user->id) {
+                $expense->lent = $expense->amount - $current_user_share;
+            }
+
+            if ($current_user_share) {
+                $expense->borrowed = $current_user_share;
+            }
+
+            $expense->group = Group::where('id', $expense->group_id)->first();
+
+            return $expense;
+        });
+
         return view('groups.show', [
             'group' => $group,
+            'expenses' => $expenses,
         ]);
     }
 

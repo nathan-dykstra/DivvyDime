@@ -12,6 +12,11 @@ return [
         'route' => 'activity',
     ],
     [
+        'text' => 'Expenses',
+        'icon' => 'fa-solid fa-receipt fa-sm',
+        'route' => 'expenses',
+    ],
+    [
         'text' => 'Groups',
         'icon' => 'fa-solid fa-user-group fa-sm',
         'route' => 'groups',

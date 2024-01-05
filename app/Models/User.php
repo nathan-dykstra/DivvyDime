@@ -60,8 +60,7 @@ class User extends Authenticatable implements MustVerifyEmail
             $query->where('users.id', $user_id);
         });
 
-        $all_expenses = $expenses_as_payer->union($expenses_as_participant)
-            ->distinct();
+        $all_expenses = $expenses_as_payer->union($expenses_as_participant);
 
         return $all_expenses;
     }
