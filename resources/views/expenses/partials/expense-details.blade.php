@@ -8,15 +8,17 @@
 
             <div class="expense-involved-container">
                 <div class="involved-chips-container" id="involved-chips-container">
-                    <div class="involved-chip involved-chip-fixed" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
-                        <span>{{ auth()->user()->username }}</span>
-                        <!--<x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />-->
-                        <!-- TODO: Allow removeal of current user when adding in a Group -->
-                    </div>
+                    @if ($expense === null)
+                        <div class="involved-chip involved-chip-fixed" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
+                            <span>{{ auth()->user()->username }}</span>
+                            <!--<x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />-->
+                            <!-- TODO: Allow removeal of current user when adding in a Group -->
+                        </div>
+                    @endif
 
-                    @foreach($expense?->participants()->orderBy('username', 'ASC')->get() ?? [] as $participant)
-                        <div class="involved-chip" data-user-id="{{ $participant->id }}" data-username="{{ $participant->username }}">
-                            <span>{{ $participant->username }}</span>
+                    @foreach($expense?->involvedUsers() ?? [] as $involved_user)
+                        <div class="involved-chip" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}">
+                            <span>{{ $involved_user->username }}</span>
                             <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
                         </div>
                     @endforeach
@@ -30,16 +32,16 @@
             <div class="expense-name-amount-category-container">
                 <x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Choose a category')">
                     <div class="expense-category">
-                        
+
                     </div>
                 </x-tooltip>
                 <div class="expense-name-amount-container">
                     <div class="expense-input-container">
-                        <input id="expense-name" class="expense-name" name="name" type="text" placeholder="{{ __('Describe the expense') }}" autocomplete="off" required />
+                        <input id="expense-name" class="expense-name" name="expense-name" type="text" placeholder="{{ __('Describe the expense') }}" value="{{ old('expense-name', $expense ? $expense->name : '') }}" autocomplete="off" required />
                     </div>
 
                     <div class="expense-input-container">
-                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-amount" name="amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" autocomplete="off" required />
+                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-amount" name="expense-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('expense-amount', $expense ? $expense->amount : '') }}" autocomplete="off" required />
                     </div>
                 </div>
             </div>
@@ -51,7 +53,7 @@
 
                         <x-primary-button class="expense-round-btn" id="expense-paid-btn" onclick="togglePaidDropdown()">
                             <div class="expense-round-btn-text">
-                                {{ auth()->user()->username }}
+                                {{ $expense?->payer_username ?? auth()->user()->username }}
                             </div>
                         </x-primary-button>
                     </div>
@@ -64,15 +66,25 @@
                         </div>
 
                         <div class="expense-paid-dropdown-list" id="expense-paid-dropdown-list">
-                            <div class="paid-dropdown-item" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
-                                <div class="paid-dropdown-item-name">{{ auth()->user()->username }}</div>
+                            @if ($expense === null)
+                                <div class="paid-dropdown-item" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
+                                    <div class="paid-dropdown-item-name">{{ auth()->user()->username }}</div>
 
-                                <i class="fa-solid fa-check text-success"></i>
-                            </div>
+                                    <i class="fa-solid fa-check text-success"></i>
+                                </div>
+                            @endif
+
+                            @foreach ($expense?->involvedUsers() ?? [] as $involved_user)
+                                <div class="paid-dropdown-item" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}" onclick="setExpensePayer(this)">
+                                    <div class="paid-dropdown-item-name">{{ $involved_user->username }}</div>
+
+                                    <i class="fa-solid fa-check text-success {{ $expense?->payer !== $involved_user->id ? 'hidden' : '' }}"></i>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 
-                    <input type="hidden" id="expense-paid" name="expense-paid" value="{{ auth()->user()->id }}" />
+                    <input type="hidden" id="expense-paid" name="expense-paid" value="{{ $expense ? $expense->payer : auth()->user()->id }}" />
                 </div>
 
                 <div>
@@ -98,7 +110,7 @@
                     <div class="expense-group-date-media">
                         <x-primary-button class="expense-round-btn expense-round-btn-equal-width" id="expense-group-btn" onclick="toggleGroupDropdown()">
                             <div class="expense-round-btn-text">
-                                {{ $expense?->group()->name ?? __('Individual Expenses') }}
+                                {{ $expense?->group()->first()->name ?? $default_group->name }}
                             </div>
                         </x-primary-button>
                     </div>
@@ -110,20 +122,20 @@
                             <div class="paid-dropdown-item" data-group-id="{{ $default_group->id }}" data-group-name="{{ $default_group->name }}" onclick="setExpenseGroup(this)">
                                 <div class="paid-dropdown-item-name">{{ $default_group->name }}</div>
     
-                                <i class="fa-solid fa-check text-success"></i>
+                                <i class="fa-solid fa-check text-success {{ $expense !== null && $expense->group_id !== $default_group->id ? 'hidden' : '' }}" ></i>
                             </div>
     
                             @foreach ($groups as $group)
                                 <div class="paid-dropdown-item" data-group-id="{{ $group->id }}" data-group-name="{{ $group->name }}" onclick="setExpenseGroup(this)">
                                     <div class="paid-dropdown-item-name">{{ $group->name }}</div>
     
-                                    <i class="fa-solid fa-check text-success hidden"></i>
+                                    <i class="fa-solid fa-check text-success {{ $expense?->group_id !== $group->id ? 'hidden' : '' }}"></i>
                                 </div>
                             @endforeach
                         </div>
                     </div>
 
-                    <input type="hidden" id="expense-group" name="expense-group" value="{{ $default_group_id }}" />
+                    <input type="hidden" id="expense-group" name="expense-group" value="{{ $expense ? $expense->group_id : $default_group->id }}" />
                 </div>
 
                 <div>
@@ -138,13 +150,13 @@
                     <div class="expense-expand-dropdown" id="expense-date-dropdown">
                         <h4 class="margin-bottom-sm">{{ __('When did the expense occur?') }}</h4>
 
-                        <!--<div class="expense-datepicker" id="expense-datepicker"></div>-->
                         <div class="expense-datepicker-container">
-                            <div inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $today }}"></div>
+                            <!-- Flowbite Tailwind CSS Datepicker -->
+                            <div id="flowbite-datepicker" inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $expense ? $expense->date : $today }}"></div> <!--inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $today }}"-->
                         </div>
                     </div>
 
-                    <input type="hidden" id="expense-date" name="expense-date" value="{{ $today }}" />
+                    <input type="hidden" id="expense-date" name="expense-date" value="{{ $expense ? $expense->date : $today }}" />
                 </div>
 
                 <div>
@@ -158,9 +170,9 @@
 
                     <div class="expense-expand-dropdown" id="expense-media-dropdown">
                         <h4 class="margin-bottom-sm">{{ __('Add a note or image') }}</h4>
-    
+
                         <x-input-label for="expense-note" :value="__('Note')" />
-                        <x-text-area id="expense-note" name="expense-note" maxlength="65535" />
+                        <x-text-area id="expense-note" name="expense-note" maxlength="65535" :value="old('expense-note', $expense?->note ?? '')" />
                     </div>
                 </div>
             </div>
@@ -176,6 +188,21 @@
     <template id="involved-chip-template">
         <div class="involved-chip" data-user-id="" data-username="">
             <div class="involved-chip-text"></div>
+            <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
+        </div>
+    </template>
+
+    <template id="involved-chip-current-user-fixed-template">
+        <div class="involved-chip involved-chip-fixed" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
+            <!-- TODO: Add user image to this template -->
+            <div class="involved-chip-text">{{ auth()->user()->username }}</div>
+        </div>
+    </template>
+
+    <template id="involved-chip-current-user-template">
+        <div class="involved-chip" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
+            <!-- TODO: Add user image to this template -->
+            <div class="involved-chip-text">{{ auth()->user()->username }}</div>
             <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
         </div>
     </template>
@@ -474,11 +501,114 @@
         display: flex;
         justify-content: center;
     }
-</style>
 
-<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>-->
+    /* Flowbite Datepicker style overrides */
+
+    .expense-datepicker-container .datepicker-picker {
+        background-color: var(--secondary-grey) !important;
+        box-shadow: none !important;
+    }
+
+    .expense-datepicker-container .days-of-week > span {
+        color: var(--text-shy) !important;
+    }
+
+    .expense-datepicker-container .datepicker-cell {
+        color: var(--text-primary) !important;
+        padding: 6px 0 !important;
+    }
+
+    .expense-datepicker-container .datepicker-cell:hover {
+        background-color: var(--accent-color) !important;
+    }
+
+    .expense-datepicker-container .datepicker-cell.selected {
+        color: var(--text-primary-highlight) !important;
+        background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-colour-hover */
+    }
+
+    .expense-datepicker-container .datepicker-cell.prev, .expense-datepicker-container .datepicker-cell.next {
+        color: var(--text-shy) !important;
+    }
+
+    .expense-datepicker-container .datepicker-cell.prev:hover, .expense-datepicker-container .datepicker-cell.next:hover {
+        color: var(--text-primary) !important;
+    }
+
+    .expense-datepicker-container button.bg-white {
+        display: inline-flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+
+        background-color: var(--secondary-grey) !important;
+        color: var(--text-primary);
+        height: 36px !important;
+        border: 1px solid var(--icon-grey) !important;
+        border-radius: var(--border-radius) !important;
+        padding: 8px 16px !important;
+        transition: border 0.3s, background-color 0.3s ease-in-out, outline 0.1s ease-in-out, outline-offset 0.1s !important;
+
+        font-size: 0.8em !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+
+        outline: none !important;
+    }
+
+    .expense-datepicker-container button.bg-white:hover {
+        background-color: var(--primary-grey-hover) !important;
+        cursor: pointer !important;
+    }
+
+    .expense-datepicker-container button.bg-white:focus {
+        outline: 3px solid var(--blue-hover) !important; /* TODO: Change this to --primary-color-hover */
+        outline-offset: 1px !important;
+        border: 1px solid var(--icon-grey) !important;
+        border-radius: var(--border-radius) !important;
+        box-shadow: none !important;
+    }
+
+    .expense-datepicker-container button svg {
+        color: var(--text-primary) !important;
+    }
+
+    .expense-datepicker-container button.today-btn {
+        display: inline-flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+
+        background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-color */
+        color: var(--text-opposite) !important;
+        height: 36px !important;
+        border: none !important;
+        border-radius: var(--border-radius) !important;
+        padding: 8px 16px !important;
+        transition: border 0.3s, background-color 0.3s ease-in-out, olor 0.3s ease-in-out, outline 0.1s ease-in-out, outline-offset 0.1s !important;
+
+        font-size: 0.8em !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+
+        outline: none !important;
+    }
+
+    .expense-datepicker-container button.today-btn:hover {
+        background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-color-hover */
+        border: none !important;
+        color: var(--text-opposite-highlight) !important;
+        cursor: pointer !important;
+    }
+
+    .expense-datepicker-container button.today-btn:focus {
+        outline: 3px solid var(--blue-hover) !important; /* TODO: Change this to --primary-color-hover */
+        outline-offset: 1px !important;
+        border: none !important;
+        border-radius: var(--border-radius) !important;
+        box-shadow: none !important;
+    }
+</style>
 
 <script>
     const involvedFriendsInput = document.getElementById('expense-involved');
@@ -493,6 +623,7 @@
 
     const paidDropdownList = document.getElementById('expense-paid-dropdown-list');
     const groupDropdownList = document.getElementById('expense-group-dropdown-list');
+    const datePicker = document.getElementById('flowbite-datepicker');
 
     const currentPayerInput = document.getElementById('expense-paid');
     const currentGroupInput = document.getElementById('expense-group');
@@ -652,7 +783,7 @@
             // Highlight/delete the last User chip
             const lastChip = $(involvedChipsContainer).children().eq(-2);
             if (lastChip.hasClass('involved-chip-selected')) {
-                lastChip.remove();
+                lastChip.children('button').click();
             } else {
                 if (!lastChip.hasClass('involved-chip-fixed')) {
                     lastChip.addClass('involved-chip-selected');
@@ -733,7 +864,6 @@
 
         mediaDropdown.classList.toggle('expense-expand-dropdown-open');
     }
-
     
     function toggleDateDropdown() {
         paidDropdown.classList.remove('expense-expand-dropdown-open');
@@ -743,17 +873,6 @@
 
         dateDropdown.classList.toggle('expense-expand-dropdown-open');
     }
-
-    /*jQuery.noConflict();
-
-    jQuery(function($) {
-        $( "#expense-datepicker" ).datepicker({
-            onSelect: function(dateText) {
-                // Set the hidden input value when a date is selected
-                $(currentDateInput).val(dateText);
-            }
-        });
-    });*/
 
     function updatePaidDropdownList() {
         $(paidDropdownList).empty();
@@ -765,7 +884,7 @@
         if (usersInvolved.length === 0) { // No users in the involved list
             $(paidDropdown).find('.paid-dropdown-empty-warning').removeClass('hidden');
         } else {
-            $(paidDropdownList).find('.paid-dropdown-empty-warning').addClass('hidden');
+            $(paidDropdown).find('.paid-dropdown-empty-warning').addClass('hidden');
 
             usersInvolved.forEach(user => {
                 var paidDropdownItemContent = $('#paid-dropdown-item-template').html();
@@ -812,5 +931,50 @@
 
         $(groupDropdownList).find('.fa-check').addClass('hidden');
         $(group).children('.fa-check').removeClass('hidden');
+
+        const defaultGroupId = {{ json_encode($default_group->id) }};
+        const currentUserId = {{ json_encode(auth()->user()->id) }};
+
+        const involvedUserChips = Array.from(involvedChipsContainer.children).slice(0, -1);
+        const currentUserChip = involvedUserChips.find(function(chip) {
+            return parseInt(chip.dataset.userId) === currentUserId;
+        });
+
+        if (parseInt(group.dataset.groupId) === defaultGroupId) {
+            if (currentUserChip) {
+                $(currentUserChip).remove();
+            }
+
+            var userChipContent = $('#involved-chip-current-user-fixed-template').html();
+            var userChip = $(userChipContent).clone();
+
+            $(involvedChipsContainer).prepend(userChip);
+
+            updatePaidDropdownList();
+        } else {
+            if (currentUserChip) {
+                $(currentUserChip).remove();
+
+                var userChipContent = $('#involved-chip-current-user-template').html();
+                var userChip = $(userChipContent).clone();
+
+                $(involvedChipsContainer).prepend(userChip);
+
+                updatePaidDropdownList();
+            }
+        }
     }
+
+    datePicker.addEventListener('changeDate', function(event) {
+        // Get selected date in 'yyyy-mm-dd' format
+        let selectedDate = new Date(event.detail.date);
+
+        const inputDate = selectedDate.toISOString().split('T')[0];
+
+        let formattedDateOptions = { month: 'long', day: 'numeric', year: 'numeric' };
+        const  formattedDate = selectedDate.toLocaleDateString(undefined, formattedDateOptions);
+
+        currentDateInput.value = inputDate;
+        $(dateBtn).children('.expense-round-btn-text').text(formattedDate);
+    })
 </script>

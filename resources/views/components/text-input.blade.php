@@ -1,4 +1,4 @@
-@props(['type' => 'text', 'class' => '', 'id' => null, 'name' => null, 'disabled' => false, 'autocomplete' => 'off', 'placeholder' => null])
+@props(['type' => 'text', 'class' => '', 'id' => null, 'name' => null, 'disabled' => false, 'autocomplete' => 'off', 'placeholder' => null, 'value' => null])
 
 <input {{ $attributes->merge([
     'type' => $type,
@@ -6,7 +6,8 @@
     'id' => $id,
     'name' => $name,
     'autocomplete' => $autocomplete,
-    'placeholder' => $placeholder
+    'placeholder' => $placeholder,
+    'value' => $value,
 ]) }} {{ $disabled ? 'disabled' : '' }}>
 
 <style>

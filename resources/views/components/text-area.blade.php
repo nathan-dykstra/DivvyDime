@@ -1,4 +1,4 @@
-@props(['class' => '', 'id' => null, 'name' => null, 'disabled' => false, 'placeholder' => null, 'maxlength' => null, 'rows' => '4'])
+@props(['class' => '', 'id' => null, 'name' => null, 'disabled' => false, 'placeholder' => null, 'maxlength' => null, 'rows' => '4', 'value' => null])
 
 <textarea {{ $attributes->merge([
     'class' => 'text-area ' . $class,
@@ -7,7 +7,7 @@
     'placeholder' => $placeholder,
     'maxlength' => $maxlength,
     'rows' => $rows,
-]) }} {{ $disabled ? 'disabled' : '' }}></textarea>
+]) }} {{ $disabled ? 'disabled' : '' }}>{{ $value ?? $slot }}</textarea>
 
 <style>
     .text-area {

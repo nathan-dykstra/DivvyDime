@@ -41,6 +41,27 @@ class Expense extends Model
         return $this->belongsToMany(User::class, 'expense_participants', 'expense_id', 'user_id');
     }
 
+    /**
+     * Returns all the Users involved in the Expense (as a payer or as a participant)
+     */
+    public function involvedUsers()
+    {
+        $payer = User::where('id', $this->payer);
+
+        $participants = $this->participants()->select('users.*');
+
+        $involved_users = $payer->union($participants)
+            ->orderByRaw("
+                CASE
+                    WHEN id = ? THEN 0
+                    ELSE 1
+                END, username ASC
+            ", [auth()->user()->id])
+            ->get();
+
+        return $involved_users;
+    }
+
     protected $fillable = [
         'name',
         'amount',

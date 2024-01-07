@@ -116,7 +116,41 @@ class ExpensesController extends Controller
         return Redirect::route('groups.show', $group->id)->with('status', 'group-created');*/
     }
 
-    public function show($expense): View
+    public function show(Expense $expense): View
+    {
+        return view('expenses.show', [
+            'expense' => $expense,
+        ]);
+    }
+
+    public function edit(Expense $expense): View
+    {
+        $current_user = auth()->user();
+
+        $groups = $current_user->groups()
+            ->whereNot('groups.id', Group::DEFAULT_GROUP)
+            ->orderBy('groups.name', 'ASC')
+            ->get();
+
+        $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
+
+        $today = Carbon::now()->isoFormat('YYYY-MM-DD');
+
+        $formatted_today = Carbon::now()->isoFormat('MMMM D, YYYY');
+
+        $expense->formatted_date = Carbon::parse($expense->date)->isoFormat('MMMM D, YYYY');
+        $expense->payer_username = User::where('id', $expense->payer)->first()->username;
+
+        return view('expenses.edit', [
+            'expense' => $expense,
+            'groups' => $groups,
+            'default_group' => $default_group,
+            'today' => $today,
+            'formatted_today' => $formatted_today,
+        ]);
+    }
+
+    public function update(CreateExpenseRequest $request, Expense $expense): RedirectResponse
     {
 
     }
