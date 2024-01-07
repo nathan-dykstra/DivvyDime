@@ -17,9 +17,11 @@
                     @endif
 
                     @foreach($expense?->involvedUsers() ?? [] as $involved_user)
-                        <div class="involved-chip" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}">
+                        <div class="involved-chip {{ $involved_user->id === auth()->user()->id && $expense->group_id === $default_group->id ? 'involved-chip-fixed' : '' }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}">
                             <span>{{ $involved_user->username }}</span>
-                            <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
+                            @if (!($involved_user->id === auth()->user()->id && $expense->group_id === $default_group->id))
+                                <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
+                            @endif
                         </div>
                     @endforeach
 
@@ -390,19 +392,28 @@
     }
 
     .expense-name {
-        font-size: 1.1em;
+        font-size: 1.25em;
         font-weight: 600;
     }
 
     .expense-currency {
         padding: 4px 0 4px 8px;
-        font-size: 1.1em;
+        font-size: 1.25em;
         font-weight: 600;
     }
 
     .expense-amount {
-        font-size: 1.6em;
-        font-weight: 600;
+        font-size: 1.75em;
+        font-weight: 800;
+
+        /* Remove up/down arrows - Firefox */
+        -moz-appearance: textfield;
+    }
+
+    /* Remove up/down arrows - Chrome, Safari, Edge */
+    .expense-amount::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
 
     .expense-paid-split-container {
@@ -932,6 +943,10 @@
         $(groupDropdownList).find('.fa-check').addClass('hidden');
         $(group).children('.fa-check').removeClass('hidden');
 
+        // Check whether the group was changed to the default Group (Individual Expenses)
+        // If it was, then the current user must be involved (can't remove their chip)
+        // Otherwise, the current user can be removed (can remove their chip)
+
         const defaultGroupId = {{ json_encode($default_group->id) }};
         const currentUserId = {{ json_encode(auth()->user()->id) }};
 
@@ -953,12 +968,10 @@
             updatePaidDropdownList();
         } else {
             if (currentUserChip) {
-                $(currentUserChip).remove();
-
                 var userChipContent = $('#involved-chip-current-user-template').html();
                 var userChip = $(userChipContent).clone();
 
-                $(involvedChipsContainer).prepend(userChip);
+                $(currentUserChip).replaceWith(userChip);
 
                 updatePaidDropdownList();
             }
