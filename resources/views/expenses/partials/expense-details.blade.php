@@ -2,17 +2,20 @@
     <div class="restrict-max-width">
         <form method="post" action="{{ $expense ? route('expenses.update', $expense) : route('expenses.store') }}" class="space-bottom-lg">
             @csrf
-            <!--method('patch')-->
+            @if ($expense)
+                @method('patch')
+            @endif
 
             <div class="expense-involved-container">
                 <div class="involved-chips-container" id="involved-chips-container">
-                    <div class="involved-chip" data-user-id="{{ auth()->user()->id }}">
+                    <div class="involved-chip involved-chip-fixed" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
                         <span>{{ auth()->user()->username }}</span>
-                        <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
+                        <!--<x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />-->
+                        <!-- TODO: Allow removeal of current user when adding in a Group -->
                     </div>
 
                     @foreach($expense?->participants()->orderBy('username', 'ASC')->get() ?? [] as $participant)
-                        <div class="involved-chip" data-user-id="{{ $participant->id }}">
+                        <div class="involved-chip" data-user-id="{{ $participant->id }}" data-username="{{ $participant->username }}">
                             <span>{{ $participant->username }}</span>
                             <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
                         </div>
@@ -25,7 +28,7 @@
             </div>
 
             <div class="expense-name-amount-category-container">
-                <x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Add a category')">
+                <x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Choose a category')">
                     <div class="expense-category">
                         
                     </div>
@@ -36,7 +39,7 @@
                     </div>
 
                     <div class="expense-input-container">
-                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-amount" name="amount" type="number" step="0.01" min="0" placeholder="{{ __('0.00') }}" autocomplete="off" required />
+                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-amount" name="amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" autocomplete="off" required />
                     </div>
                 </div>
             </div>
@@ -45,28 +48,119 @@
                 <div>
                     <div class="expense-paid-split">
                         {{ __('Who paid?') }}
-    
-                        <div class="expense-paid-split-btn" onclick="togglePaidDropdown()">
-                            {{ auth()->user()->username }}
+
+                        <x-primary-button class="expense-round-btn" id="expense-paid-btn" onclick="togglePaidDropdown()">
+                            <div class="expense-round-btn-text">
+                                {{ auth()->user()->username }}
+                            </div>
+                        </x-primary-button>
+                    </div>
+
+                    <div class="expense-expand-dropdown" id="expense-paid-dropdown">
+                        <h4 class="margin-bottom-sm">{{ __('Who paid for this expense?') }}</h4>
+
+                        <div class="paid-dropdown-empty-warning hidden">
+                            {{ __('You must add users to the expense before choosing who paid.') }}
+                        </div>
+
+                        <div class="expense-paid-dropdown-list" id="expense-paid-dropdown-list">
+                            <div class="paid-dropdown-item" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
+                                <div class="paid-dropdown-item-name">{{ auth()->user()->username }}</div>
+
+                                <i class="fa-solid fa-check text-success"></i>
+                            </div>
                         </div>
                     </div>
-    
-                    <div class="expense-paid-dropdown" id="expense-paid-dropdown">
-                        <h4>{{ __('Who paid for this expense?') }}</h4>
-                    </div>
+
+                    <input type="hidden" id="expense-paid" name="expense-paid" value="{{ auth()->user()->id }}" />
                 </div>
 
                 <div>
                     <div class="expense-paid-split">
-                        {{ __('How was it split?') }}
-    
-                        <div class="expense-paid-split-btn" onclick="toggleSplitDropdown()">
-                            {{ __('Equally') }}
-                        </div>
+                        {{ __('How was it split?') }} <!-- TODO: this section -->
+
+                        <x-primary-button class="expense-round-btn" id="expense-split-btn" onclick="toggleSplitDropdown()">
+                            <div class="expense-round-btn-text">
+                                {{ __('Equally') }}
+                            </div>
+                        </x-primary-button>
+                    </div>
+
+                    <div class="expense-expand-dropdown" id="expense-split-dropdown">
+                        <h4>{{ __('How should we divvy this up?') }}</h4>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="expense-group-date-media-container">
+                <div>
+                    <div class="expense-group-date-media">
+                        <x-primary-button class="expense-round-btn expense-round-btn-equal-width" id="expense-group-btn" onclick="toggleGroupDropdown()">
+                            <div class="expense-round-btn-text">
+                                {{ $expense?->group()->name ?? __('Individual Expenses') }}
+                            </div>
+                        </x-primary-button>
                     </div>
     
-                    <div class="expense-split-dropdown" id="expense-split-dropdown">
-                        <h4>{{ __('How should we divvy this up?') }}</h4>
+                    <div class="expense-expand-dropdown" id="expense-group-dropdown">
+                        <h4 class="margin-bottom-sm">{{ __('Choose a group') }}</h4>
+    
+                        <div class="expense-paid-dropdown-list" id="expense-group-dropdown-list">
+                            <div class="paid-dropdown-item" data-group-id="{{ $default_group->id }}" data-group-name="{{ $default_group->name }}" onclick="setExpenseGroup(this)">
+                                <div class="paid-dropdown-item-name">{{ $default_group->name }}</div>
+    
+                                <i class="fa-solid fa-check text-success"></i>
+                            </div>
+    
+                            @foreach ($groups as $group)
+                                <div class="paid-dropdown-item" data-group-id="{{ $group->id }}" data-group-name="{{ $group->name }}" onclick="setExpenseGroup(this)">
+                                    <div class="paid-dropdown-item-name">{{ $group->name }}</div>
+    
+                                    <i class="fa-solid fa-check text-success hidden"></i>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="expense-group" name="expense-group" value="{{ $default_group_id }}" />
+                </div>
+
+                <div>
+                    <div class="expense-group-date-media">
+                        <x-primary-button class="expense-round-btn expense-round-btn-equal-width" id="expense-date-btn" onclick="toggleDateDropdown()">
+                            <div class="expense-round-btn-text">
+                                {{ $expense?->formatted_date ?? $formatted_today }}
+                            </div>
+                        </x-primary-button>
+                    </div>
+
+                    <div class="expense-expand-dropdown" id="expense-date-dropdown">
+                        <h4 class="margin-bottom-sm">{{ __('When did the expense occur?') }}</h4>
+
+                        <!--<div class="expense-datepicker" id="expense-datepicker"></div>-->
+                        <div class="expense-datepicker-container">
+                            <div inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $today }}"></div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="expense-date" name="expense-date" value="{{ $today }}" />
+                </div>
+
+                <div>
+                    <div class="expense-group-date-media">
+                        <x-primary-button class="expense-round-btn expense-round-btn-equal-width" id="expense-media-btn" onclick="toggleMediaDropdown()">
+                            <div class="expense-round-btn-text">
+                                {{ __('Add Note/Media') }}
+                            </div>
+                        </x-primary-button>
+                    </div>
+
+                    <div class="expense-expand-dropdown" id="expense-media-dropdown">
+                        <h4 class="margin-bottom-sm">{{ __('Add a note or image') }}</h4>
+    
+                        <x-input-label for="expense-note" :value="__('Note')" />
+                        <x-text-area id="expense-note" name="expense-note" maxlength="65535" />
                     </div>
                 </div>
             </div>
@@ -80,7 +174,7 @@
     <!-- HTML Templates -->
 
     <template id="involved-chip-template">
-        <div class="involved-chip" data-user-id="">
+        <div class="involved-chip" data-user-id="" data-username="">
             <div class="involved-chip-text"></div>
             <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
         </div>
@@ -103,6 +197,14 @@
                 <div class="text-shy"></div>
             </div>
             <i class="fa-solid fa-user-plus add-friend-icon"></i>
+        </div>
+    </template>
+
+    <template id="paid-dropdown-item-template">
+        <div class="paid-dropdown-item" data-user-id="" data-username="" onclick="setExpensePayer(this)">
+            <div class="paid-dropdown-item-name"></div>
+
+            <i class="fa-solid fa-check text-success hidden"></i>
         </div>
     </template>
 </div>
@@ -155,6 +257,7 @@
         background-color: var(--background);
         border: 1px solid var(--border-grey);
         border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
         padding: 8px;
         margin-top: 0.5rem;
         display: flex;
@@ -254,6 +357,7 @@
     .expense-input-container {
         color: var(--text-primary);
         display: flex;
+        align-items: flex-end;
         border-bottom: 1px solid var(--border-grey);
         margin-bottom: 8px;
     }
@@ -265,17 +369,19 @@
 
     .expense-currency {
         padding: 4px 0 4px 8px;
+        font-size: 1.1em;
+        font-weight: 600;
     }
 
     .expense-amount {
-
+        font-size: 1.6em;
+        font-weight: 600;
     }
 
     .expense-paid-split-container {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        gap: 8px;
+        gap: 12px;
         padding-bottom: 2em;
         border-bottom: 1px solid var(--border-grey);
     }
@@ -288,28 +394,27 @@
         color: var(--text-shy);
     }
 
-    .expense-paid-split-btn {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        /*gap: 8px;*/
-        border: 1px solid var(--border-grey);
-        background-color: var(--primary-grey);
-        transition: border 0.3s, background-color 0.3s ease-in-out;
-
-        color: var(--text-primary);
-        height: 2em;
-        border-radius: 1em;
-        padding: 0 10px;
+    .expense-round-btn {
+        font-size: 1em !important;
+        font-weight: 400 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+        height: 2em !important;
+        border-radius: 1em !important;
+        padding: 0 10px !important;
     }
 
-    .expense-paid-split-btn:hover {
-        background-color: var(--primary-grey-hover);
-        border: 1px solid var(--border-grey-hover);
-        cursor: pointer;
+    .expense-round-btn-text {
+        overflow: hidden;
+        text-wrap: nowrap;
+        text-overflow: ellipsis;
     }
 
-    .expense-paid-dropdown, .expense-split-dropdown {
+    .expense-round-btn-equal-width {
+        width: 250px !important;
+    }
+
+    .expense-expand-dropdown {
         overflow: hidden;
         width: 100%;
         max-height: 0;
@@ -317,22 +422,87 @@
         transition: max-height 0.3s, padding 0.3s, margin 0.3s, opacity 0.3s;
     }
 
-    .expense-paid-split-dropdown-open {
+    .expense-expand-dropdown-open {
         max-height: 500px !important;
         border-top: 1px solid var(--border-grey);
         border-bottom: 1px solid var(--border-grey);
-        margin: 16px 0;
+        margin: 16px 0 0 0;
         padding: 16px 0;
         opacity: 100%;
     }
+
+    .paid-dropdown-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: var(--border-radius);
+        color: var(--text-primary);
+        padding: 8px 16px;
+        transition: 0.1s ease, color 0.1s ease;
+    }
+
+    .paid-dropdown-item:hover {
+        cursor: pointer;
+        background-color: var(--accent-color);
+        color: var(--text-primary-highlight);
+    }
+
+    .paid-dropdown-empty-warning {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 8px 0;
+        color: var(--text-warning);
+        border: 1px solid var(--border-grey);
+        border-radius: var(--border-radius);
+    }
+
+    .expense-group-date-media-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 2em;
+        border-bottom: 1px solid var(--border-grey);
+    }
+
+    .expense-group-date-media {
+        display: flex;
+        justify-content: center;
+    }
+
+    .expense-datepicker-container {
+        display: flex;
+        justify-content: center;
+    }
 </style>
+
+<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>-->
 
 <script>
     const involvedFriendsInput = document.getElementById('expense-involved');
     const involvedChipsContainer = document.getElementById('involved-chips-container');
     const involvedDropdown = document.getElementById('expense-involved-dropdown');
+
     const paidDropdown = document.getElementById('expense-paid-dropdown');
     const splitDropdown = document.getElementById('expense-split-dropdown');
+    const groupDropdown = document.getElementById('expense-group-dropdown');
+    const dateDropdown = document.getElementById('expense-date-dropdown');
+    const mediaDropdown = document.getElementById('expense-media-dropdown');
+
+    const paidDropdownList = document.getElementById('expense-paid-dropdown-list');
+    const groupDropdownList = document.getElementById('expense-group-dropdown-list');
+
+    const currentPayerInput = document.getElementById('expense-paid');
+    const currentGroupInput = document.getElementById('expense-group');
+    const currentDateInput = document.getElementById('expense-date');
+
+    const paidBtn = document.getElementById('expense-paid-btn');
+    const splitBtn = document.getElementById('expense-split-btn');
+    const groupBtn = document.getElementById('expense-group-btn');
+    const dateBtn = document.getElementById('expense-date-btn');
+    const mediaBtn = document.getElementById('expense-media-btn');
 
     var selectedDropdownItemIndex = 0;
 
@@ -404,7 +574,6 @@
 
                     dropdownItem.on('click', function() {
                         addUserChip(user);
-                        involvedDropdown.classList.add('hidden');
                     });
                 }
 
@@ -428,12 +597,16 @@
         // TODO: add user image to the user chip
         userChip.children('.involved-chip-text').text(user.username);
         userChip.attr('data-user-id', user.id);
+        userChip.attr('data-username', user.username);
 
         const searchInput = $(involvedChipsContainer).children('.expense-involved');
         searchInput.before(userChip);
 
+        involvedDropdown.classList.add('hidden');
         involvedFriendsInput.value = '';
         involvedFriendsInput.focus();
+
+        updatePaidDropdownList();
     }
 
     involvedChipsContainer.addEventListener('click', function() {
@@ -446,6 +619,8 @@
 
         involvedFriendsInput.value = '';
         involvedFriendsInput.focus();
+
+        updatePaidDropdownList();
     }
 
     document.addEventListener('click', function(event) {
@@ -479,7 +654,9 @@
             if (lastChip.hasClass('involved-chip-selected')) {
                 lastChip.remove();
             } else {
-                lastChip.addClass('involved-chip-selected');
+                if (!lastChip.hasClass('involved-chip-fixed')) {
+                    lastChip.addClass('involved-chip-selected');
+                }
             }
         } else if (event.keyCode === 13) { // Enter
             event.preventDefault();
@@ -522,12 +699,118 @@
     });
 
     function togglePaidDropdown() {
-        splitDropdown.classList.remove('expense-paid-split-dropdown-open');
-        paidDropdown.classList.toggle('expense-paid-split-dropdown-open');
+        splitDropdown.classList.remove('expense-expand-dropdown-open');
+        groupDropdown.classList.remove('expense-expand-dropdown-open');
+        mediaDropdown.classList.remove('expense-expand-dropdown-open');
+        dateDropdown.classList.remove('expense-expand-dropdown-open');
+
+        paidDropdown.classList.toggle('expense-expand-dropdown-open');
     }
 
     function toggleSplitDropdown() {
-        paidDropdown.classList.remove('expense-paid-split-dropdown-open');
-        splitDropdown.classList.toggle('expense-paid-split-dropdown-open');
+        paidDropdown.classList.remove('expense-expand-dropdown-open');
+        groupDropdown.classList.remove('expense-expand-dropdown-open');
+        mediaDropdown.classList.remove('expense-expand-dropdown-open');
+        dateDropdown.classList.remove('expense-expand-dropdown-open');
+
+        splitDropdown.classList.toggle('expense-expand-dropdown-open');
+    }
+
+    function toggleGroupDropdown() {
+        paidDropdown.classList.remove('expense-expand-dropdown-open');
+        splitDropdown.classList.remove('expense-expand-dropdown-open');
+        mediaDropdown.classList.remove('expense-expand-dropdown-open');
+        dateDropdown.classList.remove('expense-expand-dropdown-open');
+
+        groupDropdown.classList.toggle('expense-expand-dropdown-open');
+    }
+
+    function toggleMediaDropdown() {
+        paidDropdown.classList.remove('expense-expand-dropdown-open');
+        splitDropdown.classList.remove('expense-expand-dropdown-open');
+        groupDropdown.classList.remove('expense-expand-dropdown-open');
+        dateDropdown.classList.remove('expense-expand-dropdown-open');
+
+        mediaDropdown.classList.toggle('expense-expand-dropdown-open');
+    }
+
+    
+    function toggleDateDropdown() {
+        paidDropdown.classList.remove('expense-expand-dropdown-open');
+        splitDropdown.classList.remove('expense-expand-dropdown-open');
+        groupDropdown.classList.remove('expense-expand-dropdown-open');
+        mediaDropdown.classList.remove('expense-expand-dropdown-open');
+
+        dateDropdown.classList.toggle('expense-expand-dropdown-open');
+    }
+
+    /*jQuery.noConflict();
+
+    jQuery(function($) {
+        $( "#expense-datepicker" ).datepicker({
+            onSelect: function(dateText) {
+                // Set the hidden input value when a date is selected
+                $(currentDateInput).val(dateText);
+            }
+        });
+    });*/
+
+    function updatePaidDropdownList() {
+        $(paidDropdownList).empty();
+
+        const usersInvolved = Array.from(involvedChipsContainer.children).slice(0, -1);
+
+        const currentPayer = parseInt(currentPayerInput.value);
+
+        if (usersInvolved.length === 0) { // No users in the involved list
+            $(paidDropdown).find('.paid-dropdown-empty-warning').removeClass('hidden');
+        } else {
+            $(paidDropdownList).find('.paid-dropdown-empty-warning').addClass('hidden');
+
+            usersInvolved.forEach(user => {
+                var paidDropdownItemContent = $('#paid-dropdown-item-template').html();
+                var paidDropdownItem = $(paidDropdownItemContent).clone();
+
+                const paidDropdownName = paidDropdownItem.children('.paid-dropdown-item-name');
+                $(paidDropdownName).text(user.dataset.username);
+
+                paidDropdownItem.attr('data-user-id', user.dataset.userId);
+                paidDropdownItem.attr('data-username', user.dataset.username);
+
+                if (parseInt(user.dataset.userId) === currentPayer) {
+                    paidDropdownItem.children('.fa-check').removeClass('hidden');
+                }
+
+                $(paidDropdownList).append(paidDropdownItem);
+            });
+
+            // Check if current payer was removed from the involved list
+            if (!Array.from(usersInvolved).map(user => parseInt(user.dataset.userId)).includes(currentPayer)) {
+                const firstPaidDropdownItem = paidDropdownList.firstElementChild;
+                currentPayerInput.value = firstPaidDropdownItem.dataset.userId;
+                $(paidBtn).children('.expense-round-btn-text').text(firstPaidDropdownItem.dataset.username);
+                $(firstPaidDropdownItem).children('.fa-check').removeClass('hidden');
+            }
+        }
+    }
+
+    function setExpensePayer(payer) {
+        newPayer = parseInt(payer.dataset.userId);
+        currentPayerInput.value = newPayer;
+
+        $(paidBtn).children('.expense-round-btn-text').text(payer.dataset.username);
+
+        $(paidDropdownList).find('.fa-check').addClass('hidden');
+        $(payer).children('.fa-check').removeClass('hidden');
+    }
+
+    function setExpenseGroup(group) {
+        newGroup = parseInt(group.dataset.groupId);
+        currentGroupInput.value = newGroup;
+
+        $(groupBtn).children('.expense-round-btn-text').text(group.dataset.groupName);
+
+        $(groupDropdownList).find('.fa-check').addClass('hidden');
+        $(group).children('.fa-check').removeClass('hidden');
     }
 </script>

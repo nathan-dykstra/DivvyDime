@@ -72,21 +72,27 @@ class ExpensesController extends Controller
      */
     public function create(): View
     {
-        $users = auth()->user()->friends()
-            ->union(
-                User::where('id', auth()->user()->id)
-            )
-            ->orderByRaw("
-                CASE
-                    WHEN id = ? THEN 0
-                    ELSE 1
-                END, username ASC
-            ", [auth()->user()->id])
+        $current_user = auth()->user();
+
+        $groups = $current_user->groups()
+            ->whereNot('groups.id', Group::DEFAULT_GROUP)
+            ->orderBy('groups.name', 'ASC')
             ->get();
+        
+        $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
+
+        $today = Carbon::now()->format('Y-m-d');
+        $formatted_today = Carbon::now()->format('F j, Y');
+
+        $default_group_id = Group::DEFAULT_GROUP;
 
         return view('expenses.create', [
             'expense' => null,
-            'users' => $users,
+            'groups' => $groups,
+            'default_group' => $default_group,
+            'today' => $today,
+            'formatted_today' => $formatted_today,
+            'default_group_id' => $default_group_id,
         ]);
     }
 
