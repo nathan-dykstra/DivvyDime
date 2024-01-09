@@ -3,17 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateExpenseRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return false;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -22,7 +15,14 @@ class CreateExpenseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'expense-name' => ['required', 'string', 'max:255'],
+            'expense-amount' => ['required', 'numeric', 'regex:/^\d{1,8}(\.\d{1,2})?$/'],
+            'expense-paid' => ['required', 'int', Rule::exists('users', 'id')],
+            'expense-group' => ['required', 'int', Rule::exists('groups', 'id')],
+            /*'expense_type_id' => ['required', 'int', Rule::exists('expense_types', 'id')],
+            'category_id' => ['required', 'int', Rule::exists('categories', 'id')],*/
+            'expense-note' => ['nullable', 'string', 'max:65535'],
+            'expense-date' => ['required', 'date'],
         ];
     }
 }

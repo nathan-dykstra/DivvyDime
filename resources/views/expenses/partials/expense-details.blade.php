@@ -25,7 +25,7 @@
                         </div>
                     @endforeach
 
-                    <input id="expense-involved" class="expense-involved" name="expense-involved" type="text" placeholder="{{ __('Who was involved?') }}" autofocus autocomplete="off" />
+                    <input id="expense-involved" class="expense-involved" type="search" placeholder="{{ __('Who was involved?') }}" autofocus autocomplete="off" />
                 </div>
 
                 <div class="expense-involved-dropdown hidden" id="expense-involved-dropdown"></div>
@@ -95,15 +95,38 @@
 
                         <x-primary-button class="expense-round-btn" id="expense-split-btn" onclick="toggleSplitDropdown()">
                             <div class="expense-round-btn-text">
-                                {{ __('Equally') }}
+                                {{ $expense ? $expense_type_names[$expense->expense_type_id] : $expense_type_names[$default_expense_type] }}
                             </div>
                         </x-primary-button>
                     </div>
 
                     <div class="expense-expand-dropdown" id="expense-split-dropdown">
-                        <h4>{{ __('How should we divvy this up?') }}</h4>
+                        <h4 class="margin-bottom-sm">{{ __('How should we divvy this up?') }}</h4>
 
+                        <div class="expense-split-tabs-wrapper">
+                            <button type="button" class="expense-split-tabs-scroll-btn expense-split-tabs-left-btn" onclick="splitTabsScrollLeft()"><i class="fa-solid fa-arrow-left"></i></button>
+
+                            @include('expenses.partials.split-tabs.expense-tab-headers')
+
+                            <button type="button" class="expense-split-tabs-scroll-btn expense-split-tabs-right-btn" onclick="splitTabsScrollRight()"><i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+
+                        <div id="expense-split-tabs-content">
+                            <div id="expense-split-equal" class="{{ $expense->expense_type_id === $expense_type_ids['equal'] ? '' : 'hidden' }}">
+                                @include('expenses.partials.split-tabs.expense-equal-tab')
+                            </div>
+                            <div id="expense-split-amount" class="{{ $expense->expense_type_id === $expense_type_ids['amount'] ? '' : 'hidden' }}">
+                                @include('expenses.partials.split-tabs.expense-amount-tab')
+                            </div>
+                            <div id="expense-split-percentage" class="{{ $expense->expense_type_id === $expense_type_ids['percentage'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-share" class="{{ $expense->expense_type_id === $expense_type_ids['share'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-adjustment" class="{{ $expense->expense_type_id === $expense_type_ids['adjustment'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-reimbursement" class="{{ $expense->expense_type_id === $expense_type_ids['reimbursement'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-itemized" class="{{ $expense->expense_type_id === $expense_type_ids['itemized'] ? '' : 'hidden' }}">Coming soon</div>
+                        </div>
                     </div>
+
+                    <input type="hidden" id="expense-split" name="expense-split" value="{{ $expense ? $expense->expense_type_id : $default_expense_type }}" />
                 </div>
             </div>
 
@@ -513,6 +536,66 @@
         justify-content: center;
     }
 
+    .expense-split-tabs-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .expense-split-tabs-scroll-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-primary);
+        height: 32px;
+        width: 32px;
+        border-radius: 16px;
+        background-color: var(--accent-color);
+        opacity: 0.7;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+    }
+
+    .expense-split-tabs-left-btn {
+        left: 0;
+    }
+
+    .expense-split-tabs-right-btn {
+        right: 0;
+    }
+
+    .expense-split-tabs-scroll-btn:hover {
+        opacity: 1;
+    }
+
+    .expense-split-tabs {
+        display: flex;
+        align-items: center;
+        overflow-x: hidden;
+        white-space: nowrap;
+        color: var(--text-shy);
+        border-bottom: 1px solid var(--border-grey);
+    }
+
+    .expense-split-tab {
+        display: inline-block;
+        padding: 8px 16px;
+        transition: color 0.3s ease-in-out;
+    }
+
+    .expense-split-tab:hover {
+        cursor: pointer;
+    }
+
+    .expense-split-tab:not(.expense-split-tab-active):hover {
+        color: var(--text-primary);
+    }
+
+    .expense-split-tab-active {
+        color: var(--blue-hover);
+        border-bottom: 3px solid var(--blue-hover);
+    }
+
     /* Flowbite Datepicker style overrides */
 
     .expense-datepicker-container .datepicker-picker {
@@ -633,10 +716,13 @@
     const mediaDropdown = document.getElementById('expense-media-dropdown');
 
     const paidDropdownList = document.getElementById('expense-paid-dropdown-list');
+    const splitTabs = document.getElementById('expense-split-tabs');
+    const splitTabsContent = document.getElementById('expense-split-tabs-content');
     const groupDropdownList = document.getElementById('expense-group-dropdown-list');
     const datePicker = document.getElementById('flowbite-datepicker');
 
     const currentPayerInput = document.getElementById('expense-paid');
+    const currentSplitInput = document.getElementById('expense-split');
     const currentGroupInput = document.getElementById('expense-group');
     const currentDateInput = document.getElementById('expense-date');
 
@@ -645,6 +731,9 @@
     const groupBtn = document.getElementById('expense-group-btn');
     const dateBtn = document.getElementById('expense-date-btn');
     const mediaBtn = document.getElementById('expense-media-btn');
+
+    const scrollStep = 200;
+    const scrollDuration = 300;
 
     var selectedDropdownItemIndex = 0;
 
@@ -934,6 +1023,46 @@
         $(payer).children('.fa-check').removeClass('hidden');
     }
 
+    function setExpenseSplit(tab) {
+        // Update the selected tab
+        $(splitTabs).children().removeClass('expense-split-tab-active');
+        tab.classList.add('expense-split-tab-active');
+
+        // Display the selected tab's content
+        tabContent = document.getElementById(tab.dataset.tabId);
+        $(splitTabsContent).children().addClass('hidden');
+        tabContent.classList.remove('hidden');
+
+        // Update the split button and form input
+        $(splitBtn).children('.expense-round-btn-text').text(tab.dataset.tabName);
+        currentSplitInput.value = tab.dataset.expenseTypeId;
+
+        // Scroll so the selected tab is fully visible (if necessary)
+
+        const currentPosition = splitTabs.scrollLeft;
+        const containerWidth = splitTabs.offsetWidth;
+        const tabWidth = tab.offsetWidth;
+        const tabLeft = tab.offsetLeft;
+        const tabRight = tabLeft + tabWidth;
+
+        const nearLeftEdge = tabLeft - splitTabs.scrollLeft < 32;
+        const nearRightEdge = splitTabs.scrollLeft + containerWidth - tabLeft - tabWidth < 32;
+
+        if (nearLeftEdge) { // Scroll left so selected tab is fully visible
+            const scrollAmount = -(currentPosition + 32 - tabLeft);
+            const newPosition = currentPosition + scrollAmount;
+            $(splitTabs).animate({ scrollLeft: newPosition }, scrollDuration);
+            $('.expense-split-tabs-left-btn').css('display', newPosition > 0 ? 'block' : 'none');
+            $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - newPosition > splitTabs.clientWidth ? 'block' : 'none');
+        } else if (nearRightEdge) { // Scroll right so selected tab is fully visible
+            const scrollAmount = tabRight - (currentPosition + containerWidth - 32);
+            const newPosition = currentPosition + scrollAmount;
+            $(splitTabs).animate({ scrollLeft: newPosition }, scrollDuration);
+            $('.expense-split-tabs-left-btn').css('display', newPosition > 0 ? 'block' : 'none');
+            $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - newPosition > splitTabs.clientWidth ? 'block' : 'none');
+        }
+    }
+
     function setExpenseGroup(group) {
         newGroup = parseInt(group.dataset.groupId);
         currentGroupInput.value = newGroup;
@@ -989,5 +1118,66 @@
 
         currentDateInput.value = inputDate;
         $(dateBtn).children('.expense-round-btn-text').text(formattedDate);
+    })
+
+    function splitTabsScrollLeft() {
+        const direction = 'left';
+        splitTabsScroll(direction);
+    }
+
+    function splitTabsScrollRight() {
+        const direction = 'right';
+        splitTabsScroll(direction);
+    }
+
+    function splitTabsScroll(direction) {
+        const scrollAmount = direction === 'left' ? -scrollStep : scrollStep;
+        const currentPosition = splitTabs.scrollLeft;
+        const newPosition = currentPosition + scrollAmount;
+
+        $(splitTabs).animate({ scrollLeft: newPosition }, scrollDuration);
+
+        // Update scroll arrows
+        $('.expense-split-tabs-left-btn').css('display', newPosition > 0 ? 'block' : 'none');
+        $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - newPosition > splitTabs.clientWidth ? 'block' : 'none');
+    }
+
+    function splitTabsScrollToCurrentTab() {
+        const activeTab = document.querySelector('.expense-split-tab-active');
+
+        const containerWidth = splitTabs.offsetWidth;
+        const tabWidth = activeTab.offsetWidth;
+        const tabLeft = activeTab.offsetLeft;
+
+        const nearLeftEdge = tabLeft - splitTabs.scrollLeft < 32;
+        const nearRightEdge = splitTabs.scrollLeft + containerWidth - tabLeft - tabWidth < 32;
+
+        // If the selected tab is not near the left/right edge, there is no need to scroll (it's already fully visible)
+        if (!nearLeftEdge && !nearRightEdge) {
+            // Update scroll arrows (for initial load)
+            $('.expense-split-tabs-left-btn').css('display', splitTabs.scrollLeft > 0 ? 'block' : 'none');
+            $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - splitTabs.scrollLeft > splitTabs.clientWidth ? 'block' : 'none');
+            return;
+        }
+
+        // Calculate the scroll position to center the selected tab
+        const scrollPosition = tabLeft - (containerWidth - tabWidth) / 2;
+
+        // Ensure scroll position is within valid range
+        const minScroll = 0;
+        const maxScroll = splitTabs.scrollWidth - containerWidth;
+        const finalScroll = Math.max(minScroll, Math.min(maxScroll, scrollPosition));
+
+        // Scroll to bring the selected tab into view
+        splitTabs.scrollLeft = finalScroll;
+
+        // Update scroll arrows
+        $('.expense-split-tabs-left-btn').css('display', finalScroll > 0 ? 'block' : 'none');
+        $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - finalScroll > splitTabs.clientWidth ? 'block' : 'none');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Scroll to bring the selected tab into view on initial load
+        splitTabsScrollToCurrentTab();
     })
 </script>

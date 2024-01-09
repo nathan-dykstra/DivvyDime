@@ -360,3 +360,16 @@ window.addEventListener("scroll", function() {
 
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // For Mobile or negative scrolling
 });
+
+
+
+
+
+// Views
+
+
+
+
+
+// Expenses
+

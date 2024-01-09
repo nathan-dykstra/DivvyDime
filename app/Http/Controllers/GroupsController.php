@@ -145,7 +145,7 @@ class GroupsController extends Controller
     }
 
     /**
-     * Updates the group detauls.
+     * Updates the group details.
      */
     public function update(CreateGroupRequest $request, Group $group): RedirectResponse
     {

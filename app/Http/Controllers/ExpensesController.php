@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateExpenseRequest;
 use App\Models\Expense;
 use App\Models\ExpenseParticipant;
+use App\Models\ExpenseType;
 use App\Models\Group;
 use App\Models\User;
 use Carbon\Carbon;
@@ -78,13 +79,34 @@ class ExpensesController extends Controller
             ->whereNot('groups.id', Group::DEFAULT_GROUP)
             ->orderBy('groups.name', 'ASC')
             ->get();
-        
+
         $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
 
-        $today = Carbon::now()->format('Y-m-d');
-        $formatted_today = Carbon::now()->format('F j, Y');
+        $default_expense_type = ExpenseType::EQUAL;
 
-        $default_group_id = Group::DEFAULT_GROUP;
+        $expense_type_names = [
+            ExpenseType::EQUAL => __('Equal'),
+            ExpenseType::AMOUNT => __('Amount'),
+            ExpenseType::PERCENTAGE => __('Percentage'),
+            ExpenseType::SHARE => __('Share'),
+            ExpenseType::ADJUSTMENT => __('Adjustment'),
+            ExpenseType::REIMBURSEMENT => __('Reimbursement'),
+            ExpenseType::ITEMIZED => __('Itemized'),
+        ];
+
+        $expense_type_ids = [
+            'equal' => ExpenseType::EQUAL,
+            'amount' => ExpenseType::AMOUNT,
+            'percentage' => ExpenseType::PERCENTAGE,
+            'share' => ExpenseType::SHARE,
+            'adjustment' => ExpenseType::ADJUSTMENT,
+            'reimbursement' => ExpenseType::REIMBURSEMENT,
+            'itemized' => ExpenseType::ITEMIZED,
+        ];
+
+        $today = Carbon::now()->format('Y-m-d');
+
+        $formatted_today = Carbon::now()->format('F j, Y');
 
         return view('expenses.create', [
             'expense' => null,
@@ -92,7 +114,9 @@ class ExpensesController extends Controller
             'default_group' => $default_group,
             'today' => $today,
             'formatted_today' => $formatted_today,
-            'default_group_id' => $default_group_id,
+            'default_expense_type' => $default_expense_type,
+            'expense_type_names' => $expense_type_names,
+            'expense_type_ids' => $expense_type_ids,
         ]);
     }
 
@@ -101,21 +125,30 @@ class ExpensesController extends Controller
      */
     public function store(CreateExpenseRequest $request): RedirectResponse
     {
-        /*$current_user = auth()->user();
+        $current_user = auth()->user();
 
-        $group = Group::create($request->validated());
+        $expense_validated = $request->validated();
 
-        $group->owner = $current_user->id;
-        $group->save();
+        $expense_data = [
+            'name' => $expense_validated['expense-name'],
+            'amount' => $expense_validated['expense-amount'],
+            'payer' => $expense_validated['expense-paid'],
+            'group_id' => $expense_validated['expense-group'],
+            /*'expense_type_id' => ,
+            'category_id' => ,*/
+            'note' => $expense_validated['expense-note'],
+            'date' => $expense_validated['expense-date'],
+            'creator' => $current_user->id,
+        ];
 
-        GroupMember::create([
-            'group_id' => $group->id,
-            'user_id' => $current_user->id,
-        ]);
+        $expense = Expense::create($expense_data);
 
-        return Redirect::route('groups.show', $group->id)->with('status', 'group-created');*/
+        return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-created');
     }
 
+    /**
+     * Displays the Expense page.
+     */
     public function show(Expense $expense): View
     {
         return view('expenses.show', [
@@ -123,6 +156,9 @@ class ExpensesController extends Controller
         ]);
     }
 
+    /**
+     * Displays the update Expense form.
+     */
     public function edit(Expense $expense): View
     {
         $current_user = auth()->user();
@@ -133,6 +169,28 @@ class ExpensesController extends Controller
             ->get();
 
         $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
+
+        $default_expense_type = ExpenseType::EQUAL;
+
+        $expense_type_names = [
+            ExpenseType::EQUAL => __('Equal'),
+            ExpenseType::AMOUNT => __('Amount'),
+            ExpenseType::PERCENTAGE => __('Percentage'),
+            ExpenseType::SHARE => __('Share'),
+            ExpenseType::ADJUSTMENT => __('Adjustment'),
+            ExpenseType::REIMBURSEMENT => __('Reimbursement'),
+            ExpenseType::ITEMIZED => __('Itemized'),
+        ];
+
+        $expense_type_ids = [
+            'equal' => ExpenseType::EQUAL,
+            'amount' => ExpenseType::AMOUNT,
+            'percentage' => ExpenseType::PERCENTAGE,
+            'share' => ExpenseType::SHARE,
+            'adjustment' => ExpenseType::ADJUSTMENT,
+            'reimbursement' => ExpenseType::REIMBURSEMENT,
+            'itemized' => ExpenseType::ITEMIZED,
+        ];
 
         $today = Carbon::now()->isoFormat('YYYY-MM-DD');
 
@@ -147,12 +205,33 @@ class ExpensesController extends Controller
             'default_group' => $default_group,
             'today' => $today,
             'formatted_today' => $formatted_today,
+            'default_expense_type' => $default_expense_type,
+            'expense_type_names' => $expense_type_names,
+            'expense_type_ids' => $expense_type_ids,
         ]);
     }
 
+    /**
+     * Updates the Expense details.
+     */
     public function update(CreateExpenseRequest $request, Expense $expense): RedirectResponse
     {
+        $expense_validated = $request->validated();
 
+        $expense_data = [
+            'name' => $expense_validated['expense-name'],
+            'amount' => $expense_validated['expense-amount'],
+            'payer' => $expense_validated['expense-paid'],
+            'group_id' => $expense_validated['expense-group'],
+            /*'expense_type_id' => ,
+            'category_id' => ,*/
+            'note' => $expense_validated['expense-note'],
+            'date' => $expense_validated['expense-date'],
+        ];
+
+        $expense->update($expense_data);
+
+        return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-updated');
     }
 
     /**

@@ -10,7 +10,7 @@
                 @endif
             </header>
 
-            <form method="post" action="{{ $group  ? route('groups.update', $group) : route('groups.store') }}" class="space-top-sm">
+            <form method="post" action="{{ $group ? route('groups.update', $group) : route('groups.store') }}" class="space-top-sm">
                 @csrf
                 @if ($group)
                     @method('patch')

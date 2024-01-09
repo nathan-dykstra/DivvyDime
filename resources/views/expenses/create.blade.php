@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="btn-container-apart">
-            <h2>{{ __('Add an expense') }}</h2>
+            <h2>{{ __('Add expense') }}</h2>
             <div class="btn-container-end">
                 <x-primary-button :href="route('expenses')">{{ __('Cancel') }}</x-primary-button>
             </div>
