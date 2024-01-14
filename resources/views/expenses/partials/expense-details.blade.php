@@ -12,7 +12,7 @@
                         <div class="involved-chip involved-chip-fixed" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
                             <span>{{ auth()->user()->username }}</span>
                             <!--<x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />-->
-                            <!-- TODO: Allow removeal of current user when adding in a Group -->
+                            <!-- TODO: Allow removeal of current user (on initial load) when adding in a Group -->
                         </div>
                     @endif
 
@@ -39,11 +39,11 @@
                 </x-tooltip>
                 <div class="expense-name-amount-container">
                     <div class="expense-input-container">
-                        <input id="expense-name" class="expense-name" name="expense-name" type="text" placeholder="{{ __('Describe the expense') }}" value="{{ old('expense-name', $expense ? $expense->name : '') }}" autocomplete="off" required />
+                        <input id="expense-name" class="expense-name" name="expense-name" type="text" placeholder="{{ __('Describe the expense') }}" value="{{ old('expense-name', $expense ? $expense->name : '') }}" autocomplete="off" maxlength="255" required />
                     </div>
 
                     <div class="expense-input-container">
-                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-amount" name="expense-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('expense-amount', $expense ? $expense->amount : '') }}" autocomplete="off" required />
+                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-amount" name="expense-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('expense-amount', $expense ? $expense->amount : '') }}" autocomplete="off" oninput="updateSplitDropdownAmounts()" required />
                     </div>
                 </div>
             </div>
@@ -112,17 +112,17 @@
                         </div>
 
                         <div id="expense-split-tabs-content">
-                            <div id="expense-split-equal" class="{{ $expense->expense_type_id === $expense_type_ids['equal'] ? '' : 'hidden' }}">
+                            <div id="expense-split-equal" class="{{ $expense === null || $expense?->expense_type_id === $expense_type_ids['equal'] ? '' : 'hidden' }}">
                                 @include('expenses.partials.split-tabs.expense-equal-tab')
                             </div>
-                            <div id="expense-split-amount" class="{{ $expense->expense_type_id === $expense_type_ids['amount'] ? '' : 'hidden' }}">
+                            <div id="expense-split-amount" class="{{ $expense?->expense_type_id === $expense_type_ids['amount'] ? '' : 'hidden' }}">
                                 @include('expenses.partials.split-tabs.expense-amount-tab')
                             </div>
-                            <div id="expense-split-percentage" class="{{ $expense->expense_type_id === $expense_type_ids['percentage'] ? '' : 'hidden' }}">Coming soon</div>
-                            <div id="expense-split-share" class="{{ $expense->expense_type_id === $expense_type_ids['share'] ? '' : 'hidden' }}">Coming soon</div>
-                            <div id="expense-split-adjustment" class="{{ $expense->expense_type_id === $expense_type_ids['adjustment'] ? '' : 'hidden' }}">Coming soon</div>
-                            <div id="expense-split-reimbursement" class="{{ $expense->expense_type_id === $expense_type_ids['reimbursement'] ? '' : 'hidden' }}">Coming soon</div>
-                            <div id="expense-split-itemized" class="{{ $expense->expense_type_id === $expense_type_ids['itemized'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-percentage" class="{{ $expense?->expense_type_id === $expense_type_ids['percentage'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-share" class="{{ $expense?->expense_type_id === $expense_type_ids['share'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-adjustment" class="{{ $expense?->expense_type_id === $expense_type_ids['adjustment'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-reimbursement" class="{{ $expense?->expense_type_id === $expense_type_ids['reimbursement'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-itemized" class="{{ $expense?->expense_type_id === $expense_type_ids['itemized'] ? '' : 'hidden' }}">Coming soon</div>
                         </div>
                     </div>
 
@@ -484,7 +484,7 @@
     }
 
     .expense-expand-dropdown-open {
-        max-height: 500px !important;
+        max-height: 500px;
         border-top: 1px solid var(--border-grey);
         border-bottom: 1px solid var(--border-grey);
         margin: 16px 0 0 0;
@@ -512,7 +512,7 @@
         display: flex;
         justify-content: center;
         width: 100%;
-        padding: 8px 0;
+        padding: 8px 16px;
         color: var(--text-warning);
         border: 1px solid var(--border-grey);
         border-radius: var(--border-radius);
@@ -549,11 +549,9 @@
         height: 32px;
         width: 32px;
         border-radius: 16px;
-        background-color: var(--accent-color);
-        opacity: 0.7;
+        background-color: var(--secondary-grey-hover);
         border: none;
         cursor: pointer;
-        transition: opacity 0.3s ease;
     }
 
     .expense-split-tabs-left-btn {
@@ -562,10 +560,6 @@
 
     .expense-split-tabs-right-btn {
         right: 0;
-    }
-
-    .expense-split-tabs-scroll-btn:hover {
-        opacity: 1;
     }
 
     .expense-split-tabs {
@@ -613,7 +607,7 @@
     }
 
     .expense-datepicker-container .datepicker-cell:hover {
-        background-color: var(--accent-color) !important;
+        background-color: var(--secondary-grey-hover) !important;
     }
 
     .expense-datepicker-container .datepicker-cell.selected {
@@ -721,6 +715,9 @@
     const groupDropdownList = document.getElementById('expense-group-dropdown-list');
     const datePicker = document.getElementById('flowbite-datepicker');
 
+    const splitEqualList = document.getElementById('split-equal-list');
+
+    const currentAmountInput = document.getElementById('expense-amount');
     const currentPayerInput = document.getElementById('expense-paid');
     const currentSplitInput = document.getElementById('expense-split');
     const currentGroupInput = document.getElementById('expense-group');
@@ -964,7 +961,7 @@
 
         mediaDropdown.classList.toggle('expense-expand-dropdown-open');
     }
-    
+
     function toggleDateDropdown() {
         paidDropdown.classList.remove('expense-expand-dropdown-open');
         splitDropdown.classList.remove('expense-expand-dropdown-open');
@@ -974,8 +971,11 @@
         dateDropdown.classList.toggle('expense-expand-dropdown-open');
     }
 
+    // TODO: This function must update the lists in all sections that use "involved users" - change name
+    // For split lists, change to only adjust the users that were added/removed to save previous settings
     function updatePaidDropdownList() {
         $(paidDropdownList).empty();
+        $(splitEqualList).empty();
 
         const usersInvolved = Array.from(involvedChipsContainer.children).slice(0, -1);
 
@@ -983,10 +983,14 @@
 
         if (usersInvolved.length === 0) { // No users in the involved list
             $(paidDropdown).find('.paid-dropdown-empty-warning').removeClass('hidden');
+            $(splitDropdown).find('.paid-dropdown-empty-warning').removeClass('hidden');
         } else {
             $(paidDropdown).find('.paid-dropdown-empty-warning').addClass('hidden');
+            $(splitDropdown).find('.paid-dropdown-empty-warning').addClass('hidden');
 
             usersInvolved.forEach(user => {
+                // Create "Paid" dropdown list with paid-dropdown-item-template
+
                 var paidDropdownItemContent = $('#paid-dropdown-item-template').html();
                 var paidDropdownItem = $(paidDropdownItemContent).clone();
 
@@ -1001,6 +1005,18 @@
                 }
 
                 $(paidDropdownList).append(paidDropdownItem);
+
+                // Create "Split Equal" dropdown list with split-equal-dropdown-item-template
+
+                var splitEqualDropdownItemContent = $('#split-equal-dropdown-item-template').html();
+                var splitEqualDropdownItem = $(splitEqualDropdownItemContent).clone();
+
+                splitEqualDropdownItem.find('.split-equal-item').attr('for', 'split-equal-item-' + user.dataset.userId);
+                splitEqualDropdownItem.find('.split-equal-item-checkbox').attr('id', 'split-equal-item-' + user.dataset.userId);
+                splitEqualDropdownItem.find('.split-equal-item-checkbox').attr('value', user.dataset.userId);
+                splitEqualDropdownItem.find('.split-equal-item-name').text(user.dataset.username);
+
+                $(splitEqualList).append(splitEqualDropdownItem);
             });
 
             // Check if current payer was removed from the involved list
@@ -1011,6 +1027,8 @@
                 $(firstPaidDropdownItem).children('.fa-check').removeClass('hidden');
             }
         }
+
+        splitEqualUpdateSelectAll();
     }
 
     function setExpensePayer(payer) {
@@ -1180,4 +1198,8 @@
         // Scroll to bring the selected tab into view on initial load
         splitTabsScrollToCurrentTab();
     })
+
+    function updateSplitDropdownAmounts() {
+        splitEqualUpdatePriceBreakdown();
+    }
 </script>

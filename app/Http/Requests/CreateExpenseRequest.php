@@ -19,8 +19,8 @@ class CreateExpenseRequest extends FormRequest
             'expense-amount' => ['required', 'numeric', 'regex:/^\d{1,8}(\.\d{1,2})?$/'],
             'expense-paid' => ['required', 'int', Rule::exists('users', 'id')],
             'expense-group' => ['required', 'int', Rule::exists('groups', 'id')],
-            /*'expense_type_id' => ['required', 'int', Rule::exists('expense_types', 'id')],
-            'category_id' => ['required', 'int', Rule::exists('categories', 'id')],*/
+            'expense-split' => ['required', 'int', Rule::exists('expense_types', 'id')],
+            /*'expense-category' => ['required', 'int', Rule::exists('categories', 'id')],*/
             'expense-note' => ['nullable', 'string', 'max:65535'],
             'expense-date' => ['required', 'date'],
         ];

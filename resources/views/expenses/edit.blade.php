@@ -3,7 +3,7 @@
         <div class="btn-container-apart">
             <h2>{{ __('Edit expense') }}</h2>
             <div class="btn-container-end">
-                <x-primary-button :href="route('expenses')">{{ __('Cancel') }}</x-primary-button>
+                <x-primary-button :href="route('expenses.show', $expense)">{{ __('Cancel') }}</x-primary-button>
             </div>
         </div>
     </x-slot>

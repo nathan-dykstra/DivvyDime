@@ -1,6 +1,6 @@
 @props(['class' => '', 'id' => null, 'name' => null, 'disabled' => false])
 
-<label for="remember_me" class="checkbox-label">
+<label for="{{ $id }}" class="checkbox-label">
     <input {{ $attributes->merge([
         'id' => $id,
         'type' => 'checkbox',

@@ -129,19 +129,57 @@ class ExpensesController extends Controller
 
         $expense_validated = $request->validated();
 
+        // Create the Expense
+
         $expense_data = [
             'name' => $expense_validated['expense-name'],
             'amount' => $expense_validated['expense-amount'],
             'payer' => $expense_validated['expense-paid'],
             'group_id' => $expense_validated['expense-group'],
-            /*'expense_type_id' => ,
-            'category_id' => ,*/
+            'expense_type_id' => $expense_validated['expense-split'],
+            /*'category_id' => $expense_validated['expense-category'],*/
             'note' => $expense_validated['expense-note'],
             'date' => $expense_validated['expense-date'],
             'creator' => $current_user->id,
         ];
 
         $expense = Expense::create($expense_data);
+
+        // Create the ExpenseParticipants
+
+        if ((int)$expense_data['expense_type_id'] === ExpenseType::EQUAL) {
+            $participants = array_map('intval', $request->input('split-equal-user', []));
+
+            $amount_per_participant = round((float)$expense_data['amount'] / count($participants), 2);
+            $remaining_amount = (float)$expense_data['amount'];
+
+            for ($i = 0; $i < count($participants); $i++) {
+                if ($i === count($participants) - 1) {
+                    $expense_participant = ExpenseParticipant::create([
+                        'expense_id' => $expense->id,
+                        'user_id' => $participants[$i],
+                        'share' => $remaining_amount,
+                        'percentage' => null,
+                        'shares' => null,
+                        'adjustment' => null,
+                        'is_settled' => 0,
+                    ]);
+                } else {
+                    $expense_participant = ExpenseParticipant::create([
+                        'expense_id' => $expense->id,
+                        'user_id' => $participants[$i],
+                        'share' => $amount_per_participant,
+                        'percentage' => null,
+                        'shares' => null,
+                        'adjustment' => null,
+                        'is_settled' => 0,
+                    ]);
+                }
+
+                $remaining_amount -= $amount_per_participant;
+            }
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::AMOUNT) {
+        }
 
         return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-created');
     }
@@ -218,18 +256,77 @@ class ExpensesController extends Controller
     {
         $expense_validated = $request->validated();
 
+        // Update the Expense
+
         $expense_data = [
             'name' => $expense_validated['expense-name'],
             'amount' => $expense_validated['expense-amount'],
             'payer' => $expense_validated['expense-paid'],
             'group_id' => $expense_validated['expense-group'],
-            /*'expense_type_id' => ,
-            'category_id' => ,*/
+            'expense_type_id' => $expense_validated['expense-split'],
+            /*'category_id' => $expense_validated['expense-category'],*/
             'note' => $expense_validated['expense-note'],
             'date' => $expense_validated['expense-date'],
         ];
 
         $expense->update($expense_data);
+
+        // Update the ExpensePartcipants
+
+        $updated_participants = [];
+
+        if ((int)$expense_data['expense_type_id'] === ExpenseType::EQUAL) {
+            $participants = array_map('intval', $request->input('split-equal-user', []));
+            $updated_participants = $participants;
+
+            $amount_per_participant = round((float)$expense_data['amount'] / count($participants), 2);
+            $remaining_amount = (float)$expense_data['amount'];
+
+            for ($i = 0; $i < count($participants); $i++) {
+                if ($i === count($participants) - 1) {
+                    $expense_participant = ExpenseParticipant::updateOrCreate(
+                        [
+                            'expense_id' => $expense->id,
+                            'user_id' => $participants[$i]
+                        ],
+                        [
+                            'share' => $remaining_amount,
+                            'percentage' => null,
+                            'shares' => null,
+                            'adjustment' => null,
+                            'is_settled' => 0,
+                        ]
+                    );
+                } else {
+                    $expense_participant = ExpenseParticipant::updateOrCreate(
+                        [
+                            'expense_id' => $expense->id,
+                            'user_id' => $participants[$i]
+                        ],
+                        [
+                            'share' => $amount_per_participant,
+                            'percentage' => null,
+                            'shares' => null,
+                            'adjustment' => null,
+                            'is_settled' => 0,
+                        ]
+                    );
+                }
+
+                $remaining_amount -= $amount_per_participant;
+            }
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::AMOUNT) {
+        }
+
+        // Delete any old participants who were removed from the expense
+
+        $expense_participants = ExpenseParticipant::where('expense_id', $expense->id)->get();
+
+        foreach ($expense_participants as $expense_participant) {
+            if (!in_array($expense_participant->user_id, $updated_participants)) {
+                $expense_participant->delete();
+            }
+        }
 
         return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-updated');
     }
