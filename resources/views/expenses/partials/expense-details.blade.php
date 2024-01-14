@@ -306,8 +306,7 @@
         left: 0;
         z-index: 50;
 
-        background-color: var(--background);
-        border: 1px solid var(--border-grey);
+        background-color: var(--secondary-grey);
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
         padding: 8px;
@@ -356,7 +355,7 @@
 
     .involved-dropdown-item-selected {
         cursor: pointer;
-        background-color: var(--primary-grey);
+        background-color: var(--secondary-grey-hover);
         color: var(--text-primary-highlight);
     }
 
@@ -504,7 +503,7 @@
 
     .paid-dropdown-item:hover {
         cursor: pointer;
-        background-color: var(--accent-color);
+        background-color: var(--secondary-grey-hover);
         color: var(--text-primary-highlight);
     }
 

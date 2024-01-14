@@ -90,7 +90,7 @@
     }
 
     .dropdown-item:hover {
-        background-color: var(--accent-color);
+        background-color: var(--secondary-grey-hover);
         cursor: pointer;
         color: var(--text-primary-highlight);
     }
