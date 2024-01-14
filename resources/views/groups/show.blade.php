@@ -66,10 +66,14 @@
                     </x-tooltip>
                 </div>
 
-                <div class="user-amount text-warning">
-                    <div class="text-small">{{ __('You borrowed') }}</div>
-                    <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
-                </div>
+                @if ($expense->borrowed == 0)
+                    <div class="user-amount text-shy text-small">{{ __('Not involved') }}</div>
+                @else
+                    <div class="user-amount text-warning">
+                        <div class="text-small">{{ __('You borrowed') }}</div>
+                        <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
+                    </div>
+                @endif
             </div>
         @endif
     @endforeach

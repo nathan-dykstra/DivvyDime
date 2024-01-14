@@ -19,7 +19,7 @@
             <div>
                 <h3>{{ __('Delete expense') }}</h3>
                 <p class="text-shy">
-                    {{ __('Are you sure you want to delete this expense? This action cannot be undone.') }}
+                    {{ __('Are you sure you want to delete this expense? The expense will be deleted for everyone involved. This action cannot be undone.') }}
                 </p>
             </div>
 

@@ -14,6 +14,8 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
@@ -53,14 +55,18 @@ class FriendsController extends Controller
         }
 
         $expenses = $friend->expenses()
-            ->where(function ($query) use ($current_user) {
+            ->where(function ($query) use ($current_user, $friend) {
                 $query->where('payer', $current_user->id)
-                    ->orWhereHas('participants', function ($query) use ($current_user) {
-                        $query->where('users.id', $current_user->id);
+                    ->orWhere(function ($query) use ($current_user, $friend) {
+                        $query->where('payer', $friend->id)
+                            ->whereHas('participants', function ($query) use ($current_user) {
+                                $query->where('users.id', $current_user->id);
+                            });
                     });
             })
-            ->orderBy('date', 'DESC')
-            ->get();
+            ->orderBy('date', 'DESC');
+
+        $expenses = $expenses->get();
 
         $expenses = $expenses->map(function ($expense) use ($current_user) {
             $expense->payer_user = User::where('id', $expense->payer)->first();

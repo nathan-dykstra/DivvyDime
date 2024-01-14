@@ -1190,7 +1190,10 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .user-amount {
-    text-align: end;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
 }
 
 .user-amount-value {

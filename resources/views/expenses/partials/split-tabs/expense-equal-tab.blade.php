@@ -3,7 +3,7 @@
         <x-checkbox id="split-equal-select-all" onclick="splitEqualSelectAll(this)">{{ __('Select/deselect all') }}</x-checkbox> 
 
         <div class="split-equal-price-breakdown-container">
-            <div>{{__('$') }}<span class="split-equal-price-breakdown">{{$expense && $expense->participants->count() !== 0 ? round($expense->amount / $expense->participants->count(), 2) : '0.00' }}</span>{{ __('/person')}}</div>
+            <div>{{__('$') }}<span class="split-equal-price-breakdown">{{$expense && $expense->participants->count() !== 0 ? number_format(round($expense->amount / $expense->participants->count(), 2), 2) : '0.00' }}</span>{{ __('/person')}}</div>
             <div class="text-shy">(<span class="split-equal-participant-count">{{ $expense?->participants->count() ?? '1' }}</span> <span class="split-equal-participant-count-label">{{ $expense?->participants->count() === 1 || $expense === null ? __('person') : __('people') }}</span>)</div>
         </div>
     </div>

@@ -95,9 +95,18 @@ class GroupsController extends Controller
             return view('groups.not-allowed');
         }
 
-        $expenses = $group->expenses()
-            ->orderBy('date', 'DESC')
-            ->get();
+        $expenses = $group->expenses();
+
+        if ($group->id === Group::DEFAULT_GROUP) {
+            $expenses = $expenses->where(function ($query) use ($current_user) {
+                $query->where('expenses.payer', $current_user->id)
+                    ->orWhereHas('participants', function ($query) use ($current_user) {
+                        $query->where('users.id', $current_user->id);
+                    });
+            });
+        }
+
+        $expenses = $expenses->orderBy('date', 'DESC')->get();
 
         $expenses = $expenses->map(function ($expense) use ($current_user) {
             $expense->payer_user = User::where('id', $expense->payer)->first();
