@@ -9,6 +9,10 @@
         </div>
     </x-slot>
 
+    @if (session('status') === 'expense-deleted')
+        <x-session-status>{{ __('Expense deleted.') }}</x-session-status>
+    @endif
+
     <div class="section-search">
         <div class="restrict-max-width">
             <x-searchbar-secondary placeholder="Search Expenses" id="search-expenses"></x-searchbar-secondary>

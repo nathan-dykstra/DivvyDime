@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Events\ExpenseDeleting;
 use App\Events\GroupDeleting;
 use App\Events\NotificationDeleting;
 use App\Events\UserDeleting;
+use App\Listeners\DeleteExpenseDependents;
 use App\Listeners\DeleteGroupDependents;
 use App\Listeners\DeleteNotificationDependents;
 use App\Listeners\DeleteUserDependents;
@@ -32,6 +34,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserDeleting::class => [
             DeleteUserDependents::class,
+        ],
+        ExpenseDeleting::class => [
+            DeleteExpenseDependents::class,
         ],
     ];
 

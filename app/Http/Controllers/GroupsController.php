@@ -17,7 +17,6 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -88,6 +87,7 @@ class GroupsController extends Controller
         $current_user = auth()->user();
 
         $group = Group::where('id', $group_id)->first();
+        $group->is_default = $group->id === Group::DEFAULT_GROUP;
 
         if ($group === null) {
             return view('groups.does-not-exist');

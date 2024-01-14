@@ -332,6 +332,16 @@ class ExpensesController extends Controller
     }
 
     /**
+     * Deletes the Expense.
+     */
+    public function destroy(Expense $expense): RedirectResponse
+    {
+        $expense->delete();
+
+        return Redirect::route('expenses')->with('status', 'expense-deleted');
+    }
+
+    /**
      * Filters the "Who was involved?" Friends list.
      */
     public function searchFriendsToInclude(Request $request)

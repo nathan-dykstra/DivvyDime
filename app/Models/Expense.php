@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\ExpenseDeleting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -81,5 +82,9 @@ class Expense extends Model
         'expense_type_id' => 'int',
         'category_id' => 'int',
         'creator' => 'int',
+    ];
+
+    protected $dispatchesEvents = [
+        'deleting' => ExpenseDeleting::class,
     ];
 }

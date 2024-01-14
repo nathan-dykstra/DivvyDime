@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="btn-container-apart">
-            <h2>{{ $group?->name }}</h2>
+            <h2>{{ $group->name }}</h2>
             <div class="btn-container-end">
                 <x-primary-button icon="fa-solid fa-receipt icon">{{ __('Add Expense') }}</x-primary-button>
                 <x-primary-button icon="fa-solid fa-scale-balanced icon">{{ __('Settle Up') }}</x-primary-button>
@@ -20,10 +20,12 @@
                             <i class="fa-solid fa-calculator"></i>
                             <div>{{ __('Totals') }}</div>
                         </a>
-                        <a class="dropdown-item" href="{{ route('groups.settings', $group) }}">
-                            <i class="fa-solid fa-gear"></i>
-                            <div>{{ __('Settings') }}</div>
-                        </a>
+                        @if (!$group->is_default)
+                            <a class="dropdown-item" href="{{ route('groups.settings', $group) }}">
+                                <i class="fa-solid fa-gear"></i>
+                                <div>{{ __('Settings') }}</div>
+                            </a>
+                        @endif
                     </x-slot>
                 </x-dropdown>
             </div>
