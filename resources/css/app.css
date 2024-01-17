@@ -289,6 +289,10 @@ p {
     margin-top: 8px;
 }
 
+.space-bottom-xs > :not([hidden]):not(:last-child) {
+    margin-bottom: 8px;
+}
+
 .space-top-sm > :not([hidden]):not(:first-child) {
     margin-top: 16px;
 }
@@ -405,6 +409,7 @@ input[type="search"]::-webkit-search-cancel-button {
 
 
 .tooltip {
+    display: inline-block;
     position: relative;
 }
 

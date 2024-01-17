@@ -140,29 +140,6 @@ class RegisteredUserController extends Controller
 
             $group = Group::where('id', $invite->group_id)->first();
 
-            
-            foreach ($group->members()->pluck('users.id')->toArray() as $member_id) {
-                // Add each member of the group as a Friend on the app
-                Friend::create([
-                    'user1_id' => $user->id,
-                    'user2_id' => $member_id,
-                ]);
-
-                // Send each member a "joined Group" notification
-
-                $member_notification = Notification::create([
-                    'notification_type_id' => NotificationType::JOINED_GROUP,
-                    'creator' => $user->id,
-                    'sender' => $user->id,
-                    'recipient' => $member_id,
-                ]);
-    
-                NotificationAttribute::create([
-                    'notification_id' => $member_notification->id,
-                    'group_id' => $group->id,
-                ]);
-            }
-
             // Add the new User to the Group
             GroupMember::create([
                 'group_id' => $group->id,

@@ -77,6 +77,10 @@
         color: var(--text-heading);
         text-transform: uppercase;
         letter-spacing: 1px;
+
+        max-width: 250px;
+        text-wrap: nowrap;
+        overflow: hidden;
     }
 
     .dropdown-item > * {

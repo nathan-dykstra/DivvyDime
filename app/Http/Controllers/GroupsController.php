@@ -305,63 +305,10 @@ class GroupsController extends Controller
         $invitee_notification = ModelsNotification::where('id', $invitee_notification_id)->first();
 
         $group_id = $request->input('group_id');
-        $group = Group::where('id', $group_id)->first();
 
-        $inviter_id = $invitee_notification->sender;
         $invitee_id = $invitee_notification->recipient;
-        $invitee = User::where('id', $invitee_id)->first();
 
-        foreach ($group->members()->get() as $group_member) {
-            // Add group member as a friend (if necessary)
-
-            $existing_friend = in_array($group_member->id, $invitee->friends()->pluck('users.id')->toArray());
-
-            if (!$existing_friend) {
-                Friend::create([
-                    'user1_id' => $invitee_id,
-                    'user2_id' => $group_member->id,
-                ]);
-            }
-
-            // Send group member a notification that the invitee joined the group
-
-            if ($group_member->id !== $inviter_id) {
-                $member_notification = ModelsNotification::create([
-                    'notification_type_id' => NotificationType::JOINED_GROUP,
-                    'creator' => $invitee_id,
-                    'sender' => $invitee_id,
-                    'recipient' => $group_member->id,
-                ]);
-
-                NotificationAttribute::create([
-                    'notification_id' => $member_notification->id,
-                    'group_id' => $group_id,
-                ]);
-            }
-        }
-
-        // Update the inviter's and invitee's notifications
-
-        $inviter_notification_update = ModelsNotification::updateOrCreate(
-                [
-                    'notification_type_id' => NotificationType::INVITED_TO_GROUP,
-                    'creator' => $inviter_id,
-                    'sender' => $invitee_id,
-                    'recipient' => $inviter_id,
-                ],
-                [
-                    'notification_type_id' => NotificationType::JOINED_GROUP,
-                    'creator' => $invitee_id,
-                ],
-            );
-
-        NotificationAttribute::firstOrCreate(
-            [
-                'notification_id' => $inviter_notification_update->id,
-                'group_id' => $group->id,
-            ]
-        );
-
+        // Update the invitee's notification
         $invitee_notification->update([
             'notification_type_id' => NotificationType::JOINED_GROUP,
             'creator' => $invitee_id,

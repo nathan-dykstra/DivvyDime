@@ -68,7 +68,7 @@ class FriendsController extends Controller
 
         $expenses = $expenses->get();
 
-        $expenses = $expenses->map(function ($expense) use ($current_user) {
+        $expenses = $expenses->map(function ($expense) use ($current_user, $friend_id) {
             $expense->payer_user = User::where('id', $expense->payer)->first();
 
             $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
@@ -81,8 +81,12 @@ class FriendsController extends Controller
                 ->where('user_id', $current_user->id)
                 ->value('share');
 
+            $friend_share = ExpenseParticipant::where('expense_id', $expense->id)
+                ->where('user_id', $friend_id)
+                ->value('share');
+
             if ($expense->payer === $current_user->id) {
-                $expense->lent = $expense->amount - $current_user_share;
+                $expense->lent = $friend_share;
             }
 
             if ($current_user_share) {

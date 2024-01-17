@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateExpenseRequest;
+use App\Models\Balance;
 use App\Models\Expense;
 use App\Models\ExpenseParticipant;
 use App\Models\ExpenseType;
@@ -176,6 +177,27 @@ class ExpensesController extends Controller
                     ]);
                 }
 
+                // Update the group Balances between the expense payer and participant
+                if ($participants[$i] !== $expense->payer) {
+                    // Decrease the participant to payer Balance by the participant's share
+
+                    $participant_payer_balance = Balance::where('user_id', $participants[$i])
+                        ->where('friend', $expense->payer)
+                        ->where('group_id', $expense->group_id)
+                        ->first();
+
+                    $participant_payer_balance->decrement('balance', $expense_participant->share);
+
+                    // Increase the payer to participant Balance by the participant's share
+
+                    $payer_participant_balance = Balance::where('user_id', $expense->payer)
+                        ->where('friend', $participants[$i])
+                        ->where('group_id', $expense->group_id)
+                        ->first();
+
+                    $payer_participant_balance->increment('balance', $expense_participant->share);
+                }
+
                 $remaining_amount -= $amount_per_participant;
             }
         } else if ((int)$expense_data['expense_type_id'] === ExpenseType::AMOUNT) {
@@ -189,8 +211,34 @@ class ExpensesController extends Controller
      */
     public function show(Expense $expense): View
     {
+        // Get formatted dates and times
+        $expense->formatted_created_date = Carbon::parse($expense->created_at)->diffForHumans();
+        $expense->created_date = Carbon::parse($expense->created_at)->format('M d, Y');
+        $expense->created_time = Carbon::parse($expense->created_at)->setTimezone(self::TIMEZONE)->format('g:i a');
+        $expense->formatted_updated_date = Carbon::parse($expense->updated_at)->diffForHumans();
+        $expense->updated_date = Carbon::parse($expense->updated_at)->format('M d, Y');
+        $expense->updated_time = Carbon::parse($expense->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
+
+        // Get the creator and payer of the Expense
+        $expense->creator_user = User::where('id', $expense->creator)->first();
+        $expense->payer_user = User::where('id', $expense->payer)->first();
+
+        $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
+
+        $participants = ExpenseParticipant::where('expense_id', $expense->id)
+            ->join('users', 'expense_participants.user_id', 'users.id')
+            ->select('users.*', 'expense_participants.share')
+            ->orderByRaw("
+                CASE
+                    WHEN users.id = ? THEN 0
+                    ELSE 1
+                END, users.username ASC
+            ", [auth()->user()->id])
+            ->get();
+
         return view('expenses.show', [
             'expense' => $expense,
+            'participants' => $participants,
         ]);
     }
 
@@ -256,6 +304,33 @@ class ExpensesController extends Controller
     {
         $expense_validated = $request->validated();
 
+        // Undo the Balances adjustments from the initial state of the Expense
+        foreach($expense->participants()->get() as $participant) {
+            if ($participant->id !== $expense->payer) {
+                $participant_share = ExpenseParticipant::where('expense_id', $expense->id)
+                    ->where('user_id', $participant->id)
+                    ->value('share');
+
+                // Increase the participant to payer Balance by the participant's share
+
+                $participant_payer_balance = Balance::where('user_id', $participant->id)
+                    ->where('friend', $expense->payer)
+                    ->where('group_id', $expense->group_id)
+                    ->first();
+
+                $participant_payer_balance->increment('balance', $participant_share);
+
+                // Decrease the payer to participant Balance by the participant's share
+
+                $payer_participant_balance = Balance::where('user_id', $expense->payer)
+                    ->where('friend', $participant->id)
+                    ->where('group_id', $expense->group_id)
+                    ->first();
+
+                $payer_participant_balance->decrement('balance', $participant_share);
+            }
+        }
+
         // Update the Expense
 
         $expense_data = [
@@ -271,7 +346,7 @@ class ExpensesController extends Controller
 
         $expense->update($expense_data);
 
-        // Update the ExpensePartcipants
+        // Update the ExpensePartcipants and Balances
 
         $updated_participants = [];
 
@@ -311,6 +386,27 @@ class ExpensesController extends Controller
                             'is_settled' => 0,
                         ]
                     );
+                }
+
+                // Update the group Balances between the expense payer and participant
+                if ($participants[$i] !== $expense->payer) {
+                    // Decrease the participant to payer Balance by the participant's share
+
+                    $participant_payer_balance = Balance::where('user_id', $participants[$i])
+                        ->where('friend', $expense->payer)
+                        ->where('group_id', $expense->group_id)
+                        ->first();
+
+                    $participant_payer_balance->decrement('balance', $expense_participant->share);
+
+                    // Increase the payer to participant Balance by the participant's share
+
+                    $payer_participant_balance = Balance::where('user_id', $expense->payer)
+                        ->where('friend', $participants[$i])
+                        ->where('group_id', $expense->group_id)
+                        ->first();
+
+                    $payer_participant_balance->increment('balance', $expense_participant->share);
                 }
 
                 $remaining_amount -= $amount_per_participant;

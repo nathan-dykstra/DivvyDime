@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Events\ExpenseDeleting;
 use App\Events\GroupDeleting;
+use App\Events\GroupMemberCreated;
 use App\Events\NotificationDeleting;
 use App\Events\UserDeleting;
 use App\Listeners\DeleteExpenseDependents;
 use App\Listeners\DeleteGroupDependents;
 use App\Listeners\DeleteNotificationDependents;
 use App\Listeners\DeleteUserDependents;
+use App\Listeners\InitializeGroupMember;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -37,6 +39,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         ExpenseDeleting::class => [
             DeleteExpenseDependents::class,
+        ],
+        GroupMemberCreated::class => [
+            InitializeGroupMember::class,
         ],
     ];
 
