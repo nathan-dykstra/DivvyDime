@@ -3,28 +3,26 @@
         <div class="btn-container-apart">
             <h2>{{ $expense->name }}</h2>
 
-            @if (auth()->user()->id === $expense->creator)
-                <div class="btn-container-end">
-                    <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('expenses.edit', $expense)">{{ __('Edit') }}</x-primary-button>
+            <div class="btn-container-end">
+                <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('expenses.edit', $expense)">{{ __('Edit') }}</x-primary-button>
 
-                    <x-dropdown>
-                        <x-slot name="trigger">
-                            <x-primary-button icon="fa-solid fa-ellipsis-vertical" />
-                        </x-slot>
+                <x-dropdown>
+                    <x-slot name="trigger">
+                        <x-primary-button icon="fa-solid fa-ellipsis-vertical" />
+                    </x-slot>
 
-                        <x-slot name="content">
-                            <a class="dropdown-item">
-                                <i class="fa-solid fa-camera"></i>
-                                <div>{{ __('Add Image') }}</div>
-                            </a>
-                            <a class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-expense')">
-                                <i class="fa-solid fa-trash-can"></i>
-                                <div>{{ __('Delete') }}</div>
-                            </a>
-                        </x-slot>
-                    </x-dropdown>
-                </div>
-            @endif
+                    <x-slot name="content">
+                        <a class="dropdown-item">
+                            <i class="fa-solid fa-camera"></i>
+                            <div>{{ __('Add Image') }}</div>
+                        </a>
+                        <a class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-expense')">
+                            <i class="fa-solid fa-trash-can"></i>
+                            <div>{{ __('Delete') }}</div>
+                        </a>
+                    </x-slot>
+                </x-dropdown>
+            </div>
         </div>
     </x-slot>
 

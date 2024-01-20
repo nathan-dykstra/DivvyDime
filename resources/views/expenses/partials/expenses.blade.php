@@ -17,7 +17,7 @@
 
                 <div class="user-amount text-success">
                     <div class="text-small">{{ __('You lent') }}</div>
-                    <div class="user-amount-value">{{ __('$') . $expense->lent }}</div>
+                    <div class="user-amount-value">{{ __('$') . number_format($expense->lent, 2) }}</div>
                 </div>
             </div>
         @else <!-- Friend paid for the expense -->
@@ -37,7 +37,7 @@
 
                 <div class="user-amount text-warning">
                     <div class="text-small">{{ __('You borrowed') }}</div>
-                    <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
+                    <div class="user-amount-value">{{ __('$') . number_format($expense->borrowed, 2) }}</div>
                 </div>
             </div>
         @endif

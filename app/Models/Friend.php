@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\FriendCreated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,5 +18,9 @@ class Friend extends Model
     protected $casts = [
         'user1_id' => 'int',
         'user2_id' => 'int',
+    ];
+
+    protected $dispatchesEvents = [
+        'created' => FriendCreated::class,
     ];
 }

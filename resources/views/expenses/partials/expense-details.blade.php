@@ -67,26 +67,26 @@
                             {{ __('You must add users to the expense before choosing who paid.') }}
                         </div>
 
-                        <div class="expense-paid-dropdown-list" id="expense-paid-dropdown-list">
+                        <ul class="expense-paid-dropdown-list" id="expense-paid-dropdown-list">
                             @if ($expense === null)
-                                <div class="paid-dropdown-item" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
-                                    <div class="paid-dropdown-item-name">{{ auth()->user()->username }}</div>
-
-                                    <i class="fa-solid fa-check text-success"></i>
-                                </div>
+                                <li>
+                                    <label class="split-equal-item" for="paid-dropdown-item-{{ auth()->user()->id }}" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
+                                        <input type="radio" id="paid-dropdown-item-{{ auth()->user()->id }}" class="radio" name="expense-paid" value="{{ auth()->user()->id }}" checked/>
+                                        <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                                    </label>
+                                </li>
                             @endif
 
                             @foreach ($expense?->involvedUsers() ?? [] as $involved_user)
-                                <div class="paid-dropdown-item" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}" onclick="setExpensePayer(this)">
-                                    <div class="paid-dropdown-item-name">{{ $involved_user->username }}</div>
-
-                                    <i class="fa-solid fa-check text-success {{ $expense?->payer !== $involved_user->id ? 'hidden' : '' }}"></i>
-                                </div>
+                                <li>
+                                    <label class="split-equal-item" for="paid-dropdown-item-{{ $involved_user->id }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}" onclick="setExpensePayer(this)">
+                                        <input type="radio" id="paid-dropdown-item-{{ $involved_user->id }}" class="radio" name="expense-paid" value="{{ $involved_user->id }}" {{ $expense?->payer === $involved_user->id ? 'checked' : '' }}/>
+                                        <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                                    </label>
+                                </li>
                             @endforeach
-                        </div>
+                        </ul>
                     </div>
-
-                    <input type="hidden" id="expense-paid" name="expense-paid" value="{{ $expense ? $expense->payer : auth()->user()->id }}" />
                 </div>
 
                 <div>
@@ -143,24 +143,18 @@
                     <div class="expense-expand-dropdown" id="expense-group-dropdown">
                         <h4 class="margin-bottom-sm">{{ __('Choose a group') }}</h4>
     
-                        <div class="expense-paid-dropdown-list" id="expense-group-dropdown-list">
-                            <div class="paid-dropdown-item" data-group-id="{{ $default_group->id }}" data-group-name="{{ $default_group->name }}" onclick="setExpenseGroup(this)">
-                                <div class="paid-dropdown-item-name">{{ $default_group->name }}</div>
-    
-                                <i class="fa-solid fa-check text-success {{ $expense !== null && $expense->group_id !== $default_group->id ? 'hidden' : '' }}" ></i>
-                            </div>
-    
+                        <ul class="expense-paid-dropdown-list" id="expense-group-dropdown-list">
                             @foreach ($groups as $group)
-                                <div class="paid-dropdown-item" data-group-id="{{ $group->id }}" data-group-name="{{ $group->name }}" onclick="setExpenseGroup(this)">
-                                    <div class="paid-dropdown-item-name">{{ $group->name }}</div>
-    
-                                    <i class="fa-solid fa-check text-success {{ $expense?->group_id !== $group->id ? 'hidden' : '' }}"></i>
-                                </div>
+                            <!-- TODO: Select the correct Group if Expense is added from a Group -->
+                                <li>
+                                    <label class="split-equal-item" for="group-dropdown-item-{{ $group->id }}" data-group-id="{{ $group->id }}" data-group-name="{{ $group->name }}" onclick="setExpenseGroup(this)">
+                                        <input type="radio" id="group-dropdown-item-{{ $group->id }}" class="radio" name="expense-group" value="{{ $group->id }}" {{ $expense === null && $group->id === $default_group->id || $expense?->group_id === $group->id ? 'checked' : '' }}/>
+                                        <div class="split-equal-item-name">{{ $group->name }}</div>
+                                    </label>
+                                </li>
                             @endforeach
-                        </div>
+                        </ul>
                     </div>
-
-                    <input type="hidden" id="expense-group" name="expense-group" value="{{ $expense ? $expense->group_id : $default_group->id }}" />
                 </div>
 
                 <div>
@@ -253,11 +247,18 @@
     </template>
 
     <template id="paid-dropdown-item-template">
-        <div class="paid-dropdown-item" data-user-id="" data-username="" onclick="setExpensePayer(this)">
+        <!--<div class="paid-dropdown-item" data-user-id="" data-username="" onclick="setExpensePayer(this)">
             <div class="paid-dropdown-item-name"></div>
 
             <i class="fa-solid fa-check text-success hidden"></i>
-        </div>
+        </div>-->
+
+        <li>
+            <label class="split-equal-item" for="" data-user-id="" data-username="" onclick="setExpensePayer(this)">
+                <input type="radio" id="" class="radio" name="expense-paid" value="" />
+                <div class="split-equal-item-name"></div>
+            </label>
+        </li>
     </template>
 </div>
 
@@ -491,6 +492,10 @@
         opacity: 100%;
     }
 
+    .expense-paid-dropdown-list {
+        color: var(--text-primary);
+    }
+
     .paid-dropdown-item {
         display: flex;
         justify-content: space-between;
@@ -717,9 +722,9 @@
     const splitEqualList = document.getElementById('split-equal-list');
 
     const currentAmountInput = document.getElementById('expense-amount');
-    const currentPayerInput = document.getElementById('expense-paid');
+    const currentPayerInput = document.querySelector('input[name="expense-paid"]:checked');
     const currentSplitInput = document.getElementById('expense-split');
-    const currentGroupInput = document.getElementById('expense-group');
+    const currentGroupInput = document.querySelector('input[name="expense-group"]:checked');
     const currentDateInput = document.getElementById('expense-date');
 
     const paidBtn = document.getElementById('expense-paid-btn');
@@ -993,14 +998,21 @@
                 var paidDropdownItemContent = $('#paid-dropdown-item-template').html();
                 var paidDropdownItem = $(paidDropdownItemContent).clone();
 
-                const paidDropdownName = paidDropdownItem.children('.paid-dropdown-item-name');
-                $(paidDropdownName).text(user.dataset.username);
+                const paidItemLabel = paidDropdownItem.find('.split-equal-item');
+                const paidItemInput = paidDropdownItem.find('.radio');
+                const paidItemName = paidDropdownItem.find('.split-equal-item-name');
 
-                paidDropdownItem.attr('data-user-id', user.dataset.userId);
-                paidDropdownItem.attr('data-username', user.dataset.username);
+                paidItemLabel.attr('for', 'paid-dropdown-item-' + user.dataset.userId);
+                paidItemLabel.attr('data-user-id', user.dataset.userId);
+                paidItemLabel.attr('data-username', user.dataset.username);
+
+                paidItemInput.attr('id', 'paid-dropdown-item-' + user.dataset.userId);
+                paidItemInput.attr('value', user.dataset.userId);
+
+                paidItemName.text(user.dataset.username)
 
                 if (parseInt(user.dataset.userId) === currentPayer) {
-                    paidDropdownItem.children('.fa-check').removeClass('hidden');
+                    paidItemInput.attr('checked', 'checked');
                 }
 
                 $(paidDropdownList).append(paidDropdownItem);
@@ -1022,8 +1034,8 @@
             if (!Array.from(usersInvolved).map(user => parseInt(user.dataset.userId)).includes(currentPayer)) {
                 const firstPaidDropdownItem = paidDropdownList.firstElementChild;
                 currentPayerInput.value = firstPaidDropdownItem.dataset.userId;
-                $(paidBtn).children('.expense-round-btn-text').text(firstPaidDropdownItem.dataset.username);
-                $(firstPaidDropdownItem).children('.fa-check').removeClass('hidden');
+                $(paidBtn).children('.expense-round-btn-text').text($(firstPaidDropdownItem).find('.split-equal-item').attr('data-username'));
+                $(firstPaidDropdownItem).find('.radio').attr('checked', 'checked');
             }
         }
 

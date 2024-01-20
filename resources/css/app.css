@@ -512,6 +512,13 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 
+
+
+/* Layouts */
+
+
+
+
 /* Guest Layout */
 
 
@@ -1103,6 +1110,13 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 
+
+
+/* Views */
+
+
+
+
 /* Activity List */
 
 
@@ -1326,4 +1340,85 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .friend-added-icon {
     color: var(--text-success);
+}
+
+
+
+
+/* Components */
+
+
+
+
+/* checkbox */
+
+
+.checkbox {
+    color: var(--blue-hover); /* TODO: Change this to --primary-color */
+    background-color: var(--background);
+    border: 1px solid var(--border-grey);
+    border-radius: 0.25rem;
+    transition: outline 0.1s ease-in-out, outline-offset 0.1s;
+    margin-right: 4px;
+}
+
+.checkbox:focus {
+    outline: 2px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline-offset: 1px;
+    border-radius: 0.25rem;
+    border: 1px solid var(--background);
+    box-shadow: none;
+}
+
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+}
+
+.checkbox-label:hover, .checkbox:hover {
+    cursor: pointer;
+}
+
+.checkbox-label-text {
+    color: var(--text-shy);
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+
+/* radio-button */
+
+
+.radio {
+    color: var(--blue-hover); /* TODO: Change this to --primary-color */
+    background-color: var(--background);
+    border: 1px solid var(--border-grey);
+    transition: outline 0.1s ease-in-out, outline-offset 0.1s;
+    margin-right: 4px;
+}
+
+.radio:focus {
+    outline: 2px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline-offset: 1px;
+    border: 1px solid var(--background);
+    box-shadow: none;
+}
+
+.radio:checked {
+    background-color: var(--blue-hover);
+}
+
+.radio-label {
+    display: inline-flex;
+    align-items: center;
+}
+
+.radio-label:hover, .radio:hover {
+    cursor: pointer;
+}
+
+.radio-label-text {
+    color: var(--text-shy);
+    font-size: 0.9em;
+    font-weight: 500;
 }

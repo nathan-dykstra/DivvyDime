@@ -32,37 +32,7 @@ class ExpensesController extends Controller
             ->orderBy('date', 'DESC')
             ->get();
 
-        $expenses = $expenses->map(function ($expense) use ($current_user) {
-            // Get formatted dates and times
-
-            $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
-
-            $expense->date = Carbon::parse($expense->date)->format('M d, Y');
-
-            $expense->formatted_time = Carbon::parse($expense->date)->setTimezone(self::TIMEZONE)->format('g:i a');
-
-            // Get the User who paid for the Expense
-            $expense->payer_user = User::where('id', $expense->payer)->first();
-
-            // Get the current User's share, lent, and borrowed amounts
-
-            $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
-                ->where('user_id', $current_user->id)
-                ->value('share');
-
-            if ($expense->payer === $current_user->id) {
-                $expense->lent = $expense->amount - $current_user_share;
-            }
-
-            if ($current_user_share) {
-                $expense->borrowed = $current_user_share;
-            }
-
-            // Get the Expense's Group
-            $expense->group = Group::where('id', $expense->group_id)->first();
-
-            return $expense;
-        });
+        $expenses = $this->augmentExpenses($expenses);
 
         return view('expenses.expenses-list', [
             'expenses' => $expenses,
@@ -77,8 +47,12 @@ class ExpensesController extends Controller
         $current_user = auth()->user();
 
         $groups = $current_user->groups()
-            ->whereNot('groups.id', Group::DEFAULT_GROUP)
-            ->orderBy('groups.name', 'ASC')
+            ->orderByRaw("
+                CASE
+                    WHEN groups.id = ? THEN 0
+                    ELSE 1
+                END, groups.name ASC
+            ", [Group::DEFAULT_GROUP])
             ->get();
 
         $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
@@ -250,8 +224,12 @@ class ExpensesController extends Controller
         $current_user = auth()->user();
 
         $groups = $current_user->groups()
-            ->whereNot('groups.id', Group::DEFAULT_GROUP)
-            ->orderBy('groups.name', 'ASC')
+            ->orderByRaw("
+                CASE
+                    WHEN groups.id = ? THEN 0
+                    ELSE 1
+                END, groups.name ASC
+            ", [Group::DEFAULT_GROUP])
             ->get();
 
         $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
@@ -279,7 +257,6 @@ class ExpensesController extends Controller
         ];
 
         $today = Carbon::now()->isoFormat('YYYY-MM-DD');
-
         $formatted_today = Carbon::now()->isoFormat('MMMM D, YYYY');
 
         $expense->formatted_date = Carbon::parse($expense->date)->isoFormat('MMMM D, YYYY');
@@ -304,32 +281,8 @@ class ExpensesController extends Controller
     {
         $expense_validated = $request->validated();
 
-        // Undo the Balances adjustments from the initial state of the Expense
-        foreach($expense->participants()->get() as $participant) {
-            if ($participant->id !== $expense->payer) {
-                $participant_share = ExpenseParticipant::where('expense_id', $expense->id)
-                    ->where('user_id', $participant->id)
-                    ->value('share');
-
-                // Increase the participant to payer Balance by the participant's share
-
-                $participant_payer_balance = Balance::where('user_id', $participant->id)
-                    ->where('friend', $expense->payer)
-                    ->where('group_id', $expense->group_id)
-                    ->first();
-
-                $participant_payer_balance->increment('balance', $participant_share);
-
-                // Decrease the payer to participant Balance by the participant's share
-
-                $payer_participant_balance = Balance::where('user_id', $expense->payer)
-                    ->where('friend', $participant->id)
-                    ->where('group_id', $expense->group_id)
-                    ->first();
-
-                $payer_participant_balance->decrement('balance', $participant_share);
-            }
-        }
+        // Undo the Balance adjustments from the initial state of the expense
+        $expense->undoBalanceAdjustments();
 
         // Update the Expense
 
@@ -432,6 +385,8 @@ class ExpensesController extends Controller
      */
     public function destroy(Expense $expense): RedirectResponse
     {
+        $expense->undoBalanceAdjustments();
+
         $expense->delete();
 
         return Redirect::route('expenses')->with('status', 'expense-deleted');

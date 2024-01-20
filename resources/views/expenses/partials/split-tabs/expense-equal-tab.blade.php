@@ -85,11 +85,12 @@
     }
 
     .split-equal-item-name {
-        transition: color 0.1s ease, text-decoration 0.3s ease;
+        transition: color 0.1s ease;
     }
 
     .split-equal-item-name:hover {
         cursor: pointer;
+        color: var(--text-primary-highlight);
     }
 
     .split-equal-item-strikethrough:hover {
