@@ -33,74 +33,83 @@
     @endif
 
     <div class="expense-info-container">
-        <div class="expense-info-amount">
-            {{ __('$') . $expense->amount }}
-        </div>
-
-        <div class="expense-info-added-date text-shy">
-            {{ __('Added ') }}
-            <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->created_date . __(' at ') . $expense->created_time }}">
-                <span class="width-content">{{ $expense->formatted_created_date }}</span>
-            </x-tooltip>
-            {{ __(' by ') }}<span >{{ $expense->creator_user->username }}</span>
-        </div>
-
-        @if ($expense->created_at->toDateTimeString() !== $expense->updated_at->toDateTimeString())
-            <div class="text-shy">
-                {{ __('Updated ') }}
-                <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->updated_date . __(' at ') . $expense->updated_time }}">
-                    <span class="width-content">{{ $expense->formatted_updated_date }}</span>
+        <div>
+            <div class="expense-info-amount">
+                {{ __('$') . $expense->amount }}
+            </div>
+    
+            <div class="expense-info-added-date text-shy">
+                {{ __('Added ') }}
+                <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->created_date . __(' at ') . $expense->created_time }}">
+                    <span class="width-content">{{ $expense->formatted_created_date }}</span>
                 </x-tooltip>
+                {{ __(' by ') }}<span >{{ $expense->creator_user->username }}</span>
             </div>
-        @endif
-
-        <div class="expense-info-breakdown margin-top-lg">
-            <div class="expense-info-breakdown-left">
-                <div class="expense-info-payer-circle"></div>
-                <div class="expense-info-breakdown-line-container">
-                    <div class="expense-info-breakdown-line"></div>
+    
+            @if ($expense->created_at->toDateTimeString() !== $expense->updated_at->toDateTimeString())
+                <div class="text-shy">
+                    {{ __('Updated ') }}
+                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->updated_date . __(' at ') . $expense->updated_time }}">
+                        <span class="width-content">{{ $expense->formatted_updated_date }}</span>
+                    </x-tooltip>
                 </div>
-            </div>
-
-            <div class="expense-info-breakdown-right">
-                <div class="expense-info-breakdown-payer-container">
-                    <div class="expense-info-breakdown-payer">
-                        <span>{{ $expense->payer_user->username }}</span>
-                        @if ($expense->is_reimbursement)
-                            {{ __(' was paid ') }}
-                        @else
-                            {{ __(' paid ') }}
-                        @endif
-                        {{ __('$') . $expense->amount }}
+            @endif
+    
+            <div class="expense-info-breakdown margin-top-lg">
+                <div class="expense-info-breakdown-left">
+                    <div class="expense-info-payer-circle"></div>
+                    <div class="expense-info-breakdown-line-container">
+                        <div class="expense-info-breakdown-line"></div>
                     </div>
                 </div>
-
-                <div class="space-top-xs">
-                    @foreach ($participants as $participant)
-                        <div class="expense-info-participant text-shy">
-                            {{ $participant->username }}
+    
+                <div class="expense-info-breakdown-right">
+                    <div class="expense-info-breakdown-payer-container">
+                        <div class="expense-info-breakdown-payer">
+                            <span>{{ $expense->payer_user->username }}</span>
                             @if ($expense->is_reimbursement)
-                                {{ __(' receives ') }}
+                                {{ __(' was paid ') }}
                             @else
-                                {{ __(' owes ') }}
+                                {{ __(' paid ') }}
                             @endif
-                            {{ __('$') . $participant->share }}
-
-                            @if ($participant->id === $expense->payer)
-                                {{ __(' and ') }}
-                                @if ($expense->is_reimbursement)
-                                    {{ __(' owes ') }}
-                                @else
-                                    {{ __(' receives ') }}
-                                @endif
-                                {{ __('$') . number_format($expense->amount - $participant->share, 2) }}
-                            @endif
+                            {{ __('$') . $expense->amount }}
                         </div>
-                    @endforeach
+                    </div>
+    
+                    <div class="space-top-xs">
+                        @foreach ($participants as $participant)
+                            <div class="expense-info-participant text-shy">
+                                {{ $participant->username }}
+                                @if ($expense->is_reimbursement)
+                                    {{ __(' receives ') }}
+                                @else
+                                    {{ __(' owes ') }}
+                                @endif
+                                {{ __('$') . $participant->share }}
+    
+                                @if ($participant->id === $expense->payer)
+                                    {{ __(' and ') }}
+                                    @if ($expense->is_reimbursement)
+                                        {{ __(' owes ') }}
+                                    @else
+                                        {{ __(' receives ') }}
+                                    @endif
+                                    {{ __('$') . number_format($expense->amount - $participant->share, 2) }}
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
 
+        <div>
+            @if ($expense->note)
+                <div class="expense-info-note text-small">
+                    <p>{!! nl2br(e($expense->note)) !!}</p>
+                </div>
+            @endif
+        </div>  
     </div>
 
     @include('expenses.partials.expense-delete-modal')
@@ -113,7 +122,16 @@
     }*/
 
     .expense-info-container {
+        display: grid;
+        grid-template-columns: 2fr 2fr;
+        gap: 32px;
         color: var(--text-primary);
+    }
+
+    @media screen and (max-width: 768px) {
+        .expense-info-container {
+            grid-template-columns: 1fr;
+        }
     }
 
     .expense-info-amount {
@@ -166,5 +184,13 @@
     .expense-info-breakdown-payer-container {
         display: flex;
         align-items: center;
+    }
+
+    .expense-info-note {
+        border: 1px solid var(--border-grey);
+        border-radius: var(--border-radius);
+        padding: 8px 16px;
+        background-color: var(--secondary-grey);
+        word-wrap: break-word;
     }
 </style>
