@@ -171,7 +171,7 @@
 
                         <div class="expense-datepicker-container">
                             <!-- Flowbite Tailwind CSS Datepicker -->
-                            <div id="flowbite-datepicker" inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $expense ? $expense->date : $today }}"></div> <!--inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $today }}"-->
+                            <div id="flowbite-datepicker" inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $expense ? $expense->date : $today }}"></div>
                         </div>
                     </div>
 
@@ -598,6 +598,7 @@
 
     .expense-datepicker-container .datepicker-picker {
         background-color: var(--secondary-grey) !important;
+        padding: 0 !important;
         box-shadow: none !important;
     }
 
@@ -720,12 +721,14 @@
     const datePicker = document.getElementById('flowbite-datepicker');
 
     const splitEqualList = document.getElementById('split-equal-list');
+    const splitAmountList = document.getElementById('split-amount-list');
 
     const currentAmountInput = document.getElementById('expense-amount');
     const currentPayerInput = document.querySelector('input[name="expense-paid"]:checked');
     const currentSplitInput = document.getElementById('expense-split');
     const currentGroupInput = document.querySelector('input[name="expense-group"]:checked');
     const currentDateInput = document.getElementById('expense-date');
+    const currentNoteInput = document.getElementById('expense-note');
 
     const paidBtn = document.getElementById('expense-paid-btn');
     const splitBtn = document.getElementById('expense-split-btn');
@@ -980,6 +983,7 @@
     function updatePaidDropdownList() {
         $(paidDropdownList).empty();
         $(splitEqualList).empty();
+        $(splitAmountList).empty();
 
         const usersInvolved = Array.from(involvedChipsContainer.children).slice(0, -1);
 
@@ -1028,6 +1032,18 @@
                 splitEqualDropdownItem.find('.split-equal-item-name').text(user.dataset.username);
 
                 $(splitEqualList).append(splitEqualDropdownItem);
+
+                // Create "Split Amount" dropdown list with split-amount-dropdown-item-template
+
+                var splitAmountDropdownItemContent = $('#split-amount-dropdown-item-template').html();
+                var splitAmountDropdownItem = $(splitAmountDropdownItemContent).clone();
+
+                splitAmountDropdownItem.find('.split-amount-item').attr('for', 'split-amount-item-' + user.dataset.userId);
+                splitAmountDropdownItem.find('.split-equal-item-name').text(user.dataset.username);
+                splitAmountDropdownItem.find('.text-input-prepend').attr('id', 'split-amount-item-' + user.dataset.userId);
+                splitAmountDropdownItem.find('.text-input-prepend').attr('name', 'split-amount-item-' + user.dataset.userId);
+
+                $(splitAmountList).append(splitAmountDropdownItem);
             });
 
             // Check if current payer was removed from the involved list
@@ -1208,9 +1224,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Scroll to bring the selected tab into view on initial load
         splitTabsScrollToCurrentTab();
+        resizeTextarea(currentNoteInput);
     })
 
     function updateSplitDropdownAmounts() {
         splitEqualUpdatePriceBreakdown();
+        splitAmountUpdateTotal();
     }
 </script>

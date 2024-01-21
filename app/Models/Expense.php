@@ -60,6 +60,14 @@ class Expense extends Model
             ", [auth()->user()->id])
             ->get();
 
+        $involved_users = $involved_users->map(function ($involved_user) {
+            $involved_user->participant_amount = ExpenseParticipant::where('expense_id', $this->id)
+                ->where('user_id', $involved_user->id)
+                ->value('share');
+
+            return $involved_user;
+        });
+
         return $involved_users;
     }
 

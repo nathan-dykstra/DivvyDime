@@ -18,7 +18,10 @@
             <li>
                 <label class="split-equal-item" for="split-equal-item-{{ auth()->user()->id }}" onclick="splitEqualUpdateSelectAll()">
                     <input type="checkbox" id="split-equal-item-{{ auth()->user()->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ auth()->user()->id }}" checked />
-                    <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                    <div class="user-photo-name">
+                        <div class="profile-circle-sm-placeholder"></div>
+                        <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                    </div>
                 </label>
             </li>
         @endif
@@ -27,7 +30,10 @@
             <li>
                 <label class="split-equal-item" for="split-equal-item-{{ $involved_user->id }}" onclick="splitEqualUpdateSelectAll()">
                     <input type="checkbox" id="split-equal-item-{{ $involved_user->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $involved_user->id }}" {{ $expense->participants->contains('id', $involved_user->id) ? 'checked' : '' }}/>
-                    <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                    <div class="user-photo-name">
+                        <div class="profile-circle-sm-placeholder"></div>
+                        <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                    </div>
                 </label>
             </li>
         @endforeach
@@ -38,7 +44,10 @@
     <li>
         <label class="split-equal-item" for="" onclick="splitEqualUpdateSelectAll()">
             <input type="checkbox" id="" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="" checked/>
-            <div class="split-equal-item-name"></div>
+            <div class="user-photo-name">
+                <div class="profile-circle-sm-placeholder"></div>
+                <div class="split-equal-item-name"></div>
+            </div>
         </label>
     </li>
 </template>
@@ -89,7 +98,6 @@
     }
 
     .split-equal-item-name:hover {
-        cursor: pointer;
         color: var(--text-primary-highlight);
     }
 

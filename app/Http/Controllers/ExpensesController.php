@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
 
 class ExpensesController extends Controller
 {
@@ -343,28 +344,37 @@ class ExpensesController extends Controller
 
                 // Update the group Balances between the expense payer and participant
                 if ($participants[$i] !== $expense->payer) {
-                    // Decrease the participant to payer Balance by the participant's share
-
-                    $participant_payer_balance = Balance::where('user_id', $participants[$i])
-                        ->where('friend', $expense->payer)
-                        ->where('group_id', $expense->group_id)
-                        ->first();
-
-                    $participant_payer_balance->decrement('balance', $expense_participant->share);
-
-                    // Increase the payer to participant Balance by the participant's share
-
-                    $payer_participant_balance = Balance::where('user_id', $expense->payer)
-                        ->where('friend', $participants[$i])
-                        ->where('group_id', $expense->group_id)
-                        ->first();
-
-                    $payer_participant_balance->increment('balance', $expense_participant->share);
+                    $this->updateBalances($expense, $participants[$i], $expense_participant->share);
                 }
 
                 $remaining_amount -= $amount_per_participant;
             }
         } else if ((int)$expense_data['expense_type_id'] === ExpenseType::AMOUNT) {
+            foreach ($request->all() as $key => $value) {
+                if (Str::startsWith($key, 'split-amount-item-')) {
+                    $user_id = (int)Str::after($key, 'split-amount-item-');
+
+                    $updated_participants[] = $user_id;
+
+                    $expense_participant = ExpenseParticipant::updateOrCreate(
+                        [
+                            'expense_id' => $expense->id,
+                            'user_id' => $user_id
+                        ],
+                        [
+                            'share' => $value,
+                            'percentage' => null,
+                            'shares' => null,
+                            'adjustment' => null,
+                            'is_settled' => 0,
+                        ]
+                    );
+
+                    if ($user_id !== $expense->payer) {
+                        $this->updateBalances($expense, $user_id, $value);
+                    }
+                }
+            }
         }
 
         // Delete any old participants who were removed from the expense
@@ -500,5 +510,29 @@ class ExpensesController extends Controller
         });
 
         return $expenses;
+    }
+
+    /**
+     * Updates the Balances records between $expense->payer and $user_id by $amount
+     */
+    protected function updateBalances(Expense $expense, $user_id, $amount)
+    {
+        // Decrease the participant to payer Balance by the participant's share
+
+        $participant_payer_balance = Balance::where('user_id', $user_id)
+            ->where('friend', $expense->payer)
+            ->where('group_id', $expense->group_id)
+            ->first();
+
+        $participant_payer_balance->decrement('balance', $amount);
+
+        // Increase the payer to participant Balance by the participant's share
+
+        $payer_participant_balance = Balance::where('user_id', $expense->payer)
+            ->where('friend', $user_id)
+            ->where('group_id', $expense->group_id)
+            ->first();
+
+        $payer_participant_balance->increment('balance', $amount);
     }
 }

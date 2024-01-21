@@ -57,7 +57,7 @@
     
             <div class="expense-info-breakdown margin-top-lg">
                 <div class="expense-info-breakdown-left">
-                    <div class="expense-info-payer-circle"></div>
+                    <div class="profile-circle-sm-placeholder"></div>
                     <div class="expense-info-breakdown-line-container">
                         <div class="expense-info-breakdown-line"></div>
                     </div>
@@ -157,13 +157,6 @@
         gap: 8px;
     }
 
-    .expense-info-payer-circle {
-        background-color: var(--primary-grey);
-        border: 1px solid var(--border-grey);
-        height: 40px;
-        width: 40px;
-        border-radius: 50%;
-    }
     .expense-info-breakdown-line-container {
         display: flex;
         justify-content: center;

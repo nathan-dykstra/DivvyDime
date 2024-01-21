@@ -380,6 +380,24 @@ p {
     }
 }
 
+.profile-circle-sm-placeholder {
+    background-color: var(--primary-grey);
+    border: 1px solid var(--border-grey);
+    height: 40px;
+    width: 40px;
+    min-height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+}
+
+.user-photo-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-wrap: nowrap;
+    overflow:hidden;
+}
+
 body::-webkit-scrollbar, textarea::-webkit-scrollbar {
     width: var(--scrollbar-width);
 }

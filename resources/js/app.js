@@ -75,6 +75,15 @@ window.loadTheme = function() {
 }
 
 
+// Reusable
+
+
+window.resizeTextarea = function(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+}
+
+
 // Responsiveness
 
 
