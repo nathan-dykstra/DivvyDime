@@ -1,15 +1,15 @@
 @props(['type' => null, 'class' => '', 'id' => null, 'onclick' => null, 'href' => null, 'form' => null])
 
 @if ($href)
-    <a {{ $attributes->merge(['class' => 'link-btn no-focus' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => $href]) }}>
+    <a {{ $attributes->merge(['class' => 'link-btn no-focus ' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => $href]) }}>
         {{ $slot }}
     </a>
 @elseif ($form) 
-    <button {{ $attributes->merge(['class' => 'link-btn no-focus' . $class, 'id' => $id, 'form' => $form]) }}>
+    <button {{ $attributes->merge(['class' => 'link-btn no-focus ' . $class, 'id' => $id, 'form' => $form]) }}>
         {{ $slot }}
     </button>
 @elseif ($type)
-    <button {{ $attributes->merge(['type' => $type, 'class' => 'link-btn no-focus' . $class, 'id' => $id]) }}>
+    <button {{ $attributes->merge(['type' => $type, 'class' => 'link-btn no-focus ' . $class, 'id' => $id]) }}>
         {{ $slot }}
     </button>
 @endif

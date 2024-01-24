@@ -36,6 +36,45 @@
         <x-session-status>{{ __('Group created.') }}</x-session-status>
     @endif
 
+    <div class="metrics-container margin-bottom-lg">
+        @if ($overall_balance > 0)
+            <div class="metric-container text-success">
+                <span class="text-small">{{ __('Overall, you are owed') }}</span>
+                <span class="metric-number">{{ __('$') . number_format($overall_balance, 2) }}</span>
+            </div>
+        @elseif ($overall_balance < 0)
+            <div class="metric-container text-warning">
+                <span class="text-small">{{ __('Overall, you owe') }}</span>
+                <span class="metric-number">{{ __('$') . number_format(abs($overall_balance), 2) }}</span>
+            </div>
+        @else
+            <div class="metric-container text-success">
+                <span class="text-small">{{ __('Your balances are settled') }}</span>
+            </div>
+        @endif
+
+        @foreach ($individual_balances as $individual_balance)
+            @if ($individual_balance->balance > 0)
+                <div class="metric-container">
+                    <span class="text-primary text-small">{{ $individual_balance->username . __(' owes you') }}</span>
+                    <span class="text-success metric-number">{{ __('$') . number_format($individual_balance->balance, 2) }}</span>
+                </div>
+            @else
+                <div class="metric-container">
+                    <span class="text-primary text-small">{{ __('You owe ') . $individual_balance->username }}</span>
+                    <span class="text-warning metric-number">{{ __('$') . number_format(abs($individual_balance->balance), 2) }}</span>
+                </div>
+            @endif
+        @endforeach
+
+        @if ($additional_balances_count > 0)
+            <div class="metric-container">
+                <span class="text-primary text-small">{{ __('Plus ') . $additional_balances_count . __(' other ') }} {{ $additional_balances_count > 1 ? __('balances') : __('balance') }}</span>
+                <x-link-button class="width-content" :href="route('groups.show', $group)">{{ __('View all') }}</x-link-button>
+            </div>
+        @endif
+    </div>
+
     @foreach ($expenses as $expense)
         @if ($expense->payer === auth()->user()->id) <!-- Current User paid for the expense -->
             <div class="expense" onclick="openExpense('{{ route('expenses.show', $expense->id) }}')">
@@ -78,3 +117,38 @@
         @endif
     @endforeach
 </x-app-layout>
+
+<style>
+    .metrics-container {
+        display: grid;
+        grid-template-columns: repeat(4, 4fr);
+        gap: 16px;
+    }
+
+    @media screen and (max-width: 1024px) {
+        .metrics-container {
+            grid-template-columns: repeat(3, 2fr);
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        .metrics-container {
+            grid-template-columns: repeat(2, 2fr);
+        }
+    }
+
+    .metric-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 8px;
+        background-color: var(--secondary-grey);
+        border-radius: var(--border-radius);
+        padding: 16px;
+    }
+
+    .metric-number {
+        font-size: 1.75em;
+        font-weight: 800;
+    }
+</style>

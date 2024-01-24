@@ -302,6 +302,7 @@ class ExpensesController extends Controller
 
         // Update the ExpensePartcipants and Balances
 
+        // Keep track of updated participants to remove old participants later
         $updated_participants = [];
 
         if ((int)$expense_data['expense_type_id'] === ExpenseType::EQUAL) {
@@ -370,11 +371,14 @@ class ExpensesController extends Controller
                         ]
                     );
 
+                    // Update the group Balances between the expense payer and participant
                     if ($user_id !== $expense->payer) {
                         $this->updateBalances($expense, $user_id, $value);
                     }
                 }
             }
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::REIMBURSEMENT) {
+
         }
 
         // Delete any old participants who were removed from the expense

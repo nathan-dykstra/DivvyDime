@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateGroupRequest;
+use App\Models\Balance;
+use App\Models\Expense;
 use App\Models\ExpenseParticipant;
 use App\Models\Friend;
 use App\Models\Group;
@@ -27,6 +29,8 @@ use Illuminate\Support\Str;
 class GroupsController extends Controller
 {
     const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
+    const GROUP_BALANCES_SHOWN = 3;
+    const GROUP_BLANACES_LIMITED = 2;
 
     /**
      * Displays the User's Groups.
@@ -134,9 +138,37 @@ class GroupsController extends Controller
             return $expense;
         });
 
+        $overall_balance = Balance::where('group_id', $group->id)
+            ->where('user_id', $current_user->id)
+            ->sum('balance');
+
+        $group_balances_count = Balance::where('balances.group_id', $group->id)
+            ->where('balances.user_id', $current_user->id)
+            ->count();
+
+        $group_balances_shown_limit = static::GROUP_BALANCES_SHOWN;
+
+        if ($group_balances_count > static::GROUP_BALANCES_SHOWN) {
+            $group_balances_shown_limit = static::GROUP_BLANACES_LIMITED;
+        }
+
+        $individual_balances = Balance::join('users', 'balances.friend', 'users.id')
+            ->select('balances.balance', 'users.username')
+            ->where('balances.group_id', $group->id)
+            ->where('balances.user_id', $current_user->id)
+            ->whereNot('balances.balance', 0)
+            ->limit($group_balances_shown_limit)
+            ->orderBy('users.username', 'ASC')
+            ->get();
+
+        $additional_balances_count = $group_balances_count - $group_balances_shown_limit;
+
         return view('groups.show', [
             'group' => $group,
             'expenses' => $expenses,
+            'overall_balance' => $overall_balance,
+            'individual_balances' => $individual_balances,
+            'additional_balances_count' => $additional_balances_count,
         ]);
     }
 
@@ -145,10 +177,20 @@ class GroupsController extends Controller
      */
     public function settings(Group $group): View
     {
+        $group_members = $group->members()
+            ->orderByRaw("
+                CASE
+                    WHEN users.id = ? THEN 0
+                    ELSE 1
+                END, users.username ASC
+            ", [auth()->user()->id])
+            ->get();
+
         $friends = auth()->user()->friends()->orderBy('username', 'asc')->get();
 
         return view('groups.group-settings', [
             'group' => $group,
+            'group_members' => $group_members,
             'friends' => $friends,
         ]);
     }
@@ -504,6 +546,10 @@ class GroupsController extends Controller
     {
         $groups = $groups->map(function ($group) {
             $group->is_default = $group->id === Group::DEFAULT_GROUP;
+
+            $group->overall_balance = Balance::where('group_id', $group->id)
+                ->where('user_id', auth()->user()->id)
+                ->sum('balance');
 
             return $group;
         });

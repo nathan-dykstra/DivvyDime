@@ -36,7 +36,7 @@
                 </div>
             </header>
 
-            @foreach ($group->members()->orderBy('username', 'asc')->get() as $member)
+            @foreach ($group_members as $member)
                 <div class="group-settings-member">
                     <div>
                         <div class="text-primary">{{ $member->id === auth()->user()->id ? $member->username . __(' (You)') : $member->username }}</div>
