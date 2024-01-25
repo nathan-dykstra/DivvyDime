@@ -72,7 +72,10 @@
                                 <li>
                                     <label class="split-equal-item" for="paid-dropdown-item-{{ auth()->user()->id }}" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
                                         <input type="radio" id="paid-dropdown-item-{{ auth()->user()->id }}" class="radio" name="expense-paid" value="{{ auth()->user()->id }}" checked/>
-                                        <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                                        <div class="user-photo-name">
+                                            <div class="profile-circle-sm-placeholder"></div>
+                                            <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                                        </div>
                                     </label>
                                 </li>
                             @endif
@@ -81,7 +84,10 @@
                                 <li>
                                     <label class="split-equal-item" for="paid-dropdown-item-{{ $involved_user->id }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}" onclick="setExpensePayer(this)">
                                         <input type="radio" id="paid-dropdown-item-{{ $involved_user->id }}" class="radio" name="expense-paid" value="{{ $involved_user->id }}" {{ $expense?->payer === $involved_user->id ? 'checked' : '' }}/>
-                                        <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                                        <div class="user-photo-name">
+                                            <div class="profile-circle-sm-placeholder"></div>
+                                            <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                                        </div>
                                     </label>
                                 </li>
                             @endforeach
@@ -247,16 +253,13 @@
     </template>
 
     <template id="paid-dropdown-item-template">
-        <!--<div class="paid-dropdown-item" data-user-id="" data-username="" onclick="setExpensePayer(this)">
-            <div class="paid-dropdown-item-name"></div>
-
-            <i class="fa-solid fa-check text-success hidden"></i>
-        </div>-->
-
         <li>
             <label class="split-equal-item" for="" data-user-id="" data-username="" onclick="setExpensePayer(this)">
                 <input type="radio" id="" class="radio" name="expense-paid" value="" />
-                <div class="split-equal-item-name"></div>
+                <div class="user-photo-name">
+                    <div class="profile-circle-sm-placeholder"></div>
+                    <div class="split-equal-item-name"></div>
+                </div>
             </label>
         </li>
     </template>

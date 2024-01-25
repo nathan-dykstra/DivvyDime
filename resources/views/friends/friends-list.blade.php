@@ -58,9 +58,6 @@
     </x-modal>
 </x-app-layout>
 
-<style>
-</style>
-
 <script>
     friendsSearchbar = document.getElementById("search-friends");
     friendsSearchbar.addEventListener('input', function(event) {

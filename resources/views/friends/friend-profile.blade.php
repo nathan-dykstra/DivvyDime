@@ -1,11 +1,50 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="btn-container-apart">
-            <h2>{{ $friend?->username }}</h2>
+            <h2>{{ $friend->username }}</h2>
             <div class="btn-container-end">
             </div>
         </div>
     </x-slot>
+
+    <div class="metrics-container margin-bottom-lg">
+        @if ($overall_balance > 0)
+            <div class="metric-container text-success">
+                <span class="text-small">{{ __('Overall, ') . $friend->username . __(' owes you') }}</span>
+                <span class="metric-number">{{ __('$') . number_format($overall_balance, 2) }}</span>
+            </div>
+        @elseif ($overall_balance < 0)
+            <div class="metric-container text-warning">
+                <span class="text-small">{{ __('Overall, you owe ') . $friend->username }}</span>
+                <span class="metric-number">{{ __('$') . number_format(abs($overall_balance), 2) }}</span>
+            </div>
+        @else
+            <div class="metric-container text-success">
+                <span class="text-small">{{ __('Your balances are settled') }}</span>
+            </div>
+        @endif
+
+        @foreach ($group_balances as $group_balance)
+            @if ($group_balance->balance > 0)
+                <div class="metric-container">
+                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="metric-group">{{ $group_balance->name }}</a>
+                    <span class="text-primary text-small">{{ $friend->username . __(' owes you') }}</span>
+                    <span class="text-success metric-number">{{ __('$') . number_format($group_balance->balance, 2) }}</span>
+                </div>
+            @elseif ($group_balance->balance < 0)
+                <div class="metric-container">
+                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="metric-group">{{ $group_balance->name }}</a>
+                    <span class="text-primary text-small">{{ __('You owe ') . $friend->username }}</span>
+                    <span class="text-warning metric-number">{{ __('$') . number_format(abs($group_balance->balance), 2) }}</span>
+                </div>
+            @else
+                <div class="metric-container">
+                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="metric-group">{{ $group_balance->name }}</a>
+                    <span class="text-primary text-small">{{ __('You are settled up') }}</span>
+                </div>
+            @endif
+        @endforeach
+    </div>
 
     @foreach ($expenses as $expense)
         @if ($expense->payer === auth()->user()->id) <!-- Current User paid for the expense -->
@@ -13,7 +52,7 @@
                 <div>
                     <div class="expense-name">
                         <h4>{{ $expense->name }}</h4>
-                        <a class="expense-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
+                        <a class="metric-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
                     </div>
 
                     <div class="expense-amount text-small">{{ __('You paid $') . $expense->amount }}</div>
@@ -33,7 +72,7 @@
                 <div>
                     <div class="expense-name">
                         <h4 class="expense-name-text">{{ $expense->name }}</h4>
-                        <a class="expense-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
+                        <a class="metric-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
                     </div>
 
                     <div class="expense-amount text-small">

@@ -5,7 +5,7 @@
                 <div>
                     <div class="expense-name">
                         <h4>{{ $expense->name }}</h4>
-                        <a class="expense-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
+                        <a class="metric-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
                     </div>
 
                     <div class="expense-amount text-small">{{ __('You paid $') . $expense->amount }}</div>
@@ -25,7 +25,7 @@
                 <div>
                     <div class="expense-name">
                         <h4 class="expense-name-text">{{ $expense->name }}</h4>
-                        <a class="expense-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
+                        <a class="metric-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
                     </div>
 
                     <div class="expense-amount text-small"><a class="notification-username notification-username-link" href="{{ route('friends.show', $expense->payer) }}">{{ $expense->payer_user->username }}</a>{{ __(' paid $') . $expense->amount }}</div> 

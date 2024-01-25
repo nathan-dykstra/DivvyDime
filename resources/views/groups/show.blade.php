@@ -117,38 +117,3 @@
         @endif
     @endforeach
 </x-app-layout>
-
-<style>
-    .metrics-container {
-        display: grid;
-        grid-template-columns: repeat(4, 4fr);
-        gap: 16px;
-    }
-
-    @media screen and (max-width: 1024px) {
-        .metrics-container {
-            grid-template-columns: repeat(3, 2fr);
-        }
-    }
-
-    @media screen and (max-width: 768px) {
-        .metrics-container {
-            grid-template-columns: repeat(2, 2fr);
-        }
-    }
-
-    .metric-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        gap: 8px;
-        background-color: var(--secondary-grey);
-        border-radius: var(--border-radius);
-        padding: 16px;
-    }
-
-    .metric-number {
-        font-size: 1.75em;
-        font-weight: 800;
-    }
-</style>

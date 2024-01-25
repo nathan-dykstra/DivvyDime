@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Balance;
 use App\Models\ExpenseParticipant;
 use App\Models\Friend;
 use App\Models\Group;
@@ -34,6 +35,8 @@ class FriendsController extends Controller
 
         $friends = $current_user->friends()->orderBy('username', 'asc')->get();
 
+        $friends = $this->augmentFriends($friends);
+
         return view('friends.friends-list', [
             'friends' => $friends,
         ]);
@@ -53,6 +56,22 @@ class FriendsController extends Controller
         } else if (!in_array($current_user->id, $friend->friends()->pluck('id')->toArray())) {
             return view('friends.not-allowed');
         }
+
+        $overall_balance = Balance::where('user_id', $current_user->id)
+            ->where('friend', $friend->id)
+            ->sum('balance');
+
+        $group_balances = Balance::select('groups.name', 'groups.id as group_id', 'balances.*')
+            ->join('groups', 'balances.group_id', 'groups.id')
+            ->where('balances.user_id', $current_user->id)
+            ->where('balances.friend', $friend->id)
+            ->orderByRaw("
+                CASE
+                    WHEN groups.id = ? THEN 0
+                    ELSE 1
+                END, groups.name ASC
+            ", [Group::DEFAULT_GROUP])
+            ->get();
 
         $expenses = $friend->expenses()
             ->where(function ($query) use ($current_user, $friend) {
@@ -101,6 +120,8 @@ class FriendsController extends Controller
         return view('friends.friend-profile', [
             'friend' => $friend,
             'expenses' => $expenses,
+            'overall_balance' => $overall_balance,
+            'group_balances' => $group_balances,
         ]); 
     }
 
@@ -279,5 +300,34 @@ class FriendsController extends Controller
             ->get();
 
         return view('friends.partials.friends', ['friends' => $friends]);
+    }
+
+    /**
+     * Add balances information to the Friends.
+     */
+    protected function augmentFriends($friends)
+    {
+        $friends = $friends->map(function ($friend) {
+            $friend->overall_balance = Balance::where('user_id', auth()->user()->id)
+                ->where('friend', $friend->id)
+                ->sum('balance');
+
+            $friend->group_balances = Balance::select('groups.name', 'balances.*')
+                ->join('groups', 'balances.group_id', 'groups.id')
+                ->where('balances.user_id', auth()->user()->id)
+                ->where('balances.friend', $friend->id)
+                ->whereNot('balances.balance', 0)
+                ->orderByRaw("
+                    CASE
+                        WHEN groups.id = ? THEN 0
+                        ELSE 1
+                    END, groups.name ASC
+                ", [Group::DEFAULT_GROUP])
+                ->get();
+
+            return $friend;
+        });
+
+        return $friends;
     }
 }

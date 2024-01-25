@@ -1,11 +1,40 @@
 <div class="friends">
     @foreach($friends as $friend)
         <a class="friend" href="{{ route('friends.show', $friend->id) }}">
-            <div class="btn-container-apart">
-                <div class="friend-name">{{ $friend->username }}</div>
-                <div class="friend-amount"><!-- TODO: show total amount oweing/owed --></div>
-            </div>
-            <div><!-- TODO: show amounts oweing/owed in each group (if applicable) --></div>
+            @if (count($friend->group_balances) > 1)
+                <div class="expense-info-breakdown">
+                    <div class="expense-info-breakdown-left">
+                        <div class="profile-circle-sm-placeholder"></div>
+
+                        <div class="expense-info-breakdown-line-container">
+                            <div class="expense-info-breakdown-line"></div>
+                        </div>
+                    </div>
+
+                    <div class="expense-info-breakdown-right">
+                        <div class="expense-info-breakdown-payer-container">
+                            @include('friends.partials.friend-name')
+                        </div>
+
+                        <div class="space-top-xs">
+                            @foreach ($friend->group_balances as $group_balance)
+                                <div class="expense-info-participant text-shy">
+                                    @if ($group_balance->balance > 0)
+                                        {{ __('You are owed $') . number_format($group_balance->balance, 2) . __(' in ') . $group_balance->name }}
+                                    @else
+                                        {{ __('You owe $') . number_format(abs($group_balance->balance), 2) . __(' in ') . $group_balance->name }}
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="friend-name-container">
+                    <div class="profile-circle-sm-placeholder"></div>
+                    @include('friends.partials.friend-name')
+                </div>
+            @endif
         </a>
     @endforeach
 </div>
