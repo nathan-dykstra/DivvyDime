@@ -83,6 +83,10 @@ window.resizeTextarea = function(textarea) {
     textarea.style.height = (textarea.scrollHeight + 2) + 'px';
 }
 
+window.openLink = function(link) {
+    window.location.href = link;
+}
+
 
 // Responsiveness
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
+use App\Models\ExpenseParticipant;
 use App\Models\Group;
 use App\Models\Notification;
 use App\Models\NotificationAttribute;
@@ -119,14 +121,37 @@ class ActivityController extends Controller
      */
     protected function augmentNotifications($notifications) {
         $notifications = $notifications->map(function ($notification) {
+            // Notification timestamps
+
             $notification->formatted_date = Carbon::parse($notification->updated_at)->diffForHumans();
 
             $notification->date = Carbon::parse($notification->updated_at)->format('M d, Y');
             
             $notification->formatted_time = Carbon::parse($notification->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
 
-            $notification->group = Group::where('id', $notification->attributes?->group_id)->first(); // TODO: Better handling for case where notification attributes are not set
-        
+            // Notification Group
+            if ($notification->attributes?->group_id) {
+                $notification->group = Group::where('id', $notification->attributes->group_id)->first();
+            }
+
+            // Notification Expense
+            if ($notification->attributes?->expense_id) {
+                $notification->expense = Expense::where('id', $notification->attributes->expense_id)->first();
+                $notification->payer_username = User::where('id', $notification->expense->payer)->value('username');
+
+                $current_user_share = ExpenseParticipant::where('expense_id', $notification->expense->id)
+                    ->where('user_id', auth()->user()->id)
+                    ->value('share');
+
+                if ($notification->expense->payer === auth()->user()->id) {
+                    $notification->amount_lent = $notification->expense->amount - $current_user_share;
+                }
+
+                if ($current_user_share) {
+                    $notification->amount_borrowed = $current_user_share;
+                }
+            }
+
             return $notification;
         });
 

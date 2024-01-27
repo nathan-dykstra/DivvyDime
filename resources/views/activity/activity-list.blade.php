@@ -133,7 +133,9 @@
         })
     }
 
-    function deleteNotification(deleteBtn, notificationId) {
+    function deleteNotification(event, notificationId) {
+        event.stopPropagation();
+
         $.ajax({
             url: '/activity/' + notificationId + '/delete',
             method: 'DELETE',
@@ -141,7 +143,7 @@
                 '_token': '{{ csrf_token() }}',
             },
             success: function(response) {
-                notificationElement = deleteBtn.closest('.notification');
+                notificationElement = $(event.target).closest('.notification');
                 $(notificationElement).remove();
             },
             error: function(error) {

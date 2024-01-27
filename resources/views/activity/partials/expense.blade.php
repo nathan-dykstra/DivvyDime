@@ -1,9 +1,11 @@
-<div class="notification">
-    @if ($notification->creator === $notification->recipient) <!-- Current User accepted the friend request -->
+<div class="notification notification-link" onclick="openLink('{{ route('expenses.show', $notification->expense->id) }}')">
+    @if ($notification->sender === $notification->recipient) <!-- You paid for the Expense -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div>{{ __('You accepted a friend request from ') }}<span class="notification-username">{{ $notification->username }}</span></div>
+                    <div>{{ __('You added "') . $notification->expense->name . __('" in ') }}<span class="notification-username">{{ $notification->group->name }}</span></div>
+
+                    <div class="text-success text-small">{{ __('You lent $') . number_format($notification->amount_lent, 2) }}</div>
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
@@ -17,11 +19,17 @@
                 </x-tooltip>
             </div>
         </div>
-    @else <!-- Current User sent the friend request -->
+    @else <!-- A Friend or Group member paid for the Expense -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div><span class="notification-username">{{ $notification->username }}</span>{{ __(' accepted your friend request') }}</div>
+                    <div><span class="notification-username">{{ $notification->payer_username }}</span> {{ __(' added "') . $notification->expense->name . __('" in ')}}<span class="notification-username">{{ $notification->group->name }}</span></div>
+
+                    @if ($notification->amount_borrowed == 0)
+                        <div class="text-shy">{{ __('Not involved') }}</div>
+                    @else
+                        <div class="text-warning text-small">{{ __('You borrowed $') . number_format($notification->amount_borrowed, 2) }}</div>
+                    @endif
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>

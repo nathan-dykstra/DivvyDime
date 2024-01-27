@@ -48,7 +48,7 @@
 
     @foreach ($expenses as $expense)
         @if ($expense->payer === auth()->user()->id) <!-- Current User paid for the expense -->
-            <div class="expense" onclick="openExpense('{{ route('expenses.show', $expense->id) }}')">
+            <div class="expense" onclick="openLink('{{ route('expenses.show', $expense->id) }}')">
                 <div>
                     <div class="expense-name">
                         <h4>{{ $expense->name }}</h4>
@@ -68,7 +68,7 @@
                 </div>
             </div>
         @else <!-- Friend paid for the expense -->
-            <div class="expense" onclick="openExpense('{{ route('expenses.show', $expense->id) }}')">
+            <div class="expense" onclick="openLink('{{ route('expenses.show', $expense->id) }}')">
                 <div>
                     <div class="expense-name">
                         <h4 class="expense-name-text">{{ $expense->name }}</h4>

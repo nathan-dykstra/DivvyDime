@@ -1,9 +1,9 @@
-<div>
+<div class="notification">
     @if ($notification->creator === $notification->recipient) <!-- Current User sent the invite -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div>You sent <span class="notification-username">{{ $notification->username }}</span> an invite to <span class="notification-username">{{ $notification->group->name }}</span>.</div> <!-- TODO: (maybe) Show user profile image in notification, link to user profile -->
+                    <div>{{ __('You sent ') }}<span class="notification-username">{{ $notification->username }}</span>{{ __(' an invite to ') }}<span class="notification-username">{{ $notification->group->name }}</span></div>
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
@@ -15,14 +15,14 @@
 
             <div class="delete-notification-btn-container">
                 <x-tooltip side="left" tooltip="{{ __('Delete Notification') }}">
-                    <i class="fa-solid fa-trash-can delete-notification-btn" onclick="deleteNotification($(this), {{ $notification->id }})"></i>
+                    <i class="fa-solid fa-trash-can delete-notification-btn" onclick="deleteNotification(event, {{ $notification->id }})"></i>
                 </x-tooltip>
             </div>
         </div>
     @else <!-- Current User receiving the invite -->
         <div class="notification-content">
             <div>
-                <div><span class="notification-username">{{ $notification->username }}</span> sent you an invite to <span class="notification-username">{{ $notification->group->name }}</span>.</div> <!-- TODO: Show user profile image in notification, link to user profile -->
+                <div><span class="notification-username">{{ $notification->username }}</span>{{ __(' sent you an invite to ') }}<span class="notification-username">{{ $notification->group->name }}</span></div>
 
                 <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                     <div class="text-shy width-content">{{ $notification->formatted_date }}</div>

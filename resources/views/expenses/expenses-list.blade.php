@@ -45,8 +45,4 @@
             }
         });
     });
-
-    function openExpense(expense) {
-        window.location.href = expense;
-    }
 </script>

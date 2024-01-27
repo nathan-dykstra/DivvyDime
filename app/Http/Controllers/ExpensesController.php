@@ -563,6 +563,7 @@ class ExpensesController extends Controller
                 $expense->borrowed = $current_user_share;
             }
 
+            // TODO: I already have Expense::group() defined, use that instead
             $expense->group = Group::where('id', $expense->group_id)->first();
 
             return $expense;
