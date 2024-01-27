@@ -26,7 +26,7 @@ class DeleteGroupDependents
     {
         // TODO: Delete all group expenses
 
-        // Delete Group-related Notifications and NotificationAttributes
+        // Delete Group-related Notifications
 
         $notifications_to_delete = Notification::whereHas('attributes', function ($query) use ($event) {
             $query->where('group_id', $event->group->id);
