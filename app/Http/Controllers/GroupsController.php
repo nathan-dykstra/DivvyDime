@@ -119,8 +119,6 @@ class GroupsController extends Controller
 
             $expense->date = Carbon::parse($expense->date)->format('M d, Y');
 
-            $expense->formatted_time = Carbon::parse($expense->date)->setTimezone(self::TIMEZONE)->format('g:i a');
-
             $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
                 ->where('user_id', $current_user->id)
                 ->value('share');

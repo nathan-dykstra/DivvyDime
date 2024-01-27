@@ -57,7 +57,7 @@
 
                     <div class="expense-amount text-small">{{ __('You paid $') . $expense->amount }}</div>
 
-                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date . __(' at ') . $expense->formatted_time }}">
+                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date }}">
                         <div class="text-shy width-content">{{ $expense->formatted_date }}</div>
                     </x-tooltip>
                 </div>
@@ -84,7 +84,7 @@
                         {{ __(' paid $') . $expense->amount }}
                     </div> 
 
-                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date . __(' at ') . $expense->formatted_time }}">
+                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date }}">
                         <div class="text-shy width-content">{{ $expense->formatted_date }}</div>
                     </x-tooltip>
                 </div>

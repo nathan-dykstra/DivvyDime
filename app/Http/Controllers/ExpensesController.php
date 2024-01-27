@@ -8,6 +8,9 @@ use App\Models\Expense;
 use App\Models\ExpenseParticipant;
 use App\Models\ExpenseType;
 use App\Models\Group;
+use App\Models\Notification;
+use App\Models\NotificationAttribute;
+use App\Models\NotificationType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -154,28 +157,78 @@ class ExpensesController extends Controller
 
                 // Update the group Balances between the expense payer and participant
                 if ($participants[$i] !== $expense->payer) {
-                    // Decrease the participant to payer Balance by the participant's share
-
-                    $participant_payer_balance = Balance::where('user_id', $participants[$i])
-                        ->where('friend', $expense->payer)
-                        ->where('group_id', $expense->group_id)
-                        ->first();
-
-                    $participant_payer_balance->decrement('balance', $expense_participant->share);
-
-                    // Increase the payer to participant Balance by the participant's share
-
-                    $payer_participant_balance = Balance::where('user_id', $expense->payer)
-                        ->where('friend', $participants[$i])
-                        ->where('group_id', $expense->group_id)
-                        ->first();
-
-                    $payer_participant_balance->increment('balance', $expense_participant->share);
+                    $this->updateBalances($expense, $participants[$i], $expense_participant->share);
                 }
 
                 $remaining_amount -= $amount_per_participant;
             }
         } else if ((int)$expense_data['expense_type_id'] === ExpenseType::AMOUNT) {
+            foreach ($request->all() as $key => $value) {
+                if (Str::startsWith($key, 'split-amount-item-') && (float)$value != 0) {
+                    $user_id = (int)Str::after($key, 'split-amount-item-');
+
+                    $expense_participant = ExpenseParticipant::updateOrCreate(
+                        [
+                            'expense_id' => $expense->id,
+                            'user_id' => $user_id
+                        ],
+                        [
+                            'share' => $value,
+                            'percentage' => null,
+                            'shares' => null,
+                            'adjustment' => null,
+                            'is_settled' => 0,
+                        ]
+                    );
+
+                    // Update the group Balances between the expense payer and participant
+                    if ($user_id !== $expense->payer) {
+                        $this->updateBalances($expense, $user_id, $value);
+                    }
+                }
+            }
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::REIMBURSEMENT) {
+
+        }
+
+        // Send Expense Notifications
+
+        if ($expense->group_id === Group::DEFAULT_GROUP) {
+            // Only send Notification to involved Users
+
+            foreach ($expense->involvedUsers() as $involved_user) {
+                $expense_notification = Notification::create([
+                    'notification_type_id' => NotificationType::EXPENSE,
+                    'creator' => $expense->creator,
+                    'sender' => $expense->payer,
+                    'recipient' => $involved_user->id,
+                ]);
+
+                NotificationAttribute::create([
+                    'notification_id' => $expense_notification->id,
+                    'group_id' => $expense->group_id,
+                    'expense_id' => $expense->id,
+                ]);
+            }
+        } else {
+            // Send Notification to all Group members
+
+            $group = $expense->group()->first();
+
+            foreach ($group->members()->get() as $member) {
+                $expense_notification = Notification::create([
+                    'notification_type_id' => NotificationType::EXPENSE,
+                    'creator' => $expense->creator,
+                    'sender' => $expense->payer,
+                    'recipient' => $member->id,
+                ]);
+
+                NotificationAttribute::create([
+                    'notification_id' => $expense_notification->id,
+                    'group_id' => $expense->group_id,
+                    'expense_id' => $expense->id,
+                ]);
+            }
         }
 
         return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-created');
@@ -352,7 +405,7 @@ class ExpensesController extends Controller
             }
         } else if ((int)$expense_data['expense_type_id'] === ExpenseType::AMOUNT) {
             foreach ($request->all() as $key => $value) {
-                if (Str::startsWith($key, 'split-amount-item-')) {
+                if (Str::startsWith($key, 'split-amount-item-') && (float)$value != 0) {
                     $user_id = (int)Str::after($key, 'split-amount-item-');
 
                     $updated_participants[] = $user_id;
@@ -390,6 +443,10 @@ class ExpensesController extends Controller
                 $expense_participant->delete();
             }
         }
+
+        // Update the Expense's "updated_at" timestamp in case only the ExpenseParticipants were updated,
+        // and not the Expense itself
+        $expense->touch();
 
         return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-updated');
     }
@@ -493,8 +550,6 @@ class ExpensesController extends Controller
             $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
 
             $expense->date = Carbon::parse($expense->date)->format('M d, Y');
-
-            $expense->formatted_time = Carbon::parse($expense->date)->setTimezone(self::TIMEZONE)->format('g:i a');
 
             $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
                 ->where('user_id', $current_user->id)

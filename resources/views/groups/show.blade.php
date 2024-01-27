@@ -83,7 +83,7 @@
 
                     <div class="expense-amount text-small">{{ __('You paid $') . $expense->amount }}</div>
 
-                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date . __(' at ') . $expense->formatted_time }}">
+                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date }}">
                         <div class="text-shy width-content">{{ $expense->formatted_date }}</div>
                     </x-tooltip>
                 </div>
@@ -100,7 +100,7 @@
 
                     <div class="expense-amount text-small"><a class="notification-username notification-username-link" href="{{ route('friends.show', $expense->payer) }}">{{ $expense->payer_user->username }}</a>{{ __(' paid $') . $expense->amount }}</div> 
 
-                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date . __(' at ') . $expense->formatted_time }}">
+                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date }}">
                         <div class="text-shy width-content">{{ $expense->formatted_date }}</div>
                     </x-tooltip>
                 </div>

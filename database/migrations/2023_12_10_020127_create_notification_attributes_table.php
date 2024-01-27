@@ -16,13 +16,13 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('notification_id')->unique();
             $table->unsignedBigInteger('group_id')->nullable();
-            //$table->unsignedBigInteger('expense_id')->nullable();
             //$table->unsignedBigInteger('payment_id')->nullable();
 
             $table->foreign('notification_id')->references('id')->on('notifications');
             $table->foreign('group_id')->references('id')->on('groups');
-            //$table->foreign('expense_id')->references('id')->on('expenses');
             //$table->foreign('payment_id')->references('id')->on('payments');
+
+            $table->index('notification_id');
         });
     }
 
