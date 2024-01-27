@@ -237,8 +237,24 @@ class ExpensesController extends Controller
     /**
      * Displays the Expense page.
      */
-    public function show(Expense $expense): View
+    public function show($expense_id): View
     {
+        $current_user = auth()->user();
+        $expense = Expense::where('id', $expense_id)->first();
+
+        if ($expense === null) {
+            return view('expenses.does-not-exist');
+        } else if ($expense->group_id === Group::DEFAULT_GROUP) {
+            if (!in_array($current_user->id, $expense->involvedUsers()->pluck('id')->toArray())) {
+                return view('expenses.not-allowed');
+            }
+        } else {
+            $expense_group = $expense->group()->first();
+            if (!in_array($current_user->id, $expense_group->members()->pluck('users.id')->toArray())) {
+                return view('expenses.not-allowed');
+            }
+        }
+
         // Get formatted dates and times
         $expense->formatted_created_date = Carbon::parse($expense->created_at)->diffForHumans();
         $expense->created_date = Carbon::parse($expense->created_at)->format('M d, Y');
@@ -261,7 +277,7 @@ class ExpensesController extends Controller
                     WHEN users.id = ? THEN 0
                     ELSE 1
                 END, users.username ASC
-            ", [auth()->user()->id])
+            ", [$current_user->id])
             ->get();
 
         return view('expenses.show', [

@@ -35,10 +35,14 @@
                     </x-tooltip>
                 </div>
 
-                <div class="user-amount text-warning">
-                    <div class="text-small">{{ __('You borrowed') }}</div>
-                    <div class="user-amount-value">{{ __('$') . number_format($expense->borrowed, 2) }}</div>
-                </div>
+                @if ($expense->borrowed == 0)
+                    <div class="user-amount text-shy text-small">{{ __('Not involved') }}</div>
+                @else
+                    <div class="user-amount text-warning">
+                        <div class="text-small">{{ __('You borrowed') }}</div>
+                        <div class="user-amount-value">{{ __('$') . number_format($expense->borrowed, 2) }}</div>
+                    </div>
+                @endif
             </div>
         @endif
     @endforeach

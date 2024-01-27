@@ -54,12 +54,19 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $user_id = $this->id;
 
+        $user_groups = Group::select('id')->whereHas('members', function ($query) use ($user_id) {
+            $query->where('users.id', $user_id);
+        })
+        ->whereNot('id', Group::DEFAULT_GROUP)
+        ->get()->toArray();
+
         $expeneses = Expense::select('expenses.*')
-            ->where(function ($query) use ($user_id) {
+            ->where(function ($query) use ($user_id, $user_groups) {
                 $query->where('payer', $user_id)
-                    ->orWhereHas('participants', function ($query) use ($user_id){
+                    ->orWhereHas('participants', function ($query) use ($user_id) {
                         $query->where('users.id', $user_id);
-                    });
+                    })
+                    ->orWhereIn('group_id', $user_groups);
             })
             ->distinct();
 
