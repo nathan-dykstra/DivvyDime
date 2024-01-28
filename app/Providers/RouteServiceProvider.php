@@ -38,7 +38,6 @@ class RouteServiceProvider extends ServiceProvider
                 $this->addApiRoutes($route_file, ['auth:sanctum']);
             }
 
-            // ---------------------------------------------------------------------
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
 
@@ -58,7 +57,7 @@ class RouteServiceProvider extends ServiceProvider
 
     protected function addWebRoutes(string $route_file_path, array $middleware = []): void
     {
-        $middleware = array_unique(array_merge(['web'], $middleware));
+        $middleware = array_unique(array_merge(['web', 'group.authorize', 'friend.authorize', 'expense.authorize'], $middleware));
         Route::middleware($middleware)->group($route_file_path);
     }
 

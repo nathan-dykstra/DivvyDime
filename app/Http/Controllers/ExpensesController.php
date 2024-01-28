@@ -259,19 +259,6 @@ class ExpensesController extends Controller
         $current_user = auth()->user();
         $expense = Expense::where('id', $expense_id)->first();
 
-        if ($expense === null) {
-            return view('expenses.does-not-exist');
-        } else if ($expense->group_id === Group::DEFAULT_GROUP) {
-            if (!in_array($current_user->id, $expense->involvedUsers()->pluck('id')->toArray())) {
-                return view('expenses.not-allowed');
-            }
-        } else {
-            $expense_group = $expense->group()->first();
-            if (!in_array($current_user->id, $expense_group->members()->pluck('users.id')->toArray())) {
-                return view('expenses.not-allowed');
-            }
-        }
-
         // Get formatted dates and times
         $expense->formatted_created_date = Carbon::parse($expense->created_at)->diffForHumans();
         $expense->created_date = Carbon::parse($expense->created_at)->format('M d, Y');

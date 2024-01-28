@@ -93,12 +93,6 @@ class GroupsController extends Controller
         $group = Group::where('id', $group_id)->first();
         $group->is_default = $group->id === Group::DEFAULT_GROUP;
 
-        if ($group === null) {
-            return view('groups.does-not-exist');
-        } else if (!in_array($current_user->id, $group->members()->pluck('users.id')->toArray())) {
-            return view('groups.not-allowed');
-        }
-
         $expenses = $group->expenses();
 
         if ($group->id === Group::DEFAULT_GROUP) {
@@ -175,16 +169,18 @@ class GroupsController extends Controller
      */
     public function settings(Group $group): View
     {
+        $current_user = auth()->user();
+
         $group_members = $group->members()
             ->orderByRaw("
                 CASE
                     WHEN users.id = ? THEN 0
                     ELSE 1
                 END, users.username ASC
-            ", [auth()->user()->id])
+            ", [$current_user->id])
             ->get();
 
-        $friends = auth()->user()->friends()->orderBy('username', 'asc')->get();
+        $friends = $current_user->friends()->orderBy('username', 'asc')->get();
 
         return view('groups.group-settings', [
             'group' => $group,

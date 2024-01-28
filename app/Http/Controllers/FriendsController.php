@@ -51,12 +51,6 @@ class FriendsController extends Controller
 
         $friend = User::where('id', $friend_id)->first();
 
-        if ($friend === null) {
-            return view('friends.does-not-exist');
-        } else if (!in_array($current_user->id, $friend->friends()->pluck('id')->toArray())) {
-            return view('friends.not-allowed');
-        }
-
         $overall_balance = Balance::where('user_id', $current_user->id)
             ->where('friend', $friend->id)
             ->sum('balance');

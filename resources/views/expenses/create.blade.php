@@ -8,13 +8,5 @@
         </div>
     </x-slot>
 
-    <!-- TODO: remove these temp labels -->
-    @if ($group)
-        <h2>Group Here!</h2>
-    @endif
-    @if ($friend)
-        <h2>Friend Here!</h2>
-    @endif
-
     @include('expenses.partials.expense-details')
 </x-app-layout>
