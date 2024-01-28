@@ -75,8 +75,13 @@ class FriendsController extends Controller
 
         $expenses = $friend->expenses()
             ->where(function ($query) use ($current_user, $friend) {
-                $query->where('payer', $current_user->id)
-                    ->orWhere(function ($query) use ($current_user, $friend) {
+                $query->where(function ($query) use ($current_user, $friend) { // Expenses where current User paid and friend was a participant
+                        $query->where('payer', $current_user->id)
+                            ->whereHas('participants', function ($query) use ($friend) {
+                                $query->where('users.id', $friend->id);
+                            });
+                    })
+                    ->orWhere(function ($query) use ($current_user, $friend) { // Expenses where friend paid and current User was a participant
                         $query->where('payer', $friend->id)
                             ->whereHas('participants', function ($query) use ($current_user) {
                                 $query->where('users.id', $current_user->id);

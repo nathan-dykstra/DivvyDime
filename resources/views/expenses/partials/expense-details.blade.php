@@ -20,6 +20,13 @@
                             <div class="involved-chip involved-chip-fixed" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
                                 <span>{{ auth()->user()->username }}</span>
                             </div>
+
+                            @if ($friend) <!-- Expense was added from a Friend -->
+                                <div class="involved-chip" data-user-id="{{ $friend->id }}" data-username="{{ $friend->username }}">
+                                    <span>{{ $friend->username }}</span>
+                                    <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
+                                </div>
+                            @endif
                         @endif
                     @else <!-- Updating an existing Expense -->
                         @foreach($expense->involvedUsers() as $involved_user)
@@ -98,6 +105,18 @@
                                             </div>
                                         </label>
                                     </li>
+
+                                    @if ($friend) <!-- Expense was added from a Friend -->
+                                        <li>
+                                            <label class="split-equal-item" for="paid-dropdown-item-{{ $friend->id }}" data-user-id="{{ $friend->id }}" data-username="{{ $friend->username }}" onclick="setExpensePayer(this)">
+                                                <input type="radio" id="paid-dropdown-item-{{ $friend->id }}" class="radio" name="expense-paid" value="{{ $friend->id }}" />
+                                                <div class="user-photo-name">
+                                                    <div class="profile-circle-sm-placeholder"></div>
+                                                    <div class="split-equal-item-name">{{ $friend->username }}</div>
+                                                </div>
+                                            </label>
+                                        </li>
+                                    @endif
                                 @endif
                             @else <!-- Updating an existing Expense -->
                                 @foreach ($expense->involvedUsers() as $involved_user)

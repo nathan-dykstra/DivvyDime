@@ -59,9 +59,32 @@
                         />
                     </label>
                 </li>
+
+                @if ($friend) <!-- Expense was added from a Friend -->
+                    <li>
+                        <label class="split-amount-item" for="split-amount-item-{{ $friend->id }}">
+                            <div class="user-photo-name">
+                                <div class="profile-circle-sm-placeholder"></div>
+                                <div class="split-equal-item-name">{{ $friend->username }}</div>
+                            </div>
+
+                            <x-text-input-prepend 
+                                id="split-amount-item-{{ $friend->id }}"
+                                name="split-amount-item-{{ $friend->id }}"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="99999999"
+                                placeholder="{{ __('0.00') }}"
+                                :prepend="__('$')"
+                                oninput="splitAmountUpdateTotal()"
+                            />
+                        </label>
+                    </li>
+                @endif
             @endif
         @else <!-- Updating an existing Expense -->
-            @foreach ($expense?->involvedUsers() ?? [] as $involved_user)
+            @foreach ($expense->involvedUsers() as $involved_user)
                 <li>
                     <label class="split-amount-item" for="split-amount-item-{{ $involved_user->id }}">
                         <div class="user-photo-name">

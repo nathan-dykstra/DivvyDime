@@ -37,6 +37,18 @@
                         </div>
                     </label>
                 </li>
+
+                @if ($friend) <!-- Expense was added from a Friend -->
+                    <li>
+                        <label class="split-equal-item" for="split-equal-item-{{ $friend->id }}" onclick="splitEqualUpdateSelectAll()">
+                            <input type="checkbox" id="split-equal-item-{{ $friend->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $friend->id }}" checked />
+                            <div class="user-photo-name">
+                                <div class="profile-circle-sm-placeholder"></div>
+                                <div class="split-equal-item-name">{{ $friend->username }}</div>
+                            </div>
+                        </label>
+                    </li>
+                @endif
             @endif
         @else <!-- Updating an existing Expense -->
             @foreach ($expense->involvedUsers() as $involved_user)
