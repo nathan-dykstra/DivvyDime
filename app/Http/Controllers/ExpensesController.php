@@ -46,7 +46,7 @@ class ExpensesController extends Controller
     /**
      * Displays the create Expense form.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
         $current_user = auth()->user();
 
@@ -87,6 +87,21 @@ class ExpensesController extends Controller
 
         $formatted_today = Carbon::now()->format('F j, Y');
 
+        // Get additional paramters from the route if the Expense was created from a Group or Friend
+
+        $group = $request->input('group') ? Group::find($request->input('group')) : null;
+        $friend = $request->input('friend') ? User::find($request->input('friend')) : null;
+
+        if ($group) {
+            $group->group_members = $group->members()->orderByRaw("
+                CASE
+                    WHEN users.id = ? THEN 0
+                    ELSE 1
+                END, users.username ASC
+            ", [$current_user->id])
+            ->get();
+        }
+
         return view('expenses.create', [
             'expense' => null,
             'groups' => $groups,
@@ -96,6 +111,8 @@ class ExpensesController extends Controller
             'default_expense_type' => $default_expense_type,
             'expense_type_names' => $expense_type_names,
             'expense_type_ids' => $expense_type_ids,
+            'group' => $group,
+            'friend' => $friend,
         ]);
     }
 

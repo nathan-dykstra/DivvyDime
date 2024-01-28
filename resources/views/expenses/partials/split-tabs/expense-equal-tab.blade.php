@@ -14,29 +14,43 @@
 
     <ul class="split-equal-list" id="split-equal-list">
         <!-- TODO: Show user profile photo in this list -->
-        @if ($expense === null)
-            <li>
-                <label class="split-equal-item" for="split-equal-item-{{ auth()->user()->id }}" onclick="splitEqualUpdateSelectAll()">
-                    <input type="checkbox" id="split-equal-item-{{ auth()->user()->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ auth()->user()->id }}" checked />
-                    <div class="user-photo-name">
-                        <div class="profile-circle-sm-placeholder"></div>
-                        <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
-                    </div>
-                </label>
-            </li>
+        @if ($expense === null) <!-- Creating a new Expense -->
+            @if ($group) <!-- Expense was added from a Group, so show the Group members by default -->
+                @foreach ($group->group_members as $member)
+                    <li>
+                        <label class="split-equal-item" for="split-equal-item-{{ $member->id }}" onclick="splitEqualUpdateSelectAll()">
+                            <input type="checkbox" id="split-equal-item-{{ $member->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $member->id }}" checked />
+                            <div class="user-photo-name">
+                                <div class="profile-circle-sm-placeholder"></div>
+                                <div class="split-equal-item-name">{{ $member->username }}</div>
+                            </div>
+                        </label>
+                    </li>
+                @endforeach
+            @else <!-- Expense was not added from a Group (or it was added from "Individual Expenses") -->
+                <li>
+                    <label class="split-equal-item" for="split-equal-item-{{ auth()->user()->id }}" onclick="splitEqualUpdateSelectAll()">
+                        <input type="checkbox" id="split-equal-item-{{ auth()->user()->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ auth()->user()->id }}" checked />
+                        <div class="user-photo-name">
+                            <div class="profile-circle-sm-placeholder"></div>
+                            <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                        </div>
+                    </label>
+                </li>
+            @endif
+        @else <!-- Updating an existing Expense -->
+            @foreach ($expense->involvedUsers() as $involved_user)
+                <li>
+                    <label class="split-equal-item" for="split-equal-item-{{ $involved_user->id }}" onclick="splitEqualUpdateSelectAll()">
+                        <input type="checkbox" id="split-equal-item-{{ $involved_user->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $involved_user->id }}" {{ $expense->participants->contains('id', $involved_user->id) ? 'checked' : '' }}/>
+                        <div class="user-photo-name">
+                            <div class="profile-circle-sm-placeholder"></div>
+                            <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                        </div>
+                    </label>
+                </li>
+            @endforeach
         @endif
-
-        @foreach ($expense?->involvedUsers() ?? [] as $involved_user)
-            <li>
-                <label class="split-equal-item" for="split-equal-item-{{ $involved_user->id }}" onclick="splitEqualUpdateSelectAll()">
-                    <input type="checkbox" id="split-equal-item-{{ $involved_user->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $involved_user->id }}" {{ $expense->participants->contains('id', $involved_user->id) ? 'checked' : '' }}/>
-                    <div class="user-photo-name">
-                        <div class="profile-circle-sm-placeholder"></div>
-                        <div class="split-equal-item-name">{{ $involved_user->username }}</div>
-                    </div>
-                </label>
-            </li>
-        @endforeach
     </ul>
 </div>
 

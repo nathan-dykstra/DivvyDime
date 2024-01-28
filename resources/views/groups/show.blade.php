@@ -3,7 +3,7 @@
         <div class="btn-container-apart">
             <h2>{{ $group->name }}</h2>
             <div class="btn-container-end">
-                <x-primary-button icon="fa-solid fa-receipt icon">{{ __('Add Expense') }}</x-primary-button>
+                <x-primary-button icon="fa-solid fa-receipt icon" :href="route('expenses.create', $group->is_default ? '' : ['group' => $group->id])">{{ __('Add Expense') }}</x-primary-button>
                 <x-primary-button icon="fa-solid fa-scale-balanced icon">{{ __('Settle Up') }}</x-primary-button>
 
                 <x-dropdown>

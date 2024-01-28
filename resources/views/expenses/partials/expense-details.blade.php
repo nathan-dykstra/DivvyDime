@@ -8,22 +8,29 @@
 
             <div class="expense-involved-container">
                 <div class="involved-chips-container" id="involved-chips-container">
-                    @if ($expense === null)
-                        <div class="involved-chip involved-chip-fixed" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
-                            <span>{{ auth()->user()->username }}</span>
-                            <!--<x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />-->
-                            <!-- TODO: Allow removeal of current user (on initial load) when adding in a Group -->
-                        </div>
+                    @if ($expense === null) <!-- Creating a new Expense -->
+                        @if ($group) <!-- Expense was added from a Group, so show the Group members by default -->
+                            @foreach ($group->group_members as $member)
+                                <div class="involved-chip" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}">
+                                    <span>{{ $member->username }}</span>
+                                    <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
+                                </div>
+                            @endforeach
+                        @else <!-- Expense was not added from a Group (or it was added from "Individual Expenses") -->
+                            <div class="involved-chip involved-chip-fixed" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}">
+                                <span>{{ auth()->user()->username }}</span>
+                            </div>
+                        @endif
+                    @else <!-- Updating an existing Expense -->
+                        @foreach($expense->involvedUsers() as $involved_user)
+                            <div class="involved-chip {{ $involved_user->id === auth()->user()->id && $expense->group_id === $default_group->id ? 'involved-chip-fixed' : '' }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}">
+                                <span>{{ $involved_user->username }}</span>
+                                @if (!($involved_user->id === auth()->user()->id && $expense->group_id === $default_group->id))
+                                    <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
+                                @endif
+                            </div>
+                        @endforeach
                     @endif
-
-                    @foreach($expense?->involvedUsers() ?? [] as $involved_user)
-                        <div class="involved-chip {{ $involved_user->id === auth()->user()->id && $expense->group_id === $default_group->id ? 'involved-chip-fixed' : '' }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}">
-                            <span>{{ $involved_user->username }}</span>
-                            @if (!($involved_user->id === auth()->user()->id && $expense->group_id === $default_group->id))
-                                <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
-                            @endif
-                        </div>
-                    @endforeach
 
                     <input id="expense-involved" class="expense-involved" type="search" placeholder="{{ __('Who was involved?') }}" autofocus autocomplete="off" />
                 </div>
@@ -34,7 +41,7 @@
             <div class="expense-name-amount-category-container">
                 <x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Choose a category')">
                     <div class="expense-category">
-
+                        <!-- TODO: Expense Category selector -->
                     </div>
                 </x-tooltip>
                 <div class="expense-name-amount-container">
@@ -68,36 +75,50 @@
                         </div>
 
                         <ul class="expense-paid-dropdown-list" id="expense-paid-dropdown-list">
-                            @if ($expense === null)
-                                <li>
-                                    <label class="split-equal-item" for="paid-dropdown-item-{{ auth()->user()->id }}" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
-                                        <input type="radio" id="paid-dropdown-item-{{ auth()->user()->id }}" class="radio" name="expense-paid" value="{{ auth()->user()->id }}" checked/>
-                                        <div class="user-photo-name">
-                                            <div class="profile-circle-sm-placeholder"></div>
-                                            <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
-                                        </div>
-                                    </label>
-                                </li>
+                            @if ($expense === null) <!-- Creating a new Expense -->
+                                @if ($group) <!-- Expense was added from a Group, so show the Group members by default -->
+                                    @foreach ($group->group_members as $member)
+                                        <li>
+                                            <label class="split-equal-item" for="paid-dropdown-item-{{ $member->id }}" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="setExpensePayer(this)">
+                                                <input type="radio" id="paid-dropdown-item-{{ $member->id }}" class="radio" name="expense-paid" value="{{ $member->id }}" {{ $member->id === auth()->user()->id ? 'checked' : '' }} />
+                                                <div class="user-photo-name">
+                                                    <div class="profile-circle-sm-placeholder"></div>
+                                                    <div class="split-equal-item-name">{{ $member->username }}</div>
+                                                </div>
+                                            </label>
+                                        </li>
+                                    @endforeach
+                                @else <!-- Expense was not added from a Group (or it was added from "Individual Expenses") -->
+                                    <li>
+                                        <label class="split-equal-item" for="paid-dropdown-item-{{ auth()->user()->id }}" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
+                                            <input type="radio" id="paid-dropdown-item-{{ auth()->user()->id }}" class="radio" name="expense-paid" value="{{ auth()->user()->id }}" checked/>
+                                            <div class="user-photo-name">
+                                                <div class="profile-circle-sm-placeholder"></div>
+                                                <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                                            </div>
+                                        </label>
+                                    </li>
+                                @endif
+                            @else <!-- Updating an existing Expense -->
+                                @foreach ($expense->involvedUsers() as $involved_user)
+                                    <li>
+                                        <label class="split-equal-item" for="paid-dropdown-item-{{ $involved_user->id }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}" onclick="setExpensePayer(this)">
+                                            <input type="radio" id="paid-dropdown-item-{{ $involved_user->id }}" class="radio" name="expense-paid" value="{{ $involved_user->id }}" {{ $expense?->payer === $involved_user->id ? 'checked' : '' }}/>
+                                            <div class="user-photo-name">
+                                                <div class="profile-circle-sm-placeholder"></div>
+                                                <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                                            </div>
+                                        </label>
+                                    </li>
+                                @endforeach
                             @endif
-
-                            @foreach ($expense?->involvedUsers() ?? [] as $involved_user)
-                                <li>
-                                    <label class="split-equal-item" for="paid-dropdown-item-{{ $involved_user->id }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}" onclick="setExpensePayer(this)">
-                                        <input type="radio" id="paid-dropdown-item-{{ $involved_user->id }}" class="radio" name="expense-paid" value="{{ $involved_user->id }}" {{ $expense?->payer === $involved_user->id ? 'checked' : '' }}/>
-                                        <div class="user-photo-name">
-                                            <div class="profile-circle-sm-placeholder"></div>
-                                            <div class="split-equal-item-name">{{ $involved_user->username }}</div>
-                                        </div>
-                                    </label>
-                                </li>
-                            @endforeach
                         </ul>
                     </div>
                 </div>
 
                 <div>
                     <div class="expense-paid-split">
-                        {{ __('How was it split?') }} <!-- TODO: this section -->
+                        {{ __('How was it split?') }}
 
                         <x-primary-button class="expense-round-btn" id="expense-split-btn" onclick="toggleSplitDropdown()">
                             <div class="expense-round-btn-text">
@@ -141,21 +162,45 @@
                     <div class="expense-group-date-media">
                         <x-primary-button class="expense-round-btn expense-round-btn-equal-width" id="expense-group-btn" onclick="toggleGroupDropdown()">
                             <div class="expense-round-btn-text">
-                                {{ $expense?->group()->first()->name ?? $default_group->name }}
+                                @if ($expense === null) <!-- Creating a new Expense -->
+                                    @if ($group) <!-- Expense was added from a Group, so show this Group by default -->
+                                        {{ $group->name }}
+                                    @else <!-- Expense was not added from a Group (or it was added from "Individual Expenses") -->
+                                        {{ $default_group->name }}
+                                    @endif
+                                @else <!-- Updating an existing Expense -->
+                                    {{ $expense->group()->first()->name }}
+                                @endif
                             </div>
                         </x-primary-button>
                     </div>
-    
+
                     <div class="expense-expand-dropdown" id="expense-group-dropdown">
                         <h4 class="margin-bottom-sm">{{ __('Choose a group') }}</h4>
-    
+
                         <ul class="expense-paid-dropdown-list" id="expense-group-dropdown-list">
-                            @foreach ($groups as $group)
-                            <!-- TODO: Select the correct Group if Expense is added from a Group -->
+                            @foreach ($groups as $dropdown_group)
                                 <li>
-                                    <label class="split-equal-item" for="group-dropdown-item-{{ $group->id }}" data-group-id="{{ $group->id }}" data-group-name="{{ $group->name }}" onclick="setExpenseGroup(this)">
-                                        <input type="radio" id="group-dropdown-item-{{ $group->id }}" class="radio" name="expense-group" value="{{ $group->id }}" {{ $expense === null && $group->id === $default_group->id || $expense?->group_id === $group->id ? 'checked' : '' }}/>
-                                        <div class="split-equal-item-name">{{ $group->name }}</div>
+                                    <label class="split-equal-item" for="group-dropdown-item-{{ $dropdown_group->id }}" data-group-id="{{ $dropdown_group->id }}" data-group-name="{{ $dropdown_group->name }}" onclick="setExpenseGroup(this)">
+                                        <input
+                                            type="radio"
+                                            id="group-dropdown-item-{{ $dropdown_group->id }}"
+                                            class="radio"
+                                            name="expense-group"
+                                            value="{{ $dropdown_group->id }}"
+                                            @if ($expense === null)
+                                                @if ($group && $dropdown_group->id === $group->id)
+                                                    checked
+                                                @elseif (!$group && $dropdown_group->id === $default_group->id)
+                                                    checked
+                                                @endif
+                                            @else
+                                                @if ($expense->group_id === $dropdown_group->id)
+                                                    checked
+                                                @endif
+                                            @endif
+                                        />
+                                        <div class="split-equal-item-name">{{ $dropdown_group->name }}</div>
                                     </label>
                                 </li>
                             @endforeach
@@ -1227,6 +1272,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Scroll to bring the selected tab into view on initial load
         splitTabsScrollToCurrentTab();
+
+        // Resize the "Note" textarea to fit it's content
         resizeTextarea(currentNoteInput);
     })
 
