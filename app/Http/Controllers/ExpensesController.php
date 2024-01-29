@@ -538,9 +538,7 @@ class ExpensesController extends Controller
                 ->join('groups', 'expenses.group_id', 'groups.id')
                 ->where(function ($query) use ($search_string) {
                     $query->whereRaw('participant_users.username LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('participant_users.email LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('payer_users.username LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('payer_users.email LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('expenses.name LIKE ?', ["%$search_string%"]);
                 })
@@ -568,23 +566,16 @@ class ExpensesController extends Controller
             $expense->payer_user = User::where('id', $expense->payer)->first();
 
             $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
-
             $expense->date = Carbon::parse($expense->date)->format('M d, Y');
 
             $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
                 ->where('user_id', $current_user->id)
                 ->value('share');
 
-            if ($expense->payer === $current_user->id) {
-                $expense->lent = $expense->amount - $current_user_share;
-            }
+            $expense->lent = $expense->amount - $current_user_share;
+            $expense->borrowed = $current_user_share;
 
-            if ($current_user_share) {
-                $expense->borrowed = $current_user_share;
-            }
-
-            // TODO: I already have Expense::group() defined, use that instead
-            $expense->group = Group::where('id', $expense->group_id)->first();
+            $expense->group = $expense->group()->first();
 
             return $expense;
         });

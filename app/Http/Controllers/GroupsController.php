@@ -514,7 +514,6 @@ class GroupsController extends Controller
                 ->join('users', 'gm.user_id', 'users.id')
                 ->where(function ($query) use ($search_string) {
                     $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('users.email LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"]);
                 })
                 ->distinct();

@@ -288,13 +288,18 @@ class FriendsController extends Controller
             )
             ->get()->toArray();
 
-        $friends = User::whereIn('id', $friend_ids)
-            ->where(function ($query) use ($search_string) {
+        $friends_query = User::whereIn('id', $friend_ids);
+
+        if ($search_string) {
+            $friends_query = $friends_query->where(function ($query) use ($search_string) {
                 $query->whereRaw('username LIKE ?', ["%$search_string%"])
                     ->orWhereRaw('email LIKE ?', ["%$search_string%"]);
-                })
-            ->orderBy('username', 'asc')
-            ->get();
+                });
+        }
+
+        $friends = $friends_query->orderBy('username', 'asc')->get();
+
+        $friends = $this->augmentFriends($friends);
 
         return view('friends.partials.friends', ['friends' => $friends]);
     }

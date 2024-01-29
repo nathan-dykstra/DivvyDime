@@ -6,7 +6,6 @@ use App\Models\Expense;
 use App\Models\ExpenseParticipant;
 use App\Models\Group;
 use App\Models\Notification;
-use App\Models\NotificationAttribute;
 use App\Models\NotificationType;
 use App\Models\User;
 use Carbon\Carbon;
@@ -72,20 +71,22 @@ class ActivityController extends Controller
         $current_user = auth()->user();
         $search_string = $request->input('search_string');
 
-        $notifications = Notification::select('notifications.*', 'users.username')
+        $notifications_query = Notification::select('notifications.*', 'users.username')
             ->join('users', 'notifications.sender', 'users.id')
-            ->join('notification_types', 'notifications.notification_type_id', 'notification_types.id')
-            ->join('notification_attributes', 'notifications.id', 'notification_attributes.notification_id')
-            ->join('groups', 'notification_attributes.group_id', 'groups.id')
-            ->where('notifications.recipient', $current_user->id)
-            // Filter the results further based on the search
-            ->where(function ($query) use ($search_string) {
-                $query->whereRaw('users.username LIKE ? AND notifications.notification_type_id != ?', ["%$search_string%", NotificationType::JOINED_GROUP])
-                    ->orWhereRaw('notification_types.type LIKE ?', ["%$search_string%"])
-                    ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"]);
-                })
-            ->orderBy('notifications.updated_at', 'desc')
-            ->get();
+            ->where('notifications.recipient', $current_user->id);
+
+        if ($search_string) {
+            $notifications_query = $notifications_query->leftJoin('notification_attributes', 'notifications.id', 'notification_attributes.notification_id')
+                ->leftJoin('groups', 'notification_attributes.group_id', 'groups.id')
+                ->leftJoin('expenses', 'notification_attributes.expense_id', 'expenses.id')
+                ->where(function ($query) use ($search_string) {
+                    $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
+                        ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"])
+                        ->orWhereRaw('expenses.name LIKE ?', ["%$search_string%"]);
+                });
+        }
+
+        $notifications = $notifications_query->orderBy('notifications.updated_at', 'desc')->get();
 
         $notifications = $this->augmentNotifications($notifications);
 
