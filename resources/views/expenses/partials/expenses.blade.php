@@ -28,7 +28,7 @@
                         <a class="metric-group" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
                     </div>
 
-                    <div class="expense-amount text-small"><span class="notification-username">{{ $expense->payer_user->username }}</span>{{ __(' paid $') . $expense->amount }}</div> 
+                    <div class="expense-amount text-small"><span class="bold-username">{{ $expense->payer_user->username }}</span>{{ __(' paid $') . $expense->amount }}</div> 
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date }}">
                         <div class="text-shy width-content">{{ $expense->formatted_date }}</div>

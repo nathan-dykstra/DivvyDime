@@ -66,7 +66,7 @@
     .dropdown-item {
         display: grid;
         gap: 8px;
-        grid-template-columns: 22px auto;
+        grid-template-columns: 20px auto;
 
         padding: 8px 16px;
         border-radius: 0.3rem;

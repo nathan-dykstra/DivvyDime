@@ -3,7 +3,7 @@
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div>{{ __('You left ') }}<span class="notification-username">{{ $notification->group->name }}</span></div>
+                    <div>{{ __('You left ') }}<span class="bold-username">{{ $notification->group->name }}</span></div>
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
@@ -21,7 +21,7 @@
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div><span class="notification-username">{{ $notification->username }}</span>{{ __(' left ') }}<span class="notification-username">{{ $notification->group->name }}</span></div>
+                    <div><span class="bold-username">{{ $notification->username }}</span>{{ __(' left ') }}<span class="bold-username">{{ $notification->group->name }}</span></div>
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>

@@ -3,7 +3,7 @@
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div>{{ __('You sent ') }}<span class="notification-username">{{ $notification->username }}</span>{{ __(' a friend request') }}</div>
+                    <div>{{ __('You sent ') }}<span class="bold-username">{{ $notification->username }}</span>{{ __(' a friend request') }}</div>
                     
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
@@ -21,7 +21,7 @@
     @else <!-- Current User receiving the friend request -->
         <div class="notification-content">
             <div>
-                <div><span class="notification-username">{{ $notification->username }}</span>{{ __(' sent you a friend request') }}</div>
+                <div><span class="bold-username">{{ $notification->username }}</span>{{ __(' sent you a friend request') }}</div>
                 
                 <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                     <div class="text-shy width-content">{{ $notification->formatted_date }}</div>

@@ -3,7 +3,7 @@
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div>{{ __('You added "') . $notification->expense->name . __('" in ') }}<span class="notification-username">{{ $notification->group->name }}</span></div>
+                    <div>{{ __('You added "') . $notification->expense->name . __('" in ') }}<span class="bold-username">{{ $notification->group->name }}</span></div>
 
                     <div class="text-success text-small">{{ __('You lent $') . number_format($notification->amount_lent, 2) }}</div>
 
@@ -23,7 +23,7 @@
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div><span class="notification-username">{{ $notification->payer_username }}</span> {{ __(' added "') . $notification->expense->name . __('" in ')}}<span class="notification-username">{{ $notification->group->name }}</span></div>
+                    <div><span class="bold-username">{{ $notification->payer_username }}</span> {{ __(' added "') . $notification->expense->name . __('" in ')}}<span class="bold-username">{{ $notification->group->name }}</span></div>
 
                     @if ($notification->amount_borrowed == 0)
                         <div class="text-shy">{{ __('Not involved') }}</div>
