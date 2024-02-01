@@ -167,6 +167,11 @@ p {
     color: var(--text-shy);
 }
 
+.text-shy-heading {
+    font-weight: 600;
+    color: var(--text-shy);
+}
+
 .text-primary {
     font-size: 1em;
     font-weight: 400;

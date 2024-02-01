@@ -4,7 +4,7 @@
 
         <div class="split-equal-price-breakdown-container">
             <div>{{__('$') }}<span class="split-equal-price-breakdown">{{$expense && $expense->participants->count() !== 0 ? number_format(round($expense->amount / $expense->participants->count(), 2), 2) : '0.00' }}</span>{{ __('/person')}}</div>
-            <div class="text-shy">(<span class="split-equal-participant-count">{{ $expense?->participants->count() ?? '1' }}</span> <span class="split-equal-participant-count-label">{{ $expense?->participants->count() === 1 || $expense === null ? __('person') : __('people') }}</span>)</div>
+            <div class="text-shy">(<span id="split-equal-participant-count">{{ $expense?->participants->count() ?? '1' }}</span><span id="split-equal-participant-count-label">{{ $expense?->participants->count() === 1 || $expense === null ? __(' person') : __(' people') }}</span>)</div>
         </div>
     </div>
 
@@ -80,7 +80,7 @@
 
 <style>
     .expense-split-equal-container {
-        padding: 16px 0;
+        padding-top: 16px;
         color: var(--text-primary);
     }
 
@@ -150,7 +150,7 @@
         const amountPerParticipant = currentParticipantCount === 0 || currentAmountInput.value === '' ? 0 : parseFloat(currentAmountInput.value) / currentParticipantCount;
 
         $('.split-equal-price-breakdown').text(amountPerParticipant.toFixed(2));
-        $('.split-equal-participant-count').text(currentParticipantCount);
-        $('.split-equal-participant-count-label').text(currentParticipantCount === 1 ? "{{ __('person') }}" : "{{ __('people') }}");
+        $('#split-equal-participant-count').text(currentParticipantCount);
+        $('#split-equal-participant-count-label').text(currentParticipantCount === 1 ? "{{ __(' person') }}" : "{{ __(' people') }}");
     }
 </script>

@@ -5,7 +5,11 @@
                 <div>
                     <div>{{ __('You added "') . $notification->expense->name . __('" in ') }}<span class="bold-username">{{ $notification->group->name }}</span></div>
 
-                    <div class="text-success text-small">{{ __('You lent $') . number_format($notification->amount_lent, 2) }}</div>
+                    @if ($notification->is_reimbursement_expense)
+                        <div class="text-warning text-small">{{ __('You owe $') . number_format($notification->amount_lent, 2) }}</div>
+                    @else
+                        <div class="text-success text-small">{{ __('You lent $') . number_format($notification->amount_lent, 2) }}</div>
+                    @endif
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
@@ -28,7 +32,11 @@
                     @if ($notification->amount_borrowed == 0)
                         <div class="text-shy">{{ __('Not involved') }}</div>
                     @else
-                        <div class="text-warning text-small">{{ __('You borrowed $') . number_format($notification->amount_borrowed, 2) }}</div>
+                        @if ($notification->is_reimbursement_expense)
+                            <div class="text-success text-small">{{ __('You received $') . number_format($notification->amount_borrowed, 2) }}</div>
+                        @else
+                            <div class="text-warning text-small">{{ __('You borrowed $') . number_format($notification->amount_borrowed, 2) }}</div>
+                        @endif
                     @endif
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">

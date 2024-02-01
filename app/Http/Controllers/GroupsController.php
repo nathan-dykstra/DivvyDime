@@ -6,6 +6,7 @@ use App\Http\Requests\CreateGroupRequest;
 use App\Models\Balance;
 use App\Models\Expense;
 use App\Models\ExpenseParticipant;
+use App\Models\ExpenseType;
 use App\Models\Friend;
 use App\Models\Group;
 use App\Models\GroupInvite;
@@ -126,6 +127,8 @@ class GroupsController extends Controller
             }
 
             $expense->group = Group::where('id', $expense->group_id)->first();
+
+            $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
 
             return $expense;
         });

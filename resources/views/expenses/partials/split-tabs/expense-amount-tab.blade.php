@@ -3,8 +3,8 @@
         <div>{{ __('Total') }}</div>
 
         <div class="split-equal-price-breakdown-container">
-            <div>{{__('$') }}<span class="split-amount-total">{{ $expense && $expense->expense_type_id === $expense_type_ids['amount'] ? number_format($expense->amount, 2) : '0.00' }}</span></div>
-            <div class="text-shy">({{__('$') }}<span class="split-amount-left">{{ $expense && $expense->expense_type_id === $expense_type_ids['amount'] ? '0.00' : $expense?->amount ?? '0.00' }}</span> {{ __('left') }})</div>
+            <div>{{__('$') }}<span id="split-amount-total">{{ $expense && $expense->expense_type_id === $expense_type_ids['amount'] ? number_format($expense->amount, 2) : '0.00' }}</span></div>
+            <div class="text-shy">({{__('$') }}<span id="split-amount-left">{{ $expense && $expense->expense_type_id === $expense_type_ids['amount'] ? '0.00' : $expense?->amount ?? '0.00' }}</span> {{ __('left') }})</div>
         </div>
     </div>
 
@@ -124,6 +124,16 @@
     </li>
 </template>
 
+<style>
+    .split-amount-item {
+        display: grid;
+        grid-template-columns: auto 35%;
+        gap: 16px;
+        padding: 8px 16px;
+        border-radius: var(--border-radius);
+    }
+</style>
+
 <script>
     function splitAmountUpdateTotal() {
         const splitAmountItems = document.querySelectorAll(".split-amount-list li");
@@ -140,17 +150,7 @@
             }
         });
 
-        $('.split-amount-total').text(newTotal.toFixed(2));
-        $('.split-amount-left').text(amountLeft.toFixed(2));
+        $('#split-amount-total').text(newTotal.toFixed(2));
+        $('#split-amount-left').text(amountLeft.toFixed(2));
     }
 </script>
-
-<style>
-    .split-amount-item {
-        display: grid;
-        grid-template-columns: auto 35%;
-        gap: 16px;
-        padding: 8px 16px;
-        border-radius: var(--border-radius);
-    }
-</style>

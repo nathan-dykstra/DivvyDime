@@ -76,30 +76,35 @@ class Expense extends Model
      */
     public function undoBalanceAdjustments()
     {
-        // TODO: This function may need to be adjusted to support reimbursements
         foreach($this->participants()->get() as $participant) {
             if ($participant->id !== $this->payer) {
                 $participant_share = ExpenseParticipant::where('expense_id', $this->id)
                     ->where('user_id', $participant->id)
                     ->value('share');
 
-                // Increase the participant to payer Balance by the participant's share
-
                 $participant_payer_balance = Balance::where('user_id', $participant->id)
                     ->where('friend', $this->payer)
                     ->where('group_id', $this->group_id)
                     ->first();
 
-                $participant_payer_balance->increment('balance', $participant_share);
-
-                // Decrease the payer to participant Balance by the participant's share
-
                 $payer_participant_balance = Balance::where('user_id', $this->payer)
                     ->where('friend', $participant->id)
                     ->where('group_id', $this->group_id)
                     ->first();
+                
+                if ($this->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments
+                    // Decrease the participant to payer Balance by the participant's share
+                    $participant_payer_balance->decrement('balance', $participant_share);
 
-                $payer_participant_balance->decrement('balance', $participant_share);
+                    // Increase the payer to participant Balance by the participant's share
+                    $payer_participant_balance->increment('balance', $participant_share);
+                } else {
+                    // Increase the participant to payer Balance by the participant's share
+                    $participant_payer_balance->increment('balance', $participant_share);
+
+                    // Decrease the payer to participant Balance by the participant's share
+                    $payer_participant_balance->decrement('balance', $participant_share);
+                }
             }
         }
     }

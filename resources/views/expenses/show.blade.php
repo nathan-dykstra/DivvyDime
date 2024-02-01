@@ -68,7 +68,7 @@
                         <div class="expense-info-breakdown-payer">
                             <span>{{ $expense->payer_user->username }}</span>
                             @if ($expense->is_reimbursement)
-                                {{ __(' was paid ') }}
+                                {{ __(' received ') }}
                             @else
                                 {{ __(' paid ') }}
                             @endif
@@ -80,14 +80,21 @@
                         @foreach ($participants as $participant)
                             <div class="expense-info-participant text-shy">
                                 {{ $participant->username }}
-                                @if ($expense->is_reimbursement)
-                                    {{ __(' receives ') }}
-                                @else
-                                    {{ __(' owes ') }}
+                                @if ($participant->id !== $expense->payer)
+                                    @if ($expense->is_reimbursement)
+                                        {{ __(' receives ') }}
+                                    @else
+                                        {{ __(' owes ') }}
+                                    @endif
+                                    {{ __('$') . $participant->share }}
                                 @endif
-                                {{ __('$') . $participant->share }}
-    
                                 @if ($participant->id === $expense->payer)
+                                    @if ($expense->is_reimbursement)
+                                        {{ __(' keeps ') }}
+                                    @else
+                                        {{ __(' owes ') }}
+                                    @endif
+                                    {{ __('$') . $participant->share }}
                                     {{ __(' and ') }}
                                     @if ($expense->is_reimbursement)
                                         {{ __(' owes ') }}

@@ -147,7 +147,7 @@
                     </div>
 
                     <div class="expense-expand-dropdown" id="expense-split-dropdown">
-                        <h4 class="margin-bottom-sm">{{ __('How should we divvy this up?') }}</h4>
+                        <h4 class="margin-bottom-sm">{{ __('How do you want to divvy this up?') }}</h4>
 
                         <div class="expense-split-tabs-wrapper">
                             <button type="button" class="expense-split-tabs-scroll-btn expense-split-tabs-left-btn" onclick="splitTabsScrollLeft()"><i class="fa-solid fa-arrow-left"></i></button>
@@ -167,7 +167,9 @@
                             <div id="expense-split-percentage" class="{{ $expense?->expense_type_id === $expense_type_ids['percentage'] ? '' : 'hidden' }}">Coming soon</div>
                             <div id="expense-split-share" class="{{ $expense?->expense_type_id === $expense_type_ids['share'] ? '' : 'hidden' }}">Coming soon</div>
                             <div id="expense-split-adjustment" class="{{ $expense?->expense_type_id === $expense_type_ids['adjustment'] ? '' : 'hidden' }}">Coming soon</div>
-                            <div id="expense-split-reimbursement" class="{{ $expense?->expense_type_id === $expense_type_ids['reimbursement'] ? '' : 'hidden' }}">Coming soon</div>
+                            <div id="expense-split-reimbursement" class="{{ $expense?->expense_type_id === $expense_type_ids['reimbursement'] ? '' : 'hidden' }}">
+                                @include('expenses.partials.split-tabs.expense-reimbursement-tab')
+                            </div>
                             <div id="expense-split-itemized" class="{{ $expense?->expense_type_id === $expense_type_ids['itemized'] ? '' : 'hidden' }}">Coming soon</div>
                         </div>
                     </div>
@@ -789,6 +791,7 @@
 
     const splitEqualList = document.getElementById('split-equal-list');
     const splitAmountList = document.getElementById('split-amount-list');
+    const splitReimbursementList = document.getElementById('split-reimbursement-list');
 
     const currentAmountInput = document.getElementById('expense-amount');
     const currentPayerInput = document.querySelector('input[name="expense-paid"]:checked');
@@ -1045,12 +1048,15 @@
         dateDropdown.classList.toggle('expense-expand-dropdown-open');
     }
 
-    // TODO: This function must update the lists in all sections that use "involved users" - change name
-    // For split lists, change to only adjust the users that were added/removed to save previous settings
+    // TODO: This function must update the lists in all sections that use "involved users"
+    // TODO: Change this function name
+    // TODO: For the "split-x" lists, only add/remove users that were added/removed from the involved 
+    //    section to preserve settings (i.e. don't start by emptying this list)
     function updatePaidDropdownList() {
         $(paidDropdownList).empty();
         $(splitEqualList).empty();
         $(splitAmountList).empty();
+        $(splitReimbursementList).empty();
 
         const usersInvolved = Array.from(involvedChipsContainer.children).slice(0, -1);
 
@@ -1066,8 +1072,8 @@
             usersInvolved.forEach(user => {
                 // Create "Paid" dropdown list with paid-dropdown-item-template
 
-                var paidDropdownItemContent = $('#paid-dropdown-item-template').html();
-                var paidDropdownItem = $(paidDropdownItemContent).clone();
+                let paidDropdownItemContent = $('#paid-dropdown-item-template').html();
+                let paidDropdownItem = $(paidDropdownItemContent).clone();
 
                 const paidItemLabel = paidDropdownItem.find('.split-equal-item');
                 const paidItemInput = paidDropdownItem.find('.radio');
@@ -1090,8 +1096,8 @@
 
                 // Create "Split Equal" dropdown list with split-equal-dropdown-item-template
 
-                var splitEqualDropdownItemContent = $('#split-equal-dropdown-item-template').html();
-                var splitEqualDropdownItem = $(splitEqualDropdownItemContent).clone();
+                let splitEqualDropdownItemContent = $('#split-equal-dropdown-item-template').html();
+                let splitEqualDropdownItem = $(splitEqualDropdownItemContent).clone();
 
                 splitEqualDropdownItem.find('.split-equal-item').attr('for', 'split-equal-item-' + user.dataset.userId);
                 splitEqualDropdownItem.find('.split-equal-item-checkbox').attr('id', 'split-equal-item-' + user.dataset.userId);
@@ -1102,8 +1108,8 @@
 
                 // Create "Split Amount" dropdown list with split-amount-dropdown-item-template
 
-                var splitAmountDropdownItemContent = $('#split-amount-dropdown-item-template').html();
-                var splitAmountDropdownItem = $(splitAmountDropdownItemContent).clone();
+                let splitAmountDropdownItemContent = $('#split-amount-dropdown-item-template').html();
+                let splitAmountDropdownItem = $(splitAmountDropdownItemContent).clone();
 
                 splitAmountDropdownItem.find('.split-amount-item').attr('for', 'split-amount-item-' + user.dataset.userId);
                 splitAmountDropdownItem.find('.split-equal-item-name').text(user.dataset.username);
@@ -1111,6 +1117,18 @@
                 splitAmountDropdownItem.find('.text-input-prepend').attr('name', 'split-amount-item-' + user.dataset.userId);
 
                 $(splitAmountList).append(splitAmountDropdownItem);
+
+                // Create "Split Amount" dropdown list with split-reimbursement-dropdown-item-template
+
+                let splitReimbursementDropdownItemContent = $('#split-reimbursement-dropdown-item-template').html();
+                let splitReimbursementDropdownItem = $(splitReimbursementDropdownItemContent).clone();
+
+                splitReimbursementDropdownItem.find('.split-equal-item').attr('for', 'split-reimbursement-item-' + user.dataset.userId);
+                splitReimbursementDropdownItem.find('.split-reimbursement-item-checkbox').attr('id', 'split-reimbursement-item-' + user.dataset.userId);
+                splitReimbursementDropdownItem.find('.split-reimbursement-item-checkbox').attr('value', user.dataset.userId);
+                splitReimbursementDropdownItem.find('.split-equal-item-name').text(user.dataset.username);
+
+                $(splitReimbursementList).append(splitReimbursementDropdownItem);
             });
 
             // Check if current payer was removed from the involved list
@@ -1122,7 +1140,8 @@
             }
         }
 
-        splitEqualUpdateSelectAll();
+        // Make sure the "select/deselect all" checkboxes match current selection state
+        updateSplitDropdownSelectAll();
     }
 
     function setExpensePayer(payer) {
@@ -1294,10 +1313,20 @@
 
         // Resize the "Note" textarea to fit it's content
         resizeTextarea(currentNoteInput);
+
+        // Update the "split-x" dropdown list "select/deselect all" checkboxes with the initial selection state
+        updateSplitDropdownSelectAll();
     })
 
+    // Update the amounts shown in the "split-x" dropdown lists when the expense amount input is changed
     function updateSplitDropdownAmounts() {
         splitEqualUpdatePriceBreakdown();
         splitAmountUpdateTotal();
+        splitReimbursementUpdatePriceBreakdown();
+    }
+
+    function updateSplitDropdownSelectAll() {
+        splitEqualUpdateSelectAll();
+        splitReimbursementUpdateSelectAll();
     }
 </script>

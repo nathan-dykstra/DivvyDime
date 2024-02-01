@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\ExpenseParticipant;
+use App\Models\ExpenseType;
 use App\Models\Group;
 use App\Models\Notification;
 use App\Models\NotificationType;
@@ -151,6 +152,10 @@ class ActivityController extends Controller
                 if ($current_user_share) {
                     $notification->amount_borrowed = $current_user_share;
                 }
+
+                $notification->group = Group::find($notification->expense->group_id);
+
+                $notification->is_reimbursement_expense = $notification->expense->expense_type_id === ExpenseType::REIMBURSEMENT;
             }
 
             return $notification;

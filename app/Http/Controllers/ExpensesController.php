@@ -60,7 +60,6 @@ class ExpensesController extends Controller
             ->get();
 
         $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
-
         $default_expense_type = ExpenseType::EQUAL;
 
         $expense_type_names = [
@@ -72,7 +71,6 @@ class ExpensesController extends Controller
             ExpenseType::REIMBURSEMENT => __('Reimbursement'),
             ExpenseType::ITEMIZED => __('Itemized'),
         ];
-
         $expense_type_ids = [
             'equal' => ExpenseType::EQUAL,
             'amount' => ExpenseType::AMOUNT,
@@ -204,8 +202,54 @@ class ExpensesController extends Controller
                     }
                 }
             }
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::PERCENTAGE) {
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::SHARE) {
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::ADJUSTMENT) {
         } else if ((int)$expense_data['expense_type_id'] === ExpenseType::REIMBURSEMENT) {
+            $participants = array_map('intval', $request->input('split-reimbursement-user', []));
 
+            $amount_per_participant = round((float)$expense_data['amount'] / count($participants), 2);
+            $remaining_amount = (float)$expense_data['amount'];
+
+            for ($i = 0; $i < count($participants); $i++) {
+                if ($i === count($participants) - 1) {
+                    $expense_participant = ExpenseParticipant::updateOrCreate(
+                        [
+                            'expense_id' => $expense->id,
+                            'user_id' => $participants[$i]
+                        ],
+                        [
+                            'share' => $remaining_amount,
+                            'percentage' => null,
+                            'shares' => null,
+                            'adjustment' => null,
+                            'is_settled' => 0,
+                        ]
+                    );
+                } else {
+                    $expense_participant = ExpenseParticipant::updateOrCreate(
+                        [
+                            'expense_id' => $expense->id,
+                            'user_id' => $participants[$i]
+                        ],
+                        [
+                            'share' => $amount_per_participant,
+                            'percentage' => null,
+                            'shares' => null,
+                            'adjustment' => null,
+                            'is_settled' => 0,
+                        ]
+                    );
+                }
+
+                // Update the balances between the expense payer and participant
+                if ($participants[$i] !== $expense->payer) {
+                    $this->updateBalances($expense, $participants[$i], $expense_participant->share);
+                }
+
+                $remaining_amount -= $amount_per_participant;
+            }
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::ITEMIZED) {
         }
 
         // Send Expense Notifications
@@ -223,7 +267,6 @@ class ExpensesController extends Controller
 
                 NotificationAttribute::create([
                     'notification_id' => $expense_notification->id,
-                    'group_id' => $expense->group_id,
                     'expense_id' => $expense->id,
                 ]);
             }
@@ -242,7 +285,6 @@ class ExpensesController extends Controller
 
                 NotificationAttribute::create([
                     'notification_id' => $expense_notification->id,
-                    'group_id' => $expense->group_id,
                     'expense_id' => $expense->id,
                 ]);
             }
@@ -307,7 +349,6 @@ class ExpensesController extends Controller
             ->get();
 
         $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
-
         $default_expense_type = ExpenseType::EQUAL;
 
         $expense_type_names = [
@@ -319,7 +360,6 @@ class ExpensesController extends Controller
             ExpenseType::REIMBURSEMENT => __('Reimbursement'),
             ExpenseType::ITEMIZED => __('Itemized'),
         ];
-
         $expense_type_ids = [
             'equal' => ExpenseType::EQUAL,
             'amount' => ExpenseType::AMOUNT,
@@ -450,8 +490,55 @@ class ExpensesController extends Controller
                     }
                 }
             }
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::PERCENTAGE) {
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::SHARE) {
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::ADJUSTMENT) {
         } else if ((int)$expense_data['expense_type_id'] === ExpenseType::REIMBURSEMENT) {
+            $participants = array_map('intval', $request->input('split-reimbursement-user', []));
+            $updated_participants = $participants;
 
+            $amount_per_participant = round((float)$expense_data['amount'] / count($participants), 2);
+            $remaining_amount = (float)$expense_data['amount'];
+
+            for ($i = 0; $i < count($participants); $i++) {
+                if ($i === count($participants) - 1) {
+                    $expense_participant = ExpenseParticipant::updateOrCreate(
+                        [
+                            'expense_id' => $expense->id,
+                            'user_id' => $participants[$i]
+                        ],
+                        [
+                            'share' => $remaining_amount,
+                            'percentage' => null,
+                            'shares' => null,
+                            'adjustment' => null,
+                            'is_settled' => 0,
+                        ]
+                    );
+                } else {
+                    $expense_participant = ExpenseParticipant::updateOrCreate(
+                        [
+                            'expense_id' => $expense->id,
+                            'user_id' => $participants[$i]
+                        ],
+                        [
+                            'share' => $amount_per_participant,
+                            'percentage' => null,
+                            'shares' => null,
+                            'adjustment' => null,
+                            'is_settled' => 0,
+                        ]
+                    );
+                }
+
+                // Update the balances between the expense payer and participant
+                if ($participants[$i] !== $expense->payer) {
+                    $this->updateBalances($expense, $participants[$i], $expense_participant->share);
+                }
+
+                $remaining_amount -= $amount_per_participant;
+            }
+        } else if ((int)$expense_data['expense_type_id'] === ExpenseType::ITEMIZED) {
         }
 
         // Delete any old participants who were removed from the expense
@@ -575,7 +662,9 @@ class ExpensesController extends Controller
             $expense->lent = $expense->amount - $current_user_share;
             $expense->borrowed = $current_user_share;
 
-            $expense->group = $expense->group()->first();
+            $expense->group = Group::find($expense->group_id);
+
+            $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
 
             return $expense;
         });
@@ -588,22 +677,28 @@ class ExpensesController extends Controller
      */
     protected function updateBalances(Expense $expense, $user_id, $amount)
     {
-        // Decrease the participant to payer Balance by the participant's share
-
         $participant_payer_balance = Balance::where('user_id', $user_id)
             ->where('friend', $expense->payer)
             ->where('group_id', $expense->group_id)
             ->first();
-
-        $participant_payer_balance->decrement('balance', $amount);
-
-        // Increase the payer to participant Balance by the participant's share
 
         $payer_participant_balance = Balance::where('user_id', $expense->payer)
             ->where('friend', $user_id)
             ->where('group_id', $expense->group_id)
             ->first();
 
-        $payer_participant_balance->increment('balance', $amount);
+        if ($expense->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments
+            // Increase the participant to payer Balance by the participant's share
+            $participant_payer_balance->increment('balance', $amount);
+
+            // Decrease the payer to participant Balance by the participant's share
+            $payer_participant_balance->decrement('balance', $amount);
+        } else {
+            // Decrease the participant to payer Balance by the participant's share
+            $participant_payer_balance->decrement('balance', $amount);
+
+            // Increase the payer to participant Balance by the participant's share
+            $payer_participant_balance->increment('balance', $amount);
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Balance;
 use App\Models\ExpenseParticipant;
+use App\Models\ExpenseType;
 use App\Models\Friend;
 use App\Models\Group;
 use App\Models\Invite;
@@ -110,6 +111,8 @@ class FriendsController extends Controller
             }
 
             $expense->group = Group::where('id', $expense->group_id)->first();
+            
+            $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
 
             return $expense;
         });
