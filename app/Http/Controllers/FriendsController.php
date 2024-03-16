@@ -103,16 +103,19 @@ class FriendsController extends Controller
                 ->value('share');
 
             if ($expense->payer === $current_user->id) {
-                $expense->lent = $friend_share;
+                $expense->lent = number_format($friend_share, 2);
             }
-
             if ($current_user_share) {
-                $expense->borrowed = $current_user_share;
+                $expense->borrowed = number_format($current_user_share, 2);
             }
+            $expense->amount = number_format($expense->amount, 2);
 
             $expense->group = Group::where('id', $expense->group_id)->first();
             
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
+
+            $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
+            $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
 
             return $expense;
         });

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('expense_type_id')->default(ExpenseType::EQUAL);
             $table->unsignedBigInteger('category_id')->default(Category::DEFAULT_CATEGORY);
             $table->text('note')->nullable();
-            $table->date('date');
+            $table->dateTime('date');
             $table->unsignedBigInteger('creator');
             $table->timestamps();
 

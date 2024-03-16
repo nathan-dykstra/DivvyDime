@@ -209,7 +209,7 @@ p {
 .key-symbol {
     border: 1px solid var(--border-grey);
     background-color: var(--primary-grey);
-    padding: 0.4em 0.4em;
+    padding: 0.4em 0.6em;
     border-radius: 0.3rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -239,6 +239,33 @@ p {
 
 .session-status > p {
     margin-top: 0 !important;
+}
+
+.validation-warning {
+    display: flex;
+    gap: 16px;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateX(-50%);
+    }
+    20%, 50%, 80% {
+        transform: translateX(-53%);
+    }
+    35%, 65% {
+        transform: translateX(-47%);
+    }
+}
+
+.session-status.validation-warning {
+    animation: bounce 0.5s ease;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease;
+}
+
+.session-status.validation-warning.animate-out {
+    transform: translateX(100%);
+    opacity: 0;
 }
 
 .hidden {
@@ -388,6 +415,16 @@ p {
     width: 40px;
     min-height: 40px;
     min-width: 40px;
+    border-radius: 50%;
+}
+
+.profile-circle-lg-placeholder {
+    background-color: var(--primary-grey);
+    border: 1px solid var(--border-grey);
+    height: 65px;
+    width: 65px;
+    min-height: 65px;
+    min-width: 65px;
     border-radius: 50%;
 }
 
@@ -1385,6 +1422,561 @@ input[type="search"]::-webkit-search-cancel-button {
 /* Expense Edit */
 
 
+.expense-involved-container {
+    position: relative;
+}
+
+.involved-chips-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    background-color: var(--secondary-grey);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-grey);
+}
+
+.expense-involved {
+    height: 2em;
+    color: var(--text-primary);
+    min-width: 200px;
+    width: auto;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background-color: var(--secondary-grey);
+}
+
+.expense-involved:focus {
+    border: none !important;
+    outline: none !important;
+    outline-offset: 0 !important;
+    box-shadow: none !important;
+}
+
+.expense-involved::placeholder {
+    color: var(--text-shy);
+}
+
+.expense-involved-dropdown {
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 50;
+
+    background-color: var(--secondary-grey);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 8px;
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.involved-chip {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border-grey);
+    background-color: var(--primary-grey);
+    transition: border 0.3s, background-color 0.3s ease-in-out;
+
+    color: var(--text-primary);
+    height: 2em;
+    border-radius: 1em;
+    padding: 0 10px;
+}
+
+.involved-chip-selected {
+    background-color: var(--primary-grey-hover);
+    border: 1px solid var(--border-grey-hover);
+}
+
+.involved-chip-text {
+    max-width: 150px;
+    overflow: hidden;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+}
+
+.involved-dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-primary);
+    border-radius: 0.3rem;
+    padding: 8px 16px;
+    border-radius: 0.3rem;
+    transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.involved-dropdown-item-selected {
+    cursor: pointer;
+    background-color: var(--secondary-grey-hover);
+    color: var(--text-primary-highlight);
+}
+
+.expense-name-amount-category-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 2em;
+}
+
+.expense-category {
+    height: 80px;
+    width: 80px;
+    background-color: var(--primary-grey);
+    border: 1px solid var(--border-grey);
+    border-radius: var(--border-radius);
+    transition: border 0.3s, background-color 0.3s ease-in-out;
+}
+
+.expense-category:hover {
+    background-color: var(--primary-grey-hover);
+    border: 1px solid var(--border-grey-hover);
+    cursor: pointer;
+}
+
+.expense-form-name, .expense-form-amount {
+    color: var(--text-primary);
+    border: none;
+    width: 100%;
+    padding: 4px 8px;
+    margin: 0;
+    background-color: var(--secondary-grey);
+}
+
+.expense-form-name:focus, .expense-form-amount:focus {
+    border: none !important;
+    outline: none !important;
+    outline-offset: 0 !important;
+    box-shadow: none !important;
+}
+
+.expense-form-name::placeholder, .expense-form-amount::placeholder {
+    color: var(--text-shy);
+}
+
+.expense-name-amount-container {
+    width: 100%;
+}
+
+.expense-input-container {
+    color: var(--text-primary);
+    display: flex;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--border-grey);
+    margin-bottom: 8px;
+}
+
+.expense-form-name {
+    font-size: 1.25em;
+    font-weight: 600;
+}
+
+.expense-currency {
+    padding: 4px 0 4px 8px;
+    font-size: 1.25em;
+    font-weight: 600;
+}
+
+.expense-form-amount {
+    font-size: 1.75em;
+    font-weight: 800;
+
+    /* Remove up/down arrows - Firefox */
+    -moz-appearance: textfield;
+}
+
+/* Remove up/down arrows - Chrome, Safari, Edge */
+.expense-form-amount::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.expense-paid-split-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 2em;
+    border-bottom: 1px solid var(--border-grey);
+}
+
+.expense-paid-split {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-shy);
+}
+
+.expense-round-btn {
+    font-size: 1em !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    height: 2em !important;
+    border-radius: 1em !important;
+    padding: 0 10px !important;
+}
+
+.expense-round-btn-text {
+    overflow: hidden;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+}
+
+.expense-round-btn-equal-width {
+    width: 250px !important;
+}
+
+.expense-expand-dropdown {
+    overflow: hidden;
+    width: 100%;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s, padding 0.3s, margin 0.3s, opacity 0.3s;
+}
+
+.expense-expand-dropdown-open {
+    max-height: 500px;
+    border-top: 1px solid var(--border-grey);
+    border-bottom: 1px solid var(--border-grey);
+    margin: 16px 0 0 0;
+    padding: 16px 0;
+    opacity: 100%;
+}
+
+.expense-paid-dropdown-list {
+    color: var(--text-primary);
+}
+
+.paid-dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    transition: 0.1s ease, color 0.1s ease;
+}
+
+.paid-dropdown-item:hover {
+    cursor: pointer;
+    background-color: var(--secondary-grey-hover);
+    color: var(--text-primary-highlight);
+}
+
+.paid-dropdown-empty-warning {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 8px 16px;
+    color: var(--text-warning);
+    border: 1px solid var(--border-grey);
+    border-radius: var(--border-radius);
+}
+
+.expense-group-date-media-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 2em;
+    border-bottom: 1px solid var(--border-grey);
+}
+
+.expense-group-date-media {
+    display: flex;
+    justify-content: center;
+}
+
+.expense-datepicker-container {
+    display: flex;
+    justify-content: center;
+}
+
+.expense-split-tabs-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.expense-split-tabs-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-primary);
+    height: 32px;
+    width: 32px;
+    border-radius: 16px;
+    background-color: var(--secondary-grey-hover);
+    border: none;
+    cursor: pointer;
+}
+
+.expense-split-tabs-left-btn {
+    left: 0;
+}
+
+.expense-split-tabs-right-btn {
+    right: 0;
+}
+
+.expense-split-tabs {
+    display: flex;
+    align-items: center;
+    overflow-x: hidden;
+    white-space: nowrap;
+    color: var(--text-shy);
+    border-bottom: 1px solid var(--border-grey);
+}
+
+.expense-split-tab {
+    display: inline-block;
+    padding: 8px 16px;
+    transition: color 0.3s ease-in-out;
+}
+
+.expense-split-tab:hover {
+    cursor: pointer;
+}
+
+.expense-split-tab:not(.expense-split-tab-active):hover {
+    color: var(--text-primary);
+}
+
+.expense-split-tab-active {
+    color: var(--blue-hover);
+    border-bottom: 3px solid var(--blue-hover);
+}
+
+
+/* Split Equal tab */
+
+
+.expense-split-equal-container {
+    padding-top: 16px;
+    color: var(--text-primary);
+}
+
+.split-equal-select-all-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 16px 8px 16px;
+}
+
+.split-equal-price-breakdown-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.split-equal-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.split-equal-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.split-equal-item:hover {
+    cursor: pointer;
+    background-color: var(--secondary-grey-hover);
+    color: var(--text-primary-highlight);
+}
+
+/*.split-equal-item-name {
+    transition: color 0.1s ease;
+}
+
+.split-equal-item-name:hover {
+    color: var(--text-primary-highlight);
+}*/
+
+.split-equal-item-strikethrough:hover {
+    color: var(--text-shy) !important;
+}
+
+
+/* Split Amount tab */
+
+
+.split-amount-item {
+    display: grid;
+    grid-template-columns: auto 35%;
+    gap: 16px;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+}
+
+
+/* Split Reimbursement tab */
+
+
+.expense-split-reimbursement-info {
+    display: flex;
+}
+
+
+/* Flowbite Datepicker style overrides */
+
+
+.expense-datepicker-container .datepicker-picker {
+    background-color: var(--secondary-grey) !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+.expense-datepicker-container .days-of-week > span {
+    color: var(--text-shy) !important;
+}
+
+.expense-datepicker-container .datepicker-cell {
+    color: var(--text-primary) !important;
+    padding: 6px 0 !important;
+}
+
+.expense-datepicker-container .datepicker-cell:hover {
+    background-color: var(--secondary-grey-hover) !important;
+}
+
+.expense-datepicker-container .datepicker-cell.selected {
+    color: var(--text-primary-highlight) !important;
+    background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-colour-hover */
+}
+
+.expense-datepicker-container .datepicker-cell.prev, .expense-datepicker-container .datepicker-cell.next {
+    color: var(--text-shy) !important;
+}
+
+.expense-datepicker-container .datepicker-cell.prev:hover, .expense-datepicker-container .datepicker-cell.next:hover {
+    color: var(--text-primary) !important;
+}
+
+.expense-datepicker-container button.bg-white {
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    background-color: var(--secondary-grey) !important;
+    color: var(--text-primary);
+    height: 36px !important;
+    border: 1px solid var(--icon-grey) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 8px 16px !important;
+    transition: border 0.3s, background-color 0.3s ease-in-out, outline 0.1s ease-in-out, outline-offset 0.1s !important;
+
+    font-size: 0.8em !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+
+    outline: none !important;
+}
+
+.expense-datepicker-container button.bg-white:hover {
+    background-color: var(--primary-grey-hover) !important;
+    cursor: pointer !important;
+}
+
+.expense-datepicker-container button.bg-white:focus {
+    outline: 3px solid var(--blue-hover) !important; /* TODO: Change this to --primary-color-hover */
+    outline-offset: 1px !important;
+    border: 1px solid var(--icon-grey) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: none !important;
+}
+
+.expense-datepicker-container button svg {
+    color: var(--text-primary) !important;
+}
+
+.expense-datepicker-container button.today-btn {
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-color */
+    color: var(--text-opposite) !important;
+    height: 36px !important;
+    border: none !important;
+    border-radius: var(--border-radius) !important;
+    padding: 8px 16px !important;
+    transition: border 0.3s, background-color 0.3s ease-in-out, olor 0.3s ease-in-out, outline 0.1s ease-in-out, outline-offset 0.1s !important;
+
+    font-size: 0.8em !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+
+    outline: none !important;
+}
+
+.expense-datepicker-container button.today-btn:hover {
+    background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-color-hover */
+    border: none !important;
+    color: var(--text-opposite-highlight) !important;
+    cursor: pointer !important;
+}
+
+.expense-datepicker-container button.today-btn:focus {
+    outline: 3px solid var(--blue-hover) !important; /* TODO: Change this to --primary-color-hover */
+    outline-offset: 1px !important;
+    border: none !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: none !important;
+}
+
+
+/* Payment Edit */
+
+
+.payment-user-selector-item, .payment-group-selector-item  {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.payment-user-selector-item:hover, .payment-group-selector-item:hover {
+    cursor: pointer;
+    background-color: var(--secondary-grey-hover);
+    color: var(--text-primary-highlight);
+}
+
+.payment-group-selector-item-disabled {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    padding: 8px 16px;
+    color: var(--text-shy);
+} 
+
+.payment-user-selector-radio {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+
 /* Groups List */
 
 
@@ -1573,7 +2165,7 @@ input[type="search"]::-webkit-search-cancel-button {
     align-items: center;
 }
 
-.radio-label:hover, .radio:hover {
+.radio-label:not([disabled]):hover, .radio:not([disabled]):hover {
     cursor: pointer;
 }
 

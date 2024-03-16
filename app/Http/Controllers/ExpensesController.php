@@ -135,6 +135,7 @@ class ExpensesController extends Controller
             'note' => $expense_validated['expense-note'],
             'date' => $expense_validated['expense-date'],
             'creator' => $current_user->id,
+            'updator' => $current_user->id,
         ];
 
         $expense = Expense::create($expense_data);
@@ -182,19 +183,15 @@ class ExpensesController extends Controller
                 if (Str::startsWith($key, 'split-amount-item-') && (float)$value != 0) {
                     $user_id = (int)Str::after($key, 'split-amount-item-');
 
-                    $expense_participant = ExpenseParticipant::updateOrCreate(
-                        [
-                            'expense_id' => $expense->id,
-                            'user_id' => $user_id
-                        ],
-                        [
-                            'share' => $value,
-                            'percentage' => null,
-                            'shares' => null,
-                            'adjustment' => null,
-                            'is_settled' => 0,
-                        ]
-                    );
+                    $expense_participant = ExpenseParticipant::create([
+                        'expense_id' => $expense->id,
+                        'user_id' => $user_id,
+                        'share' => $value,
+                        'percentage' => null,
+                        'shares' => null,
+                        'adjustment' => null,
+                        'is_settled' => 0,
+                    ]);
 
                     // Update the group Balances between the expense payer and participant
                     if ($user_id !== $expense->payer) {
@@ -213,33 +210,25 @@ class ExpensesController extends Controller
 
             for ($i = 0; $i < count($participants); $i++) {
                 if ($i === count($participants) - 1) {
-                    $expense_participant = ExpenseParticipant::updateOrCreate(
-                        [
-                            'expense_id' => $expense->id,
-                            'user_id' => $participants[$i]
-                        ],
-                        [
-                            'share' => $remaining_amount,
-                            'percentage' => null,
-                            'shares' => null,
-                            'adjustment' => null,
-                            'is_settled' => 0,
-                        ]
-                    );
+                    $expense_participant = ExpenseParticipant::create([
+                        'expense_id' => $expense->id,
+                        'user_id' => $participants[$i],
+                        'share' => $remaining_amount,
+                        'percentage' => null,
+                        'shares' => null,
+                        'adjustment' => null,
+                        'is_settled' => 0,
+                    ]);
                 } else {
-                    $expense_participant = ExpenseParticipant::updateOrCreate(
-                        [
-                            'expense_id' => $expense->id,
-                            'user_id' => $participants[$i]
-                        ],
-                        [
-                            'share' => $amount_per_participant,
-                            'percentage' => null,
-                            'shares' => null,
-                            'adjustment' => null,
-                            'is_settled' => 0,
-                        ]
-                    );
+                    $expense_participant = ExpenseParticipant::create([
+                        'expense_id' => $expense->id,
+                        'user_id' => $participants[$i],
+                        'share' => $amount_per_participant,
+                        'percentage' => null,
+                        'shares' => null,
+                        'adjustment' => null,
+                        'is_settled' => 0,
+                    ]);
                 }
 
                 // Update the balances between the expense payer and participant
@@ -326,10 +315,18 @@ class ExpensesController extends Controller
             ", [$current_user->id])
             ->get();
 
-        return view('expenses.show', [
-            'expense' => $expense,
-            'participants' => $participants,
-        ]);
+        // If this Expense is a Payment, display the Payment screen rather than the Expense screen
+        if ($expense->expense_type_id === -5) { // TODO: Update this with the payment type
+            return view('payments.show', [
+                'expense' => $expense,
+                'participant' => $participants[0],
+            ]);
+        } else {
+            return view('expenses.show', [
+                'expense' => $expense,
+                'participants' => $participants,
+            ]);
+        }
     }
 
     /**
@@ -409,6 +406,7 @@ class ExpensesController extends Controller
             /*'category_id' => $expense_validated['expense-category'],*/
             'note' => $expense_validated['expense-note'],
             'date' => $expense_validated['expense-date'],
+            'updator' => auth()->user()->id,
         ];
 
         $expense->update($expense_data);
@@ -563,8 +561,6 @@ class ExpensesController extends Controller
      */
     public function destroy(Expense $expense): RedirectResponse
     {
-        $expense->undoBalanceAdjustments();
-
         $expense->delete();
 
         return Redirect::route('expenses')->with('status', 'expense-deleted');
@@ -659,12 +655,16 @@ class ExpensesController extends Controller
                 ->where('user_id', $current_user->id)
                 ->value('share');
 
-            $expense->lent = $expense->amount - $current_user_share;
-            $expense->borrowed = $current_user_share;
+            $expense->lent = number_format($expense->amount - $current_user_share, 2);
+            $expense->borrowed = number_format($current_user_share, 2);
+            $expense->amount = number_format($expense->amount, 2);
 
             $expense->group = Group::find($expense->group_id);
 
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
+
+            $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
+            $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
 
             return $expense;
         });
@@ -687,7 +687,7 @@ class ExpensesController extends Controller
             ->where('group_id', $expense->group_id)
             ->first();
 
-        if ($expense->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments
+        if ($expense->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments for reimbursement
             // Increase the participant to payer Balance by the participant's share
             $participant_payer_balance->increment('balance', $amount);
 

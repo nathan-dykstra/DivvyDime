@@ -42,7 +42,7 @@ class User extends Authenticatable implements MustVerifyEmail
             )
             ->get()->toArray();
 
-        $friends = User::whereIn('id', $friend_ids);
+        $friends = User::whereIn('users.id', $friend_ids);
 
         return $friends;
     }

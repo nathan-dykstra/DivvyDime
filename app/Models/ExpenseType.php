@@ -14,6 +14,7 @@ class ExpenseType extends Model
     const ADJUSTMENT = 5;
     const REIMBURSEMENT = 6;
     const ITEMIZED = 7;
+    const PAYMENT = 8;
 
     use HasFactory;
 

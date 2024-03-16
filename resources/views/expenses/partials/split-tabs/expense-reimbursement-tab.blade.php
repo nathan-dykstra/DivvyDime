@@ -10,7 +10,7 @@
                     {{ __('About group reimbursements') }}
                 </div>
                 <div class="text-shy">
-                    {{ __('The users selected in this menu will receive the reimbursement from the user selected in the "Who paid?" menu.') }}
+                    {{ __('Each user selected in this menu receives a reimbursement from the user selected in the "Who paid?" menu.') }}
                 </div>
             </div>
         </div>
@@ -94,12 +94,6 @@
         </label>
     </li>
 </template>
-
-<style>
-    .expense-split-reimbursement-info {
-        display: flex;
-    }
-</style>
 
 <script>
     function splitReimbursementSelectAll(box) {

@@ -87,6 +87,30 @@ window.openLink = function(link) {
     window.location.href = link;
 }
 
+window.showValidationWarning = function(validationWarning) {
+    validationWarning.classList.remove('animate-out');
+    validationWarning.classList.remove('hidden');
+}
+
+window.hideValidationWarning = function(hideBtn) {
+    let validationWarning = hideBtn.closest('.validation-warning');
+
+    validationWarning.classList.add('animate-out');
+    setTimeout(() => {
+        validationWarning.classList.add('hidden');
+    }, 300);
+}
+
+window.hideAllValidationWarnings = function() {
+    let validationWarnings = document.querySelectorAll('.validation-warning');
+    validationWarnings.forEach(function(validationWarning) {
+        validationWarning.classList.add('animate-out');
+        setTimeout(() => {
+            validationWarning.classList.add('hidden');
+        }, 300);
+    });
+}
+
 
 // Responsiveness
 

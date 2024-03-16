@@ -4,13 +4,15 @@
             <h2>{{ __('Expenses') }}</h2>
             <div class="btn-container-end">
                 <x-primary-button icon="fa-solid fa-receipt icon" :href="route('expenses.create')">{{ __('Add Expense') }}</x-primary-button>
-                <x-primary-button icon="fa-solid fa-scale-balanced icon">{{ __('Settle Up') }}</x-primary-button>
+                <x-primary-button icon="fa-solid fa-scale-balanced icon" :href="route('payments.create')">{{ __('Settle Up') }}</x-primary-button>
             </div>
         </div>
     </x-slot>
 
     @if (session('status') === 'expense-deleted')
         <x-session-status>{{ __('Expense deleted.') }}</x-session-status>
+    @elseif (session('status') === 'payment-created')
+        <x-session-status>{{ __('Payment created.') }}</x-session-status>
     @endif
 
     <div class="section-search">

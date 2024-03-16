@@ -124,16 +124,6 @@
     </li>
 </template>
 
-<style>
-    .split-amount-item {
-        display: grid;
-        grid-template-columns: auto 35%;
-        gap: 16px;
-        padding: 8px 16px;
-        border-radius: var(--border-radius);
-    }
-</style>
-
 <script>
     function splitAmountUpdateTotal() {
         const splitAmountItems = document.querySelectorAll(".split-amount-list li");

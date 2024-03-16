@@ -78,60 +78,6 @@
     </li>
 </template>
 
-<style>
-    .expense-split-equal-container {
-        padding-top: 16px;
-        color: var(--text-primary);
-    }
-
-    .split-equal-select-all-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        padding: 0 16px 8px 16px;
-    }
-
-    .split-equal-price-breakdown-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .split-equal-list {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-
-    .split-equal-item {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 16px;
-        padding: 8px 16px;
-        border-radius: var(--border-radius);
-        transition: background-color 0.1s ease, color 0.1s ease;
-    }
-
-    .split-equal-item:hover {
-        cursor: pointer;
-        background-color: var(--secondary-grey-hover);
-        color: var(--text-primary-highlight);
-    }
-
-    .split-equal-item-name {
-        transition: color 0.1s ease;
-    }
-
-    .split-equal-item-name:hover {
-        color: var(--text-primary-highlight);
-    }
-
-    .split-equal-item-strikethrough:hover {
-        color: var(--text-shy) !important;
-    }
-</style>
-
 <script>
     function splitEqualSelectAll(box) {
         $('.split-equal-item-checkbox').prop('checked', box.checked);

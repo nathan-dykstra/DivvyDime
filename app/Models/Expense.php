@@ -72,6 +72,36 @@ class Expense extends Model
     }
 
     /**
+     * Updates the Balances records between $expense->payer and $user_id by $amount
+     */
+    public static function updateBalances(Expense $expense, $user_id, $amount)
+    {
+        $participant_payer_balance = Balance::where('user_id', $user_id)
+            ->where('friend', $expense->payer)
+            ->where('group_id', $expense->group_id)
+            ->first();
+
+        $payer_participant_balance = Balance::where('user_id', $expense->payer)
+            ->where('friend', $user_id)
+            ->where('group_id', $expense->group_id)
+            ->first();
+
+        if ($expense->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments for reimbursement
+            // Increase the participant to payer Balance by the participant's share
+            $participant_payer_balance->increment('balance', $amount);
+
+            // Decrease the payer to participant Balance by the participant's share
+            $payer_participant_balance->decrement('balance', $amount);
+        } else {
+            // Decrease the participant to payer Balance by the participant's share
+            $participant_payer_balance->decrement('balance', $amount);
+
+            // Increase the payer to participant Balance by the participant's share
+            $payer_participant_balance->increment('balance', $amount);
+        }
+    }
+
+    /**
      * Undo the Balance adjustments that were made when this Expense was created/updated
      */
     public function undoBalanceAdjustments()
@@ -119,6 +149,7 @@ class Expense extends Model
         'note',
         'date',
         'creator',
+        'updator',
     ];
 
     protected $casts = [
@@ -128,6 +159,7 @@ class Expense extends Model
         'expense_type_id' => 'int',
         'category_id' => 'int',
         'creator' => 'int',
+        'updator' => 'int',
     ];
 
     protected $dispatchesEvents = [

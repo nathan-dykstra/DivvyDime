@@ -23,6 +23,9 @@ class DeleteExpenseDependents
      */
     public function handle(ExpenseDeleting $event): void
     {
+        // Adjust Balances
+        $event->expense->undoBalanceAdjustments();
+
         // Delete ExpenseParticipants
         ExpenseParticipant::where('expense_id', $event->expense->id)->delete();
 
