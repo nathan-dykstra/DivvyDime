@@ -49,27 +49,33 @@
             </div>
         @else
             <div class="metric-container text-success">
-                <span class="text-small">{{ __('Your balances are settled') }}</span>
+                <span class="text-small">{{ __('Overall, you owe') }}</span>
+                <span class="metric-number">{{ __('$') . number_format(abs($overall_balance), 2) }}</span>
             </div>
         @endif
-
+        
         @foreach ($individual_balances as $individual_balance)
             @if ($individual_balance->balance > 0)
                 <div class="metric-container">
                     <span class="text-primary text-small"><span class="bold-username">{{ $individual_balance->username }}</span>{{ __(' owes you') }}</span>
                     <span class="text-success metric-number">{{ __('$') . number_format($individual_balance->balance, 2) }}</span>
                 </div>
-            @else
+            @elseif ($individual_balance->balance < 0)
                 <div class="metric-container">
                     <span class="text-primary text-small">{{ __('You owe ') }}<span class="bold-username">{{ $individual_balance->username }}</span></span>
                     <span class="text-warning metric-number">{{ __('$') . number_format(abs($individual_balance->balance), 2) }}</span>
+                </div>   
+            @else
+                <div class="metric-container">
+                    <span class="text-primary text-small">{{ __('You and ') }}<span class="bold-username">{{ $individual_balance->username }}</span>{{ __(' are') }}</span>
+                    <span class="text-success metric-number">{{ __('Settled Up!') }}</span>
                 </div>
             @endif
         @endforeach
 
-        @if ($additional_balances_count > 0)
+        @if ($hidden_balances_count > 0)
             <div class="metric-container">
-                <span class="text-primary text-small">{{ __('Plus ') . $additional_balances_count . __(' other ') }} {{ $additional_balances_count > 1 ? __('balances') : __('balance') }}</span>
+                <span class="text-primary text-small">{{ __('Plus ') . $hidden_balances_count . __(' other ') }} {{ $hidden_balances_count > 1 ? __('balances') : __('balance') }}</span>
                 <x-link-button class="width-content" :href="route('groups.show', $group)">{{ __('View all') }}</x-link-button> <!-- TODO: Change this to link to the Group Balances page -->
             </div>
         @endif

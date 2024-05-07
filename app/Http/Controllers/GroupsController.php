@@ -30,8 +30,8 @@ use Illuminate\Support\Str;
 class GroupsController extends Controller
 {
     const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
-    const GROUP_BALANCES_SHOWN = 3;
-    const GROUP_BLANACES_LIMITED = 2;
+    const MAX_BALANCES_SHOWN = 3;
+    const BLANACES_LIMITED = 2;
 
     /**
      * Displays the User's Groups.
@@ -142,33 +142,40 @@ class GroupsController extends Controller
             ->where('user_id', $current_user->id)
             ->sum('balance');
 
-        $group_balances_count = Balance::where('balances.group_id', $group->id)
+        $balances_count = Balance::where('balances.group_id', $group->id)
             ->where('balances.user_id', $current_user->id)
             ->count();
 
-        $group_balances_shown_limit = static::GROUP_BALANCES_SHOWN;
+        $balances_shown_limit = static::MAX_BALANCES_SHOWN;
 
-        if ($group_balances_count > static::GROUP_BALANCES_SHOWN) {
-            $group_balances_shown_limit = static::GROUP_BLANACES_LIMITED;
+        if ($balances_count > static::MAX_BALANCES_SHOWN) {
+            $balances_shown_limit = static::BLANACES_LIMITED;
+            $hidden_balances_count = $balances_count - $balances_shown_limit;
+        } else {
+            $hidden_balances_count = 0;
         }
 
         $individual_balances = Balance::join('users', 'balances.friend', 'users.id')
             ->select('balances.balance', 'users.username')
             ->where('balances.group_id', $group->id)
             ->where('balances.user_id', $current_user->id)
-            ->whereNot('balances.balance', 0)
-            ->limit($group_balances_shown_limit)
-            ->orderBy('users.username', 'ASC')
+            //->whereNot('balances.balance', 0)
+            ->limit($balances_shown_limit)
+            ->orderByRaw("
+                CASE 
+                    WHEN balance = 0 THEN 1
+                    ELSE 0
+                END, 
+                balances.balance ASC
+            ")
             ->get();
-
-        $additional_balances_count = $group_balances_count - $group_balances_shown_limit;
 
         return view('groups.show', [
             'group' => $group,
             'expenses' => $expenses,
             'overall_balance' => $overall_balance,
             'individual_balances' => $individual_balances,
-            'additional_balances_count' => $additional_balances_count,
+            'hidden_balances_count' => $hidden_balances_count,
         ]);
     }
 
