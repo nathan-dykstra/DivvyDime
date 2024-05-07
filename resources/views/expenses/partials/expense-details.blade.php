@@ -30,9 +30,9 @@
                         @endif
                     @else <!-- Updating an existing Expense -->
                         @foreach($expense->involvedUsers() as $involved_user)
-                            <div class="involved-chip {{ $involved_user->id === auth()->user()->id && $expense->group_id === $default_group->id ? 'involved-chip-fixed' : '' }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}">
+                            <div class="involved-chip {{ $involved_user->id === auth()->user()->id && $expense->groups->first()->id === $default_group->id ? 'involved-chip-fixed' : '' }}" data-user-id="{{ $involved_user->id }}" data-username="{{ $involved_user->username }}">
                                 <span>{{ $involved_user->username }}</span>
-                                @if (!($involved_user->id === auth()->user()->id && $expense->group_id === $default_group->id))
+                                @if (!($involved_user->id === auth()->user()->id && $expense->groups->first()->id === $default_group->id))
                                     <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
                                 @endif
                             </div>
@@ -89,7 +89,7 @@
                                             <label class="split-equal-item" for="paid-dropdown-item-{{ $member->id }}" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="setExpensePayer(this)">
                                                 <input type="radio" id="paid-dropdown-item-{{ $member->id }}" class="radio" name="expense-paid" value="{{ $member->id }}" {{ $member->id === auth()->user()->id ? 'checked' : '' }} />
                                                 <div class="user-photo-name">
-                                                    <div class="profile-circle-sm-placeholder"></div>
+                                                    <div class="profile-circle-sm-placeholder"></div> <!-- TODO: profile image -->
                                                     <div class="split-equal-item-name">{{ $member->username }}</div>
                                                 </div>
                                             </label>
@@ -100,7 +100,7 @@
                                         <label class="split-equal-item" for="paid-dropdown-item-{{ auth()->user()->id }}" data-user-id="{{ auth()->user()->id }}" data-username="{{ auth()->user()->username }}" onclick="setExpensePayer(this)">
                                             <input type="radio" id="paid-dropdown-item-{{ auth()->user()->id }}" class="radio" name="expense-paid" value="{{ auth()->user()->id }}" checked/>
                                             <div class="user-photo-name">
-                                                <div class="profile-circle-sm-placeholder"></div>
+                                                <div class="profile-circle-sm-placeholder"></div> <!-- TODO: profile image -->
                                                 <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
                                             </div>
                                         </label>
@@ -111,7 +111,7 @@
                                             <label class="split-equal-item" for="paid-dropdown-item-{{ $friend->id }}" data-user-id="{{ $friend->id }}" data-username="{{ $friend->username }}" onclick="setExpensePayer(this)">
                                                 <input type="radio" id="paid-dropdown-item-{{ $friend->id }}" class="radio" name="expense-paid" value="{{ $friend->id }}" />
                                                 <div class="user-photo-name">
-                                                    <div class="profile-circle-sm-placeholder"></div>
+                                                    <div class="profile-circle-sm-placeholder"></div> <!-- TODO: profile image -->
                                                     <div class="split-equal-item-name">{{ $friend->username }}</div>
                                                 </div>
                                             </label>
@@ -190,7 +190,7 @@
                                         {{ $default_group->name }}
                                     @endif
                                 @else <!-- Updating an existing Expense -->
-                                    {{ $expense->group()->first()->name }}
+                                    {{ $expense->groups->first()->name }}
                                 @endif
                             </div>
                         </x-primary-button>

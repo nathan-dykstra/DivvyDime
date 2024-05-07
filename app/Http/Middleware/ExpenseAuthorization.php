@@ -31,18 +31,25 @@ class ExpenseAuthorization
 
             if ($expense === null) {
                 abort(404, "Uh oh! This expense doesn't exist.");
-            } else if ($expense->group_id === Group::DEFAULT_GROUP) {
+            } else if ($expense->groups()->where('groups.id', Group::DEFAULT_GROUP)->exists()) {
                 if (!in_array($current_user->id, $expense->involvedUsers()->pluck('id')->toArray())) {
                     abort(403, "Uh oh! You're not involved in this expense.");
                 }
             } else {
-                $expense_group = $expense->group()->first();
-                if (!in_array($current_user->id, $expense_group->members()->pluck('users.id')->toArray())) {
+                $expense_groups = $expense->groups()->get();
+                $in_expense_group = false;
+                foreach($expense_groups as $expense_group) {
+                    if (in_array($current_user->id, $expense_group->members()->pluck('users.id')->toArray())) {
+                        $in_expense_group = true;
+                        break;
+                    }
+                }
+                if (!$in_expense_group) {
                     abort(403, "Uh oh! You're not involved in this expense.");
                 }
             }
         }
-        
+
         if ($request->input('group')) {
             $group = Group::find($request->input('group'));
 

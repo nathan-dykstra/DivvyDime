@@ -6,15 +6,20 @@ use App\Http\Requests\CreatePaymentRequest;
 use App\Models\Balance;
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\ExpenseGroup;
 use App\Models\ExpenseParticipant;
 use App\Models\ExpenseType;
 use App\Models\Group;
+use App\Models\Notification;
+use App\Models\NotificationAttribute;
+use App\Models\NotificationType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 
 class PaymentsController extends Controller
@@ -68,6 +73,9 @@ class PaymentsController extends Controller
         ]);
     }
 
+    /**
+     * Saves the new payment.
+     */
     public function store(CreatePaymentRequest $request): RedirectResponse
     {
         $current_user = auth()->user();
@@ -79,23 +87,31 @@ class PaymentsController extends Controller
         // Get the group from the payment balance
         $payment_group = Balance::find($payment_validated['payment-balance'])->value('group_id');
 
-        // Get the User id of the payee
+        // Get the user_id of the payee
         $payee_id = $payment_validated['payment-payee'];
 
         $payment_data = [
             'amount' => $payment_validated['payment-amount'],
             'payer' => $current_user->id,
-            'group_id' => $payment_group,
+            'group_id' => $payment_group, // TODO: remove this when group_id is removed from the expenses table
             'expense_type_id' => ExpenseType::PAYMENT,
             'category_id' => Category::PAYMENT_CATEGORY,
             'note' => $payment_validated['payment-note'],
             'date' => $payment_validated['payment-date'],
+            'is_confirmed' => 0,
             'creator' => $current_user->id,
             'updator' => $current_user->id,
         ];
 
         $payment = Expense::create($payment_data);
 
+        // Add the expense group
+        ExpenseGroup::create([
+            'expense_id' => $payment->id,
+            'group_id' => $payment_group,
+        ]);
+
+        // Add the payee as the participant
         ExpenseParticipant::create([
             'expense_id' => $payment->id,
             'user_id' => $payee_id,
@@ -106,11 +122,67 @@ class PaymentsController extends Controller
             'is_settled' => 0,
         ]);
 
-        Expense::updateBalances($payment, $payee_id, $payment->amount);
+        //Expense::updateBalances($payment, $payee_id, $payment->amount);
+
+        // Send Payment Notifications
+        $payment->sendExpenseNotifications();
 
         return Redirect::route('expenses')->with('status', 'payment-created');
     }
 
+    // TODO: update payment
+
+    /**
+     * Confirm that the payment was received. Update the notifications and adjust the balances.
+     */
+    public function confirmPayment(Request $request)
+    {
+        Log::info("here");
+        $payee_notification = Notification::find($request->input('notification_id'));
+
+        $payment = Expense::find($payee_notification->attributes()->value('expense_id'));
+
+        // Update the expenses.is_confirmed field
+        $payment->update([
+            'is_confirmed' => 1,
+        ]);
+
+        // Update the balances
+        Expense::updateBalances($payment, $payee_notification->recipient, $payment->amount);
+
+        // Update notifications
+
+        $payer_notification = Notification::updateOrCreate(
+            [
+                'notification_type_id' => NotificationType::PAYMENT,
+                'creator' => $payment->payer,
+                'sender' => $payment->payer,
+                'recipient' => $payment->payer,
+            ],
+            [
+                'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+            ],
+        );
+
+        if ($payer_notification->wasRecentlyCreated) {
+            NotificationAttribute::create([
+                'notification_id' => $payer_notification->id,
+                'expense_id' => $payment->id,
+            ]);
+        }
+
+        $payee_notification->update([
+            'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+        ]);
+    }
+
+    /**
+     * The payment was rejected. Update the notifications.
+     */
+    public function rejectPayment(Request $request)
+    {
+        // TODO
+    }
 
     /**
      * Deletes the Payment.

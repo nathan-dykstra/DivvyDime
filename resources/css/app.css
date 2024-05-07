@@ -1282,11 +1282,14 @@ input[type="search"]::-webkit-search-cancel-button {
     border: 1px solid var(--secondary-grey-hover);
     padding: 3px 5px;
     background-color: var(--secondary-grey-hover);
+}
+
+.metric-group-hover {
     transition: background-color 0.3s ease;
 }
 
-.metric-group:hover {
-    
+.metric-group-hover:hover {
+    cursor: pointer;
     background-color: unset;
 }
 

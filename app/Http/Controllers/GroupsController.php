@@ -98,14 +98,16 @@ class GroupsController extends Controller
 
         if ($group->id === Group::DEFAULT_GROUP) {
             $expenses = $expenses->where(function ($query) use ($current_user) {
-                $query->where('expenses.payer', $current_user->id)
-                    ->orWhereHas('participants', function ($query) use ($current_user) {
-                        $query->where('users.id', $current_user->id);
-                    });
-            });
+                    $query->where('expenses.payer', $current_user->id)
+                        ->orWhereHas('participants', function ($query) use ($current_user) {
+                            $query->where('users.id', $current_user->id);
+                        });
+                });
         }
 
-        $expenses = $expenses->orderBy('date', 'DESC')->get();
+        $expenses = $expenses->orderBy('date', 'DESC')
+            ->orderBy('created_at', 'DESC')
+            ->get();
 
         $expenses = $expenses->map(function ($expense) use ($current_user) {
             $expense->payer_user = User::where('id', $expense->payer)->first();
@@ -129,7 +131,7 @@ class GroupsController extends Controller
             $expense->group = Group::where('id', $expense->group_id)->first();
 
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
-
+            $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
             $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
             $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
 
@@ -344,7 +346,7 @@ class GroupsController extends Controller
     public function accept(Request $request)
     {
         $invitee_notification_id = $request->input('notification_id');
-        $invitee_notification = ModelsNotification::where('id', $invitee_notification_id)->first();
+        $invitee_notification = ModelsNotification::find($invitee_notification_id);
 
         $group_id = $request->input('group_id');
 
@@ -375,7 +377,7 @@ class GroupsController extends Controller
         // Delete inviter's and invitee's notifications
 
         $invitee_notification_id = $request->input('notification_id');
-        $invitee_notification = ModelsNotification::where('id', $invitee_notification_id)->first();
+        $invitee_notification = ModelsNotification::find($invitee_notification_id);
 
         $inviter_id = $invitee_notification->sender;
         $invitee_id = $invitee_notification->recipient;

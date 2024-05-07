@@ -13,9 +13,13 @@ class Expense extends Model
     /**
      * Defines the Expense to Group relationship.
      */
-    public function group()
+    /*public function group()
     {
         return $this->belongsTo(Group::class);
+    }*/
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'expense_groups');
     }
 
     /**
@@ -139,6 +143,48 @@ class Expense extends Model
         }
     }
 
+    /**
+     * Send notifications to the users/group members involved in the expense or payment
+     */
+    public function sendExpenseNotifications()
+    {
+        if ($this->group_id === Group::DEFAULT_GROUP || $this->expense_type_id === ExpenseType::PAYMENT) {
+            // Only send the notification to involved Users
+
+            foreach ($this->involvedUsers() as $involved_user) {
+                $expense_notification = Notification::create([
+                    'notification_type_id' => $this->expense_type_id === ExpenseType::PAYMENT ? NotificationType::PAYMENT : NotificationType::EXPENSE,
+                    'creator' => $this->creator,
+                    'sender' => $this->creator,
+                    'recipient' => $involved_user->id,
+                ]);
+
+                NotificationAttribute::create([
+                    'notification_id' => $expense_notification->id,
+                    'expense_id' => $this->id,
+                ]);
+            }
+        } else {
+            // Send the notification to all group members
+
+            $group = $this->group()->first();
+
+            foreach ($group->members()->get() as $member) {
+                $expense_notification = Notification::create([
+                    'notification_type_id' => $this->expense_type_id === ExpenseType::PAYMENT ? NotificationType::PAYMENT : NotificationType::EXPENSE,
+                    'creator' => $this->creator,
+                    'sender' => $this->creator,
+                    'recipient' => $member->id,
+                ]);
+
+                NotificationAttribute::create([
+                    'notification_id' => $expense_notification->id,
+                    'expense_id' => $this->id,
+                ]);
+            }
+        }
+    }
+
     protected $fillable = [
         'name',
         'amount',
@@ -148,6 +194,7 @@ class Expense extends Model
         'category_id',
         'note',
         'date',
+        'is_confirmed',
         'creator',
         'updator',
     ];

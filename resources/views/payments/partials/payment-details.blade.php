@@ -44,57 +44,50 @@
                 <h4 class="margin-bottom-sm">{{ __('Choose a balance to settle') }}</h4>
 
                 <ul id="payment-balances-list">
-                    <li>
-                        <label class="payment-group-selector-item" for="choose-balance-item-all" onclick="setPaymentBalance(this)">
-                            <div class="payment-user-selector-radio">
-                                <input type="radio" id="choose-balance-item-all" class="radio" name="payment-balance" value="-1" {{ $expense === null ? 'checked' : '' }}/>
-                                <div class="user-photo-name">
-                                    <div class="profile-circle-sm-placeholder"></div>
-                                    <div class="split-equal-item-name">All balances</div>
-                                </div>
-                            </div>
-                        </label>
-                    </li>
+                    @foreach ($users_selection as $user)
+                        @if ($user->total_balance < 0)
+                            <li>
+                                <label class="payment-group-selector-item" for="choose-balance-item-all-{{ $user->id }}" data-user-id="{{ $user->id }}" data-group-name="{{ __('All Balances') }}" data-balance="" onclick="setPaymentBalance(this)">
+                                    <div class="payment-user-selector-radio">
+                                        <input type="radio" id="choose-balance-item-all-{{ $user->id }}" class="radio" name="payment-balance" value="-1" {{ $expense === null ? 'checked' : '' }}/>
+                                        <div class="user-photo-name">
+                                            <div class="profile-circle-sm-placeholder"></div>
+                                            <div class="split-equal-item-name">{{ __('All Balances') }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="payment-user-amount">
+                                        <div class="text-small text-warning">{{ __('You owe $') . number_format(abs($user->total_balance), 2) }}</div>
+                                    </div>
+                                </label>
+                            </li>
+                        @endif
+                    @endforeach
 
                     @foreach ($balances_selection as $balance)
                         <li>
-                            @if ($balance->balance < 0) <!-- Current users owes money in this group -->
-                                <label class="payment-group-selector-item" for="choose-balance-item-{{ $balance->id }}" data-user-id="{{ $balance->friend }}" data-group-name="{{ $balance->group_name }}" data-balance="{{ number_format(abs($balance->balance), 2) }}" onclick="setPaymentBalance(this)">
-                                    <div class="payment-user-selector-radio">
-                                        <input type="radio" id="choose-balance-item-{{ $balance->id }}" class="radio" name="payment-balance" value="{{ $balance->id }}" {{ $expense?->group_id === $balance->group_id || $group?->id == $balance->group_id ? 'checked' : '' }}/>
-                                        <div class="user-photo-name">
-                                            <div class="profile-circle-sm-placeholder"></div>
-                                            <div class="split-equal-item-name">{{ $balance->group_name }}</div>
-                                        </div>
+                            <label class="payment-group-selector-item" for="choose-balance-item-{{ $balance->id }}" data-user-id="{{ $balance->friend }}" data-group-name="{{ $balance->group_name }}" data-balance="{{ $balance->balance }}" onclick="setPaymentBalance(this)">
+                                <div class="payment-user-selector-radio">
+                                    <input type="radio" id="choose-balance-item-{{ $balance->id }}" class="radio" name="payment-balance" value="{{ $balance->id }}" {{ $expense?->group_id === $balance->group_id || $group?->id == $balance->group_id ? 'checked' : '' }}/>
+                                    <div class="user-photo-name">
+                                        <div class="profile-circle-sm-placeholder"></div>
+                                        <div class="split-equal-item-name">{{ $balance->group_name }}</div>
                                     </div>
+                                </div>
 
+                                @if ($balance->balance < 0) <!-- Current user owes money in this group -->
                                     <div class="payment-user-amount">
                                         <div class="text-small text-warning">{{ __('You owe $') . number_format(abs($balance->balance), 2) }}</div>
                                     </div>
-                                </label>
-                            @else <!-- Current use does not owe money in this group (either they are owed or are settled up) -->
-                                <label class="payment-group-selector-item-disabled" for="choose-balance-item-{{ $balance->id }}" data-user-id="{{ $balance->friend }}">
-                                    <div class="payment-user-selector-radio">
-                                        <input type="radio" id="choose-balance-item-{{ $balance->id }}" class="radio" name="payment-balance" disabled/>
-                                        <div class="user-photo-name">
-                                            <div class="profile-circle-sm-placeholder"></div>
-                                            <div class="split-equal-item-name">{{ $balance->group_name }}</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="payment-user-amount">
-                                        @if ($balance->balance > 0)
-                                            <div class="text-small text-success">{{ __('You are owed $') . number_format(abs($balance->balance), 2) }}</div>
-                                        @else
-                                            <div class="text-shy">{{ __('Settled up') }}</div>
-                                        @endif
-                                    </div>
-                                </label>
-                            @endif
+                                @elseif ($balance->balance > 0) <!-- Current user is owed money in this group -->
+                                    <div class="text-small text-success">{{ __('You are owed $') . number_format(abs($balance->balance), 2) }}</div>
+                                @else
+                                    <div class="text-shy">{{ __('Settled up') }}</div>
+                                @endif
+                            </label>
                         </li>
                     @endforeach
                 </ul>
-
 
                 <div class="btn-container-start">
                     <x-primary-button onclick="showPayeeSelector()">{{ __('Back') }}</x-primary-button>
@@ -296,6 +289,7 @@
             hideAllValidationWarnings();
 
             paymentForm.classList.remove('hidden');
+            currentAmountInput.focus();
 
             paymentChooseUser.classList.add('hidden');
             paymentChooseBalance.classList.add('hidden');
@@ -318,7 +312,13 @@
         let balance = balanceItem.dataset.balance;
 
         groupBtn.querySelector('.expense-round-btn-text').textContent = groupName;
-        currentAmountInput.value = balance;
+
+        if (balance < 0) {
+            balance = Math.abs(balance).toFixed(2);
+            currentAmountInput.value = balance;
+        } else {
+            currentAmountInput.value = "";
+        }
     }
 
     function updateBalanceOptions(userId) {
@@ -332,6 +332,19 @@
                 item.querySelector('input[name="payment-balance"]').checked = false;
             }
         })
+
+        // Select the first non-hidden balance item
+
+        let balanceRadios = document.querySelectorAll('input[name="payment-balance"]');
+
+        for (let i = 0; i < balanceRadios.length; i++) {
+            let radio = balanceRadios[i];
+
+            if (!radio.classList.contains('hidden')) {
+                radio.click();
+                break;
+            }
+        }
     }
 
     function toggleMediaDropdown() {

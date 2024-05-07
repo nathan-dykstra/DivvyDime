@@ -133,6 +133,43 @@
         })
     }
 
+    function confirmPayment(event, notificationId) {
+        event.stopPropagation();
+
+        $.ajax({
+            url: "{{ route('payments.confirm') }}",
+            method: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'notification_id': notificationId,
+            },
+            success: function(response) {
+                notifications = $('.notifications');
+
+                $.ajax({
+                    url: "{{ route('activity.get-updated-notifications') }}",
+                    method: 'GET',
+                    data: {
+                        '_token': '{{ csrf_token() }}',
+                    },
+                    success: function(html) {
+                        notifications.replaceWith(html);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        })
+    }
+
+    function rejectPayment(event, rejectBtn, notificationId) {
+        event.stopPropagation();
+    }
+
     function deleteNotification(event, notificationId) {
         event.stopPropagation();
 

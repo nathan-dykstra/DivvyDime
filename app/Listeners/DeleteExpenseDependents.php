@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\ExpenseDeleting;
+use App\Models\ExpenseGroup;
 use App\Models\ExpenseParticipant;
 use App\Models\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,11 +24,16 @@ class DeleteExpenseDependents
      */
     public function handle(ExpenseDeleting $event): void
     {
-        // Adjust Balances
-        $event->expense->undoBalanceAdjustments();
+        // Adjust Balances (ignore unconfirmed expenses - i.e. payments - as these have not updated any balances)
+        if ($event->expense->is_confirmed) {
+            $event->expense->undoBalanceAdjustments();
+        }
 
         // Delete ExpenseParticipants
         ExpenseParticipant::where('expense_id', $event->expense->id)->delete();
+
+        // Delete ExpenseGroups
+        ExpenseGroup::where('expense_id', $event->expense->id)->delete();
 
         // Delete Expense Notifications
 

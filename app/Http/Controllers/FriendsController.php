@@ -83,9 +83,9 @@ class FriendsController extends Controller
                             });
                     });
             })
-            ->orderBy('date', 'DESC');
-
-        $expenses = $expenses->get();
+            ->orderBy('date', 'DESC')
+            ->orderBy('created_at', 'DESC')
+            ->get();
 
         $expenses = $expenses->map(function ($expense) use ($current_user, $friend_id) {
             $expense->payer_user = User::where('id', $expense->payer)->first();
@@ -113,7 +113,7 @@ class FriendsController extends Controller
             $expense->group = Group::where('id', $expense->group_id)->first();
             
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
-
+            $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
             $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
             $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
 

@@ -38,10 +38,10 @@ class ActivityController extends Controller
     {
         $current_user = auth()->user();
 
-        $notifications = Notification::select('notifications.*', 'users.username')
+        $notifications = Notification::select('notifications.*', 'users.username AS sender_username')
             ->join('users', 'notifications.sender', 'users.id')
             ->where('notifications.recipient', $current_user->id)
-            ->orderBy('notifications.updated_at', 'desc')
+            ->orderBy('notifications.updated_at', 'DESC')
             ->get();
 
         $notifications = $this->augmentNotifications($notifications);
@@ -87,7 +87,7 @@ class ActivityController extends Controller
                 });
         }
 
-        $notifications = $notifications_query->orderBy('notifications.updated_at', 'desc')->get();
+        $notifications = $notifications_query->orderBy('notifications.updated_at', 'DESC')->get();
 
         $notifications = $this->augmentNotifications($notifications);
 
@@ -107,7 +107,7 @@ class ActivityController extends Controller
         $notifications = Notification::select('notifications.*', 'users.username')
             ->join('users', 'notifications.sender', 'users.id')
             ->where('notifications.recipient', $current_user->id)
-            ->orderBy('notifications.updated_at', 'desc')
+            ->orderBy('notifications.updated_at', 'DESC')
             ->get();
 
         $notifications = $this->augmentNotifications($notifications);
@@ -119,43 +119,44 @@ class ActivityController extends Controller
     }
 
     /**
-     * Add datetime formatting and notification attributes to the notifications.
+     * Add addition information to the notifications.
      */
     protected function augmentNotifications($notifications) {
         $notifications = $notifications->map(function ($notification) {
             // Notification timestamps
-
             $notification->formatted_date = Carbon::parse($notification->updated_at)->diffForHumans();
-
             $notification->date = Carbon::parse($notification->updated_at)->format('M d, Y');
-            
             $notification->formatted_time = Carbon::parse($notification->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
 
             // Notification Group
             if ($notification->attributes?->group_id) {
-                $notification->group = Group::where('id', $notification->attributes->group_id)->first();
+                $notification->group = Group::find($notification->attributes->group_id);
             }
 
             // Notification Expense
             if ($notification->attributes?->expense_id) {
-                $notification->expense = Expense::where('id', $notification->attributes->expense_id)->first();
-                $notification->payer_username = User::where('id', $notification->expense->payer)->value('username');
+                $notification->expense = Expense::find($notification->attributes->expense_id);
 
+                // Get the amount the current user lent/borrowed in the expense
                 $current_user_share = ExpenseParticipant::where('expense_id', $notification->expense->id)
                     ->where('user_id', auth()->user()->id)
                     ->value('share');
-
                 if ($notification->expense->payer === auth()->user()->id) {
-                    $notification->amount_lent = $notification->expense->amount - $current_user_share;
+                    $notification->amount_lent = number_format($notification->expense->amount - $current_user_share, 2);
                 }
-
                 if ($current_user_share) {
-                    $notification->amount_borrowed = $current_user_share;
+                    $notification->amount_borrowed = number_format($current_user_share, 2);
                 }
 
                 $notification->group = Group::find($notification->expense->group_id);
 
-                $notification->is_reimbursement_expense = $notification->expense->expense_type_id === ExpenseType::REIMBURSEMENT;
+                // Additional information if expense is a Reimbursement or Payment
+
+                $notification->is_reimbursement = $notification->expense->expense_type_id === ExpenseType::REIMBURSEMENT;
+
+                if ($notification->expense->expense_type_id === ExpenseType::PAYMENT) {
+                    $notification->payee = $notification->expense->participants()->first();
+                }
             }
 
             return $notification;

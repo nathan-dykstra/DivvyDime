@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateExpenseRequest;
 use App\Models\Balance;
 use App\Models\Expense;
+use App\Models\ExpenseGroup;
 use App\Models\ExpenseParticipant;
 use App\Models\ExpenseType;
 use App\Models\Group;
@@ -34,6 +35,7 @@ class ExpensesController extends Controller
 
         $expenses = $current_user->expenses()
             ->orderBy('date', 'DESC')
+            ->orderBy('created_at', 'DESC')
             ->get();
 
         $expenses = $this->augmentExpenses($expenses);
@@ -129,7 +131,7 @@ class ExpensesController extends Controller
             'name' => $expense_validated['expense-name'],
             'amount' => $expense_validated['expense-amount'],
             'payer' => $expense_validated['expense-paid'],
-            'group_id' => $expense_validated['expense-group'],
+            'group_id' => $expense_validated['expense-group'], // TODO: Remove this when group_id is removed from expenses table
             'expense_type_id' => $expense_validated['expense-split'],
             /*'category_id' => $expense_validated['expense-category'],*/
             'note' => $expense_validated['expense-note'],
@@ -139,6 +141,12 @@ class ExpensesController extends Controller
         ];
 
         $expense = Expense::create($expense_data);
+
+        // Add the expense group
+        ExpenseGroup::create([
+            'expense_id' => $expense->id,
+            'group_id' => $expense_validated['expense-group'],
+        ]);
 
         // Create the ExpenseParticipants
 
@@ -173,7 +181,7 @@ class ExpensesController extends Controller
 
                 // Update the group Balances between the expense payer and participant
                 if ($participants[$i] !== $expense->payer) {
-                    $this->updateBalances($expense, $participants[$i], $expense_participant->share);
+                    Expense::updateBalances($expense, $participants[$i], $expense_participant->share);
                 }
 
                 $remaining_amount -= $amount_per_participant;
@@ -195,7 +203,7 @@ class ExpensesController extends Controller
 
                     // Update the group Balances between the expense payer and participant
                     if ($user_id !== $expense->payer) {
-                        $this->updateBalances($expense, $user_id, $value);
+                        Expense::updateBalances($expense, $user_id, $value);
                     }
                 }
             }
@@ -233,7 +241,7 @@ class ExpensesController extends Controller
 
                 // Update the balances between the expense payer and participant
                 if ($participants[$i] !== $expense->payer) {
-                    $this->updateBalances($expense, $participants[$i], $expense_participant->share);
+                    Expense::updateBalances($expense, $participants[$i], $expense_participant->share);
                 }
 
                 $remaining_amount -= $amount_per_participant;
@@ -242,42 +250,7 @@ class ExpensesController extends Controller
         }
 
         // Send Expense Notifications
-
-        if ($expense->group_id === Group::DEFAULT_GROUP) {
-            // Only send Notification to involved Users
-
-            foreach ($expense->involvedUsers() as $involved_user) {
-                $expense_notification = Notification::create([
-                    'notification_type_id' => NotificationType::EXPENSE,
-                    'creator' => $expense->creator,
-                    'sender' => $expense->payer,
-                    'recipient' => $involved_user->id,
-                ]);
-
-                NotificationAttribute::create([
-                    'notification_id' => $expense_notification->id,
-                    'expense_id' => $expense->id,
-                ]);
-            }
-        } else {
-            // Send Notification to all Group members
-
-            $group = $expense->group()->first();
-
-            foreach ($group->members()->get() as $member) {
-                $expense_notification = Notification::create([
-                    'notification_type_id' => NotificationType::EXPENSE,
-                    'creator' => $expense->creator,
-                    'sender' => $expense->payer,
-                    'recipient' => $member->id,
-                ]);
-
-                NotificationAttribute::create([
-                    'notification_id' => $expense_notification->id,
-                    'expense_id' => $expense->id,
-                ]);
-            }
-        }
+        $expense->sendExpenseNotifications();
 
         return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-created');
     }
@@ -401,7 +374,7 @@ class ExpensesController extends Controller
             'name' => $expense_validated['expense-name'],
             'amount' => $expense_validated['expense-amount'],
             'payer' => $expense_validated['expense-paid'],
-            'group_id' => $expense_validated['expense-group'],
+            'group_id' => $expense_validated['expense-group'], // TODO: Remove this when group_id is removed from expenses table
             'expense_type_id' => $expense_validated['expense-split'],
             /*'category_id' => $expense_validated['expense-category'],*/
             'note' => $expense_validated['expense-note'],
@@ -410,6 +383,11 @@ class ExpensesController extends Controller
         ];
 
         $expense->update($expense_data);
+
+        // Update the expense group
+        ExpenseGroup::where('expense_id', $expense->id)->update([
+            'group_id' => $expense_validated['expense-group'],
+        ]);
 
         // Update the ExpensePartcipants and Balances
 
@@ -456,7 +434,7 @@ class ExpensesController extends Controller
 
                 // Update the group Balances between the expense payer and participant
                 if ($participants[$i] !== $expense->payer) {
-                    $this->updateBalances($expense, $participants[$i], $expense_participant->share);
+                    Expense::updateBalances($expense, $participants[$i], $expense_participant->share);
                 }
 
                 $remaining_amount -= $amount_per_participant;
@@ -484,7 +462,7 @@ class ExpensesController extends Controller
 
                     // Update the group Balances between the expense payer and participant
                     if ($user_id !== $expense->payer) {
-                        $this->updateBalances($expense, $user_id, $value);
+                        Expense::updateBalances($expense, $user_id, $value);
                     }
                 }
             }
@@ -531,7 +509,7 @@ class ExpensesController extends Controller
 
                 // Update the balances between the expense payer and participant
                 if ($participants[$i] !== $expense->payer) {
-                    $this->updateBalances($expense, $participants[$i], $expense_participant->share);
+                    Expense::updateBalances($expense, $participants[$i], $expense_participant->share);
                 }
 
                 $remaining_amount -= $amount_per_participant;
@@ -618,11 +596,11 @@ class ExpensesController extends Controller
                 ->join('expense_participants AS ep', 'expenses.id', 'ep.expense_id')
                 ->join('users AS participant_users', 'ep.user_id', 'participant_users.id')
                 ->join('users AS payer_users', 'expenses.payer', 'payer_users.id')
-                ->join('groups', 'expenses.group_id', 'groups.id')
+                //->join('groups', 'expenses.group_id', 'groups.id')
                 ->where(function ($query) use ($search_string) {
                     $query->whereRaw('participant_users.username LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('payer_users.username LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"])
+                        //->orWhereRaw('groups.name LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('expenses.name LIKE ?', ["%$search_string%"]);
                 })
                 ->distinct();
@@ -662,7 +640,7 @@ class ExpensesController extends Controller
             $expense->group = Group::find($expense->group_id);
 
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
-
+            $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
             $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
             $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
 
@@ -670,35 +648,5 @@ class ExpensesController extends Controller
         });
 
         return $expenses;
-    }
-
-    /**
-     * Updates the Balances records between $expense->payer and $user_id by $amount
-     */
-    protected function updateBalances(Expense $expense, $user_id, $amount)
-    {
-        $participant_payer_balance = Balance::where('user_id', $user_id)
-            ->where('friend', $expense->payer)
-            ->where('group_id', $expense->group_id)
-            ->first();
-
-        $payer_participant_balance = Balance::where('user_id', $expense->payer)
-            ->where('friend', $user_id)
-            ->where('group_id', $expense->group_id)
-            ->first();
-
-        if ($expense->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments for reimbursement
-            // Increase the participant to payer Balance by the participant's share
-            $participant_payer_balance->increment('balance', $amount);
-
-            // Decrease the payer to participant Balance by the participant's share
-            $payer_participant_balance->decrement('balance', $amount);
-        } else {
-            // Decrease the participant to payer Balance by the participant's share
-            $participant_payer_balance->decrement('balance', $amount);
-
-            // Increase the payer to participant Balance by the participant's share
-            $payer_participant_balance->increment('balance', $amount);
-        }
     }
 }

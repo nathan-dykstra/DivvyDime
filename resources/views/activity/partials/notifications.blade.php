@@ -7,9 +7,9 @@
         @elseif ($notification->notification_type_id === $notification_types['reminder'])
 
         @elseif ($notification->notification_type_id === $notification_types['payment'])
-
+            @include('activity.partials.payment')
         @elseif ($notification->notification_type_id === $notification_types['payment_confirmed'])
-
+            @include('activity.partials.payment-confirmed')
         @elseif ($notification->notification_type_id === $notification_types['balance_settled'])
 
         @elseif ($notification->notification_type_id === $notification_types['friend_request'])

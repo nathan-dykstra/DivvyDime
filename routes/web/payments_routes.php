@@ -10,5 +10,8 @@ Route::get('/payments/{expense_id}', [PaymentsController::class, 'show'])->name(
 //Route::patch('/expenses/{expense}/update', [ExpensesController::class, 'update'])->name('expenses.update');
 Route::delete('/payments/{expense}/destroy', [PaymentsController::class, 'destroy'])->name('payments.destroy');
 
+Route::post('/payments/reject', [PaymentsController::class, 'rejectPayment'])->name('payments.reject');
+Route::post('/payments/confirm', [PaymentsController::class, 'confirmPayment'])->name('payments.confirm');
+
 //Route::post('/expenses/search', [ExpensesController::class, 'search'])->name('expenses.search');
 //Route::post('/payments/search-friends-to-include', [PaymentsController::class, 'searchFriendsToInclude'])->name('payments.search-friends-to-include');

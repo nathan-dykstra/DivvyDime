@@ -4,7 +4,7 @@
             @if (count($friend->group_balances) > 1)
                 <div class="expense-info-breakdown">
                     <div class="expense-info-breakdown-left">
-                        <div class="profile-circle-sm-placeholder"></div>
+                        <div class="profile-circle-sm-placeholder"></div> <!-- TODO: profile image -->
 
                         <div class="expense-info-breakdown-line-container">
                             <div class="expense-info-breakdown-line"></div>
