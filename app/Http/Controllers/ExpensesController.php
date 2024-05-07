@@ -550,8 +550,9 @@ class ExpensesController extends Controller
     public function searchFriendsToInclude(Request $request)
     {
         $search_string = $request->input('search_string');
+        $group_id = $request->input('group');
 
-        $users_base_query = auth()->user()->friends()
+        /*$users_base_query = auth()->user()->friends()
             ->union(
                 User::where('id', auth()->user()->id)
             );
@@ -564,9 +565,16 @@ class ExpensesController extends Controller
             });
 
         $new_bindings = array_merge($users_base_query->getBindings(), $users->getBindings());
-        $users->setBindings($new_bindings);
+        $users->setBindings($new_bindings);*/
 
-        $users = $users->orderByRaw("
+        $users = User::whereHas('groups', function ($query) use ($group_id) {
+                $query->where('groups.id', $group_id);
+            })
+            ->where(function ($query) use ($search_string) {
+                $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
+                    ->orWhereRaw('users.email LIKE ?', ["%$search_string%"]);
+            })
+            ->orderByRaw("
                 CASE
                     WHEN users.id = ? THEN 0
                     ELSE 1

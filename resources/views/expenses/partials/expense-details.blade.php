@@ -386,6 +386,7 @@
             data: {
                 '_token': '{{ csrf_token() }}',
                 'search_string': searchString,
+                'group': currentGroupInput.value,
             },
             success: function(users) {
                 if (searchString === '') {

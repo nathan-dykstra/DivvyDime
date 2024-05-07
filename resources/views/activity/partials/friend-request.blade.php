@@ -4,12 +4,13 @@
             <div class="notification-content">
                 <div>
                     <div>{{ __('You sent ') }}<span class="bold-username">{{ $notification->username }}</span>{{ __(' a friend request') }}</div>
-                    
+
+                    <div class="text-sm text-warning"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This request is pending.') }}</div>
+
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
                     </x-tooltip>
                 </div>
-                <div class="text-warning"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This request is pending.') }}</div>
             </div>
 
             <div class="delete-notification-btn-container">

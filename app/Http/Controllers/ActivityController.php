@@ -38,8 +38,9 @@ class ActivityController extends Controller
     {
         $current_user = auth()->user();
 
-        $notifications = Notification::select('notifications.*', 'users.username AS sender_username')
-            ->join('users', 'notifications.sender', 'users.id')
+        $notifications = Notification::select('notifications.*', 'users1.username AS sender_username', 'users2.username AS recipient_username')
+            ->join('users AS users1', 'notifications.sender', 'users1.id')
+            ->join('users AS users2', 'notifications.recipient', 'users2.id')
             ->where('notifications.recipient', $current_user->id)
             ->orderBy('notifications.updated_at', 'DESC')
             ->get();
@@ -72,8 +73,9 @@ class ActivityController extends Controller
         $current_user = auth()->user();
         $search_string = $request->input('search_string');
 
-        $notifications_query = Notification::select('notifications.*', 'users.username')
-            ->join('users', 'notifications.sender', 'users.id')
+        $notifications_query = Notification::select('notifications.*', 'users1.username AS sender_username')
+            ->join('users AS users1', 'notifications.sender', 'users1.id')
+            ->join('users AS users2', 'notifications.recipient', 'users2.id')
             ->where('notifications.recipient', $current_user->id);
 
         if ($search_string) {
@@ -81,7 +83,8 @@ class ActivityController extends Controller
                 ->leftJoin('groups', 'notification_attributes.group_id', 'groups.id')
                 ->leftJoin('expenses', 'notification_attributes.expense_id', 'expenses.id')
                 ->where(function ($query) use ($search_string) {
-                    $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
+                    $query->whereRaw('users1.username LIKE ?', ["%$search_string%"])
+                        ->orWhereRaw('users2.username LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('expenses.name LIKE ?', ["%$search_string%"]);
                 });
@@ -104,7 +107,7 @@ class ActivityController extends Controller
     {
         $current_user = auth()->user();
 
-        $notifications = Notification::select('notifications.*', 'users.username')
+        $notifications = Notification::select('notifications.*', 'users.username AS sender_username')
             ->join('users', 'notifications.sender', 'users.id')
             ->where('notifications.recipient', $current_user->id)
             ->orderBy('notifications.updated_at', 'DESC')

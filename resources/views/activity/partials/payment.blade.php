@@ -29,11 +29,12 @@
                         {{ __(' paid ') }}<span class="bold-username">{{ $notification->payee->username }}</span>{{ __(' $') . number_format($notification->expense->amount, 2) . __(' in ') }}<span class="bold-username">{{ $notification->group->name }}</span>
                     </div>
 
+                    <div class="text-sm text-warning"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This payment is pending') }}</div>
+
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
                     </x-tooltip>
                 </div>
-                <div class="text-warning"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This payment is pending.') }}</div>
             </div>
 
             <div class="delete-notification-btn-container">

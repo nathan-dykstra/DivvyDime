@@ -137,7 +137,6 @@ class PaymentsController extends Controller
      */
     public function confirmPayment(Request $request)
     {
-        Log::info("here");
         $payee_notification = Notification::find($request->input('notification_id'));
 
         $payment = Expense::find($payee_notification->attributes()->value('expense_id'));
