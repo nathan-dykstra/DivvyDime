@@ -216,7 +216,7 @@
                                                     checked
                                                 @endif
                                             @else
-                                                @if ($expense->group_id === $dropdown_group->id)
+                                                @if ($expense->groups->first()->id === $dropdown_group->id)
                                                     checked
                                                 @endif
                                             @endif

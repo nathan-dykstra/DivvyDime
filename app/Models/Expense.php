@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Events\ExpenseDeleting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Expense extends Model
 {
@@ -80,14 +81,16 @@ class Expense extends Model
      */
     public static function updateBalances(Expense $expense, $user_id, $amount)
     {
+        // TODO: support settle all balances
+
         $participant_payer_balance = Balance::where('user_id', $user_id)
             ->where('friend', $expense->payer)
-            ->where('group_id', $expense->group_id)
+            ->where('group_id', $expense->groups->first()->id)
             ->first();
 
         $payer_participant_balance = Balance::where('user_id', $expense->payer)
             ->where('friend', $user_id)
-            ->where('group_id', $expense->group_id)
+            ->where('group_id', $expense->groups->first()->id)
             ->first();
 
         if ($expense->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments for reimbursement
@@ -110,6 +113,8 @@ class Expense extends Model
      */
     public function undoBalanceAdjustments()
     {
+        // TODO: support settle all balances
+
         foreach($this->participants()->get() as $participant) {
             if ($participant->id !== $this->payer) {
                 $participant_share = ExpenseParticipant::where('expense_id', $this->id)
@@ -118,12 +123,12 @@ class Expense extends Model
 
                 $participant_payer_balance = Balance::where('user_id', $participant->id)
                     ->where('friend', $this->payer)
-                    ->where('group_id', $this->group_id)
+                    ->where('group_id', $this->groups->first()->id)
                     ->first();
 
                 $payer_participant_balance = Balance::where('user_id', $this->payer)
                     ->where('friend', $participant->id)
-                    ->where('group_id', $this->group_id)
+                    ->where('group_id', $this->groups->first()->id)
                     ->first();
                 
                 if ($this->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments
@@ -148,7 +153,7 @@ class Expense extends Model
      */
     public function sendExpenseNotifications()
     {
-        if ($this->group_id === Group::DEFAULT_GROUP || $this->expense_type_id === ExpenseType::PAYMENT) {
+        if ($this->group_id === Group::DEFAULT_GROUP || $this->expense_type_id === ExpenseType::PAYMENT || $this->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) {
             // Only send the notification to involved Users
 
             foreach ($this->involvedUsers() as $involved_user) {
@@ -167,7 +172,7 @@ class Expense extends Model
         } else {
             // Send the notification to all group members
 
-            $group = $this->group()->first();
+            $group = $this->groups->first();
 
             foreach ($group->members()->get() as $member) {
                 $expense_notification = Notification::create([

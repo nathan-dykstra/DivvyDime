@@ -52,6 +52,7 @@
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->updated_date . __(' at ') . $expense->updated_time }}">
                         <span class="width-content">{{ $expense->formatted_updated_date }}</span>
                     </x-tooltip>
+                    {{ __(' by ') }}<span >{{ $expense->updator_user->username }}</span>
                 </div>
             @endif
     
@@ -66,7 +67,7 @@
                 <div class="expense-info-breakdown-right">
                     <div class="expense-info-breakdown-payer-container">
                         <div class="expense-info-breakdown-payer">
-                            <span>{{ $expense->payer_user->username }}</span>
+                            <span>{{ $expense->payer === auth()->user()->id ? __("You") : $expense->payer_user->username }}</span>
                             @if ($expense->is_reimbursement)
                                 {{ __(' received ') }}
                             @else
@@ -79,27 +80,27 @@
                     <div class="space-top-xs">
                         @foreach ($participants as $participant)
                             <div class="expense-info-participant text-shy">
-                                {{ $participant->username }}
+                                {{ $participant->id === auth()->user()->id ? __('You') : $participant->username }}
                                 @if ($participant->id !== $expense->payer)
                                     @if ($expense->is_reimbursement)
-                                        {{ __(' receives ') }}
+                                        {{ $participant->id === auth()->user()->id ? __(' receive ') : __(' receives ') }}
                                     @else
-                                        {{ __(' owes ') }}
+                                        {{ $participant->id === auth()->user()->id ? __(' owe ') : __(' owes ') }}
                                     @endif
                                     {{ __('$') . $participant->share }}
                                 @endif
                                 @if ($participant->id === $expense->payer)
                                     @if ($expense->is_reimbursement)
-                                        {{ __(' keeps ') }}
+                                        {{ $participant->id === auth()->user()->id ? __(' keep ') : __(' keeps ') }}
                                     @else
-                                        {{ __(' owes ') }}
+                                        {{ $participant->id === auth()->user()->id ? __(' owe ') : __(' owes ') }}
                                     @endif
                                     {{ __('$') . $participant->share }}
                                     {{ __(' and ') }}
                                     @if ($expense->is_reimbursement)
-                                        {{ __(' owes ') }}
+                                        {{ $participant->id === auth()->user()->id ? __(' owe ') : __(' owes ') }}
                                     @else
-                                        {{ __(' receives ') }}
+                                        {{ $participant->id === auth()->user()->id ? __(' receive ') : __(' receives ') }}
                                     @endif
                                     {{ __('$') . number_format($expense->amount - $participant->share, 2) }}
                                 @endif

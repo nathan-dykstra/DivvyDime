@@ -566,7 +566,7 @@ class GroupsController extends Controller
             }
             $expense->amount = number_format($expense->amount, 2);
 
-            $expense->group = Group::where('id', $expense->group_id)->first();
+            $expense->group = $expense->groups->first();
 
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
             $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;

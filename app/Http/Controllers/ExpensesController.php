@@ -131,7 +131,6 @@ class ExpensesController extends Controller
             'name' => $expense_validated['expense-name'],
             'amount' => $expense_validated['expense-amount'],
             'payer' => $expense_validated['expense-paid'],
-            'group_id' => $expense_validated['expense-group'], // TODO: Remove this when group_id is removed from expenses table
             'expense_type_id' => $expense_validated['expense-split'],
             /*'category_id' => $expense_validated['expense-category'],*/
             'note' => $expense_validated['expense-note'],
@@ -143,10 +142,7 @@ class ExpensesController extends Controller
         $expense = Expense::create($expense_data);
 
         // Add the expense group
-        ExpenseGroup::create([
-            'expense_id' => $expense->id,
-            'group_id' => $expense_validated['expense-group'],
-        ]);
+        $expense->groups()->attach($expense_validated['expense-group']);
 
         // Create the ExpenseParticipants
 
@@ -272,8 +268,9 @@ class ExpensesController extends Controller
         $expense->updated_time = Carbon::parse($expense->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
 
         // Get the creator and payer of the Expense
-        $expense->creator_user = User::where('id', $expense->creator)->first();
-        $expense->payer_user = User::where('id', $expense->payer)->first();
+        $expense->creator_user = User::find($expense->creator);
+        $expense->updator_user = User::find($expense->updator);
+        $expense->payer_user = User::find($expense->payer);
 
         $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
 
@@ -289,7 +286,7 @@ class ExpensesController extends Controller
             ->get();
 
         // If this Expense is a Payment, display the Payment screen rather than the Expense screen
-        if ($expense->expense_type_id === -5) { // TODO: Update this with the payment type
+        if ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) {
             return view('payments.show', [
                 'expense' => $expense,
                 'participant' => $participants[0],
@@ -374,7 +371,6 @@ class ExpensesController extends Controller
             'name' => $expense_validated['expense-name'],
             'amount' => $expense_validated['expense-amount'],
             'payer' => $expense_validated['expense-paid'],
-            'group_id' => $expense_validated['expense-group'], // TODO: Remove this when group_id is removed from expenses table
             'expense_type_id' => $expense_validated['expense-split'],
             /*'category_id' => $expense_validated['expense-category'],*/
             'note' => $expense_validated['expense-note'],
@@ -385,9 +381,8 @@ class ExpensesController extends Controller
         $expense->update($expense_data);
 
         // Update the expense group
-        ExpenseGroup::where('expense_id', $expense->id)->update([
-            'group_id' => $expense_validated['expense-group'],
-        ]);
+        $expense->groups()->sync([$expense_validated['expense-group']]);
+        $expense->load('groups'); // Refresh the relationship to avoid problems with old cached data
 
         // Update the ExpensePartcipants and Balances
 
