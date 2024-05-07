@@ -151,7 +151,7 @@ class ActivityController extends Controller
                     $notification->amount_borrowed = number_format($current_user_share, 2);
                 }
 
-                $notification->group = Group::find($notification->expense->group_id);
+                $notification->group = Group::find($notification->expense->groups->first()->id);
 
                 // Additional information if expense is a Reimbursement or Payment
 

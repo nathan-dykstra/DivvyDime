@@ -66,7 +66,9 @@ class User extends Authenticatable implements MustVerifyEmail
                     ->orWhereHas('participants', function ($query) use ($user_id) {
                         $query->where('users.id', $user_id);
                     })
-                    ->orWhereIn('group_id', $user_groups);
+                    ->orWhereHas('groups', function ($query) use ($user_groups) {
+                        $query->whereIn('group_id', $user_groups);
+                    });
             })
             ->distinct();
 

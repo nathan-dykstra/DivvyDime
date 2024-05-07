@@ -109,34 +109,7 @@ class GroupsController extends Controller
             ->orderBy('created_at', 'DESC')
             ->get();
 
-        $expenses = $expenses->map(function ($expense) use ($current_user) {
-            $expense->payer_user = User::where('id', $expense->payer)->first();
-
-            $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
-
-            $expense->date = Carbon::parse($expense->date)->format('M d, Y');
-
-            $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
-                ->where('user_id', $current_user->id)
-                ->value('share');
-
-            if ($expense->payer === $current_user->id) {
-                $expense->lent = number_format($expense->amount - $current_user_share, 2);
-            }
-            if ($current_user_share) {
-                $expense->borrowed = number_format($current_user_share, 2);
-            }
-            $expense->amount = number_format($expense->amount, 2);
-
-            $expense->group = Group::where('id', $expense->group_id)->first();
-
-            $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
-            $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
-            $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
-            $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
-
-            return $expense;
-        });
+        $expenses = $this->augmentExpenses($expenses);
 
         $overall_balance = Balance::where('group_id', $group->id)
             ->where('user_id', $current_user->id)
@@ -548,7 +521,8 @@ class GroupsController extends Controller
     }
 
     /**
-     * Add default Group information to the Groups.
+     * Add additional information about default group and group balances
+     * to the groups.
      */
     protected function augmentGroups($groups)
     {
@@ -564,6 +538,44 @@ class GroupsController extends Controller
 
         return $groups;
     }
+
+    /**
+     * Add additional information such as dates/times, lent/borrowed amounts, 
+     * and group info to the expenses
+     */
+    protected function augmentExpenses($expenses)
+    {
+        $current_user = auth()->user();
+
+        $expenses = $expenses->map(function ($expense) use ($current_user) {
+            $expense->payer_user = User::where('id', $expense->payer)->first();
+
+            $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
+
+            $expense->date = Carbon::parse($expense->date)->format('M d, Y');
+
+            $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
+                ->where('user_id', $current_user->id)
+                ->value('share');
+
+            if ($expense->payer === $current_user->id) {
+                $expense->lent = number_format($expense->amount - $current_user_share, 2);
+            }
+            if ($current_user_share) {
+                $expense->borrowed = number_format($current_user_share, 2);
+            }
+            $expense->amount = number_format($expense->amount, 2);
+
+            $expense->group = Group::where('id', $expense->group_id)->first();
+
+            $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
+            $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+            $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
+            $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
+
+            return $expense;
+        });
+
+        return $expenses;
+    }
 }
-
-

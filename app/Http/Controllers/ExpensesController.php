@@ -553,21 +553,6 @@ class ExpensesController extends Controller
         $group_id = (int)$request->input('group_id');
         $current_user = auth()->user();
 
-        /*$users_base_query = auth()->user()->friends()
-            ->union(
-                User::where('id', auth()->user()->id)
-            );
-
-        $users = DB::table(DB::raw("({$users_base_query->toSql()}) as users"))
-            ->select('users.*')
-            ->where(function ($query) use ($search_string) {
-                $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
-                    ->orWhereRaw('users.email LIKE ?', ["%$search_string%"]);
-            });
-
-        $new_bindings = array_merge($users_base_query->getBindings(), $users->getBindings());
-        $users->setBindings($new_bindings);*/
-
         $users = User::whereHas('groups', function ($query) use ($group_id) {
                 $query->where('groups.id', $group_id);
             })
@@ -602,30 +587,27 @@ class ExpensesController extends Controller
 
         $search_string = $request->input('search_string');
 
-        $expenses_query = $current_user->expenses();
-
-        $base_query_bindings = $expenses_query->getBindings();
+        $expenses = $current_user->expenses();
 
         if ($search_string) {
-            $expenses_query = DB::table(DB::raw("({$expenses_query->toSql()}) as expenses"))
-                ->select('expenses.*')
-                ->join('expense_participants AS ep', 'expenses.id', 'ep.expense_id')
+            $expenses = $expenses->join('expense_participants AS ep', 'expenses.id', 'ep.expense_id')
                 ->join('users AS participant_users', 'ep.user_id', 'participant_users.id')
                 ->join('users AS payer_users', 'expenses.payer', 'payer_users.id')
-                //->join('groups', 'expenses.group_id', 'groups.id')
                 ->where(function ($query) use ($search_string) {
                     $query->whereRaw('participant_users.username LIKE ?', ["%$search_string%"])
                         ->orWhereRaw('payer_users.username LIKE ?', ["%$search_string%"])
-                        //->orWhereRaw('groups.name LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('expenses.name LIKE ?', ["%$search_string%"]);
-                })
-                ->distinct();
-
-            $new_bindings = array_merge($base_query_bindings, $expenses_query->getBindings());
-            $expenses_query->setBindings($new_bindings);
+                        ->orWhereRaw('expenses.name LIKE ?', ["%$search_string%"])
+                        ->orWhereRaw('expenses.amount LIKE ?', ["$search_string%"])
+                        ->orWhere('expenses.amount', $search_string)
+                        ->orWhereHas('groups', function ($query) use ($search_string) {
+                            $query->whereRaw('groups.name LIKE ?', ["%$search_string%"]);
+                        });
+                });
         }
 
-        $expenses = $expenses_query->orderBy('date', 'DESC')->get();
+        $expenses = $expenses->orderBy('date', 'DESC')
+            ->orderBy('created_at', 'DESC')
+            ->get();
 
         $expenses = $this->augmentExpenses($expenses);
 
@@ -653,7 +635,7 @@ class ExpensesController extends Controller
             $expense->borrowed = number_format($current_user_share, 2);
             $expense->amount = number_format($expense->amount, 2);
 
-            $expense->group = Group::find($expense->group_id);
+            $expense->group = $expense->groups->first();
 
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
             $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
