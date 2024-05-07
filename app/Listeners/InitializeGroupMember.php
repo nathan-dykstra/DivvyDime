@@ -31,6 +31,11 @@ class InitializeGroupMember
         $group = Group::where('id', $event->member->group_id)->first();
         $new_member = User::where('id', $event->member->user_id)->first();
 
+        // Friend balances in the default group are created by the InitializeFriend listener
+        if ($group->id === Group::DEFAULT_GROUP) {
+            return;
+        }
+
         // For each group member (excluding the newly created member): 
         //    1. Establish friendship on the app
         //    2. Send a "Joined Group" notification
