@@ -157,7 +157,7 @@ class ActivityController extends Controller
 
                 $notification->is_reimbursement = $notification->expense->expense_type_id === ExpenseType::REIMBURSEMENT;
 
-                if ($notification->expense->expense_type_id === ExpenseType::PAYMENT) {
+                if ($notification->expense->expense_type_id === ExpenseType::PAYMENT || $notification->expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) {
                     $notification->payee = $notification->expense->participants()->first();
                 }
             }

@@ -1,4 +1,4 @@
-<x-modal name="delete-expense" focusable>
+<x-modal name="delete-payment" focusable>
     <form method="post" action="{{ route('payments.destroy', $payment) }}" class="space-bottom-sm">
         @csrf
         @method('delete')

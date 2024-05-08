@@ -1,9 +1,15 @@
-@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'onclick' => null])
+@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'href' => null, 'onclick' => null])
 
-<button {{ $attributes->merge(['type' => $type, 'class' => 'icon-btn ' . $class, 'id' => $id, 'onclick' => $onclick]) }}>
-    <i class="{{ $icon }}" id="{{ $iconId }}"></i>
-    {{ $slot }}
-</button>
+@if ($href)
+    <a {{ $attributes->merge(['class' => 'icon-btn ' . $class, 'id' => $id, 'href' => $href]) }}>
+        <i class="{{ $icon }}" id="{{ $iconId }}"></i>
+    </a>
+@else
+    <button {{ $attributes->merge(['type' => $type, 'class' => 'icon-btn ' . $class, 'id' => $id, 'onclick' => $onclick]) }}>
+        <i class="{{ $icon }}" id="{{ $iconId }}"></i>
+        {{ $slot }}
+    </button>
+@endif
 
 <style>
     .icon-btn {

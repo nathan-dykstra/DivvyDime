@@ -54,7 +54,8 @@
 
 <script>
     function highlightSidebarItem() {
-        const currentRoute = window.location.href;
+        let tempCurrentRoute = window.location.href;
+        const currentRoute = tempCurrentRoute.replace(/\/payments/g, "/expenses"); // "Expenses" sidebar item should be highlighted for payments pages
 
         const sidebarItems = document.querySelectorAll(".sidebar-items li");
 

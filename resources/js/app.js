@@ -92,9 +92,16 @@ window.showValidationWarning = function(validationWarning) {
     validationWarning.classList.remove('hidden');
 }
 
-window.hideValidationWarning = function(hideBtn) {
+window.closeValidationWarning = function(hideBtn) {
     let validationWarning = hideBtn.closest('.validation-warning');
 
+    validationWarning.classList.add('animate-out');
+    setTimeout(() => {
+        validationWarning.classList.add('hidden');
+    }, 300);
+}
+
+window.hideValidationWarning = function(validationWarning) {
     validationWarning.classList.add('animate-out');
     setTimeout(() => {
         validationWarning.classList.add('hidden');

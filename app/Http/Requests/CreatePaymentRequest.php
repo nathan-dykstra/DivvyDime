@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Balance;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class CreatePaymentRequest extends FormRequest
@@ -17,9 +19,24 @@ class CreatePaymentRequest extends FormRequest
         return [
             'payment-amount' => ['required', 'numeric', 'regex:/^\d{1,8}(\.\d{1,2})?$/'],
             'payment-payee' => ['required', 'int', Rule::exists('users', 'id')],
-            'payment-balance' => ['required', 'int', Rule::exists('balances', 'id')],
+            'payment-balance' => ['required', 'int', 'valid_balance_id'],
             'payment-note' => ['nullable', 'string', 'max:65535'],
             'payment-date' => ['required', 'date'],
         ];
+    }
+
+    /**
+     * Customize the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        Log::info("here");
+        // Add custom validation rule
+        $validator->addExtension('valid_balance_id', function ($attribute, $value, $parameters, $validator) {
+            return $value == -1 || Balance::where('id', $value)->exists();
+        });
     }
 }

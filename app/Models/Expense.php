@@ -158,7 +158,7 @@ class Expense extends Model
 
             foreach ($this->involvedUsers() as $involved_user) {
                 $expense_notification = Notification::create([
-                    'notification_type_id' => $this->expense_type_id === ExpenseType::PAYMENT ? NotificationType::PAYMENT : NotificationType::EXPENSE,
+                    'notification_type_id' => ($this->expense_type_id === ExpenseType::PAYMENT || $this->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) ? NotificationType::PAYMENT : NotificationType::EXPENSE,
                     'creator' => $this->creator,
                     'sender' => $this->creator,
                     'recipient' => $involved_user->id,
@@ -176,7 +176,7 @@ class Expense extends Model
 
             foreach ($group->members()->get() as $member) {
                 $expense_notification = Notification::create([
-                    'notification_type_id' => $this->expense_type_id === ExpenseType::PAYMENT ? NotificationType::PAYMENT : NotificationType::EXPENSE,
+                    'notification_type_id' => NotificationType::EXPENSE,
                     'creator' => $this->creator,
                     'sender' => $this->creator,
                     'recipient' => $member->id,

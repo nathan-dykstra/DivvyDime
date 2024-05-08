@@ -1,21 +1,21 @@
-@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'form' => null, 'href' => null, 'onclick' => null])
+@props(['type' => 'button', 'class' => '', 'id' => null, 'icon' => null, 'iconId' => null, 'form' => null, 'href' => null, 'onclick' => null, 'disabled' => false])
 
 @if ($href)
-    <a {{ $attributes->merge(['class' => 'primary-btn ' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => $href]) }}>
+    <a {{ $attributes->merge(['class' => 'primary-btn ' . $class, 'id' => $id, 'onclick' => $onclick, 'href' => $href]) }} {{ $disabled ? 'disabled' : '' }}>
         @if ($icon)
             <i class="{{ $icon }}" id="{{ $iconId }}"></i>
         @endif
         {{ $slot }}
     </a>
 @elseif ($form) 
-    <button {{ $attributes->merge(['class' => 'primary-btn ' . $class, 'id' => $id, 'form' => $form]) }}>
+    <button {{ $attributes->merge(['class' => 'primary-btn ' . $class, 'id' => $id, 'form' => $form]) }} {{ $disabled ? 'disabled' : '' }}>
         @if ($icon) 
             <i class="{{ $icon }}" id="{{ $iconId }}"></i>
         @endif
         {{ $slot }}
     </button>
 @else
-    <button {{ $attributes->merge(['type' => $type, 'class' => 'primary-btn ' . $class, 'id' => $id, 'onclick' => $onclick]) }}>
+    <button {{ $attributes->merge(['type' => $type, 'class' => 'primary-btn ' . $class, 'id' => $id, 'onclick' => $onclick]) }} {{ $disabled ? 'disabled' : '' }}>
         @if ($icon) 
             <i class="{{ $icon }}" id="{{ $iconId }}"></i>
         @endif

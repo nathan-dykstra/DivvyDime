@@ -517,8 +517,8 @@ class ExpensesController extends Controller
             }
         }
 
-        // Update the Expense's "updated_at" timestamp in case only the ExpenseParticipants were updated,
-        // and not the Expense itself
+        // Update the expense's "updated_at" timestamp in case only the expense participants were updated,
+        // and not the expense itself
         $expense->touch();
 
         return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-updated');

@@ -3,18 +3,32 @@
     <x-validation-warning id="balance-validation-warning">{{ __('Select a balance!') }}</x-validation-warning>
 
     <div class="restrict-max-width">
-        <form method="post" action="{{ route('payments.store') }}">
+        <form method="post" action="{{ $payment ? route('payments.update', $payment) : route('payments.store') }}">
             @csrf
+            @if ($payment)
+                @method('patch')
+            @endif
 
             <div class="payment-choose-user space-bottom-lg {{ $friend ? 'hidden' : '' }}" id="payment-choose-user">
-                <h4 class="margin-bottom-sm">{{ __('Who did you pay?') }}</h4>
+                <div>
+                    @if ($group)
+                        <div class="margin-bottom-sm">
+                            <div class="btn-container-start payment-added-in-group">
+                                {{ __('In "') . $group->name . __('"') }}
+                                <x-icon-button icon="fa-solid fa-xmark fa-sm" href="{{ route('payments.create') }}"/>
+                            </div>
+                        </div>
+                    @endif
+
+                    <h4 class="margin-bottom-sm">{{ __('Who did you pay?') }}</h4>
+                </div>
 
                 <ul id="payment-users-list">
                     @foreach ($users_selection as $user)
                         <li>
                             <label class="payment-user-selector-item" for="choose-user-item-{{ $user->id }}" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}" onclick="setPaymentUser(this)">
                                 <div class="payment-user-selector-radio">
-                                    <input type="radio" id="choose-user-item-{{ $user->id }}" class="radio" name="payment-payee" value="{{ $user->id }}" {{ $expense?->payer === $user->id || $friend?->id == $user->id ? 'checked' : '' }}/>
+                                    <input type="radio" id="choose-user-item-{{ $user->id }}" class="radio" name="payment-payee" value="{{ $user->id }}" {{ $payment?->payer === $user->id || $friend?->id == $user->id ? 'checked' : '' }}/>
                                     <div class="user-photo-name">
                                         <div class="profile-circle-sm-placeholder"></div>
                                         <div class="split-equal-item-name">{{ $user->username }}</div>
@@ -43,51 +57,7 @@
             <div class="payment-choose-balance space-bottom-lg {{ $group || !$friend ? 'hidden' : '' }}" id="payment-choose-balance">
                 <h4 class="margin-bottom-sm">{{ __('Choose a balance to settle') }}</h4>
 
-                <ul id="payment-balances-list">
-                    @foreach ($users_selection as $user)
-                        @if ($user->total_balance < 0)
-                            <li>
-                                <label class="payment-group-selector-item" for="choose-balance-item-all-{{ $user->id }}" data-user-id="{{ $user->id }}" data-group-name="{{ __('All Balances') }}" data-balance="" onclick="setPaymentBalance(this)">
-                                    <div class="payment-user-selector-radio">
-                                        <input type="radio" id="choose-balance-item-all-{{ $user->id }}" class="radio" name="payment-balance" value="-1" {{ $expense === null ? 'checked' : '' }}/>
-                                        <div class="user-photo-name">
-                                            <div class="profile-circle-sm-placeholder"></div>
-                                            <div class="split-equal-item-name">{{ __('All Balances') }}</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="payment-user-amount">
-                                        <div class="text-small text-warning">{{ __('You owe $') . number_format(abs($user->total_balance), 2) }}</div>
-                                    </div>
-                                </label>
-                            </li>
-                        @endif
-                    @endforeach
-
-                    @foreach ($balances_selection as $balance)
-                        <li>
-                            <label class="payment-group-selector-item" for="choose-balance-item-{{ $balance->id }}" data-user-id="{{ $balance->friend }}" data-group-name="{{ $balance->group_name }}" data-balance="{{ $balance->balance }}" onclick="setPaymentBalance(this)">
-                                <div class="payment-user-selector-radio">
-                                    <input type="radio" id="choose-balance-item-{{ $balance->id }}" class="radio" name="payment-balance" value="{{ $balance->id }}" {{ $expense?->group_id === $balance->group_id || $group?->id == $balance->group_id ? 'checked' : '' }}/>
-                                    <div class="user-photo-name">
-                                        <div class="profile-circle-sm-placeholder"></div>
-                                        <div class="split-equal-item-name">{{ $balance->group_name }}</div>
-                                    </div>
-                                </div>
-
-                                @if ($balance->balance < 0) <!-- Current user owes money in this group -->
-                                    <div class="payment-user-amount">
-                                        <div class="text-small text-warning">{{ __('You owe $') . number_format(abs($balance->balance), 2) }}</div>
-                                    </div>
-                                @elseif ($balance->balance > 0) <!-- Current user is owed money in this group -->
-                                    <div class="text-small text-success">{{ __('You are owed $') . number_format(abs($balance->balance), 2) }}</div>
-                                @else
-                                    <div class="text-shy">{{ __('Settled up') }}</div>
-                                @endif
-                            </label>
-                        </li>
-                    @endforeach
-                </ul>
+                @include('payments.partials.payment-balances')
 
                 <div class="btn-container-start">
                     <x-primary-button onclick="showPayeeSelector()">{{ __('Back') }}</x-primary-button>
@@ -122,7 +92,7 @@
 
                 <div class="payment-amount-container">
                     <div class="expense-input-container payment-amount">
-                        <span class="expense-currency">{{ __('$') }}</span><input id="payment-amount" class="expense-form-amount" name="payment-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('payment-amount', $expense ? $expense->amount : '') }}" autocomplete="off" required />
+                        <span class="expense-currency">{{ __('$') }}</span><input id="payment-amount" class="expense-form-amount" name="payment-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('payment-amount', $payment ? $payment->amount : '') }}" autocomplete="off" required />
                     </div>
                 </div>
 
@@ -131,14 +101,14 @@
                         <div class="expense-group-date-media">
                             <x-primary-button class="expense-round-btn expense-round-btn-equal-width" id="payment-group-btn" onclick="showBalanceSelector()">
                                 <div class="expense-round-btn-text">
-                                    @if ($expense === null) <!-- Creating a new Payment -->
+                                    @if ($payment === null) <!-- Creating a new Payment -->
                                         @if ($group) <!-- Payment was added from a Group, so show this Group by default -->
                                             {{ $group->name }}
                                         @else <!-- Payment was not added from a Group (or it was added from "Individual Expenses") -->
                                             {{ $default_group->name }}
                                         @endif
                                     @else <!-- Updating an existing Payment -->
-                                        {{ $expense->group()->first()->name }}
+                                        {{ $payment->group()->first()->name }}
                                     @endif
                                 </div>
                             </x-primary-button>
@@ -214,6 +184,9 @@
     const payeesList = document.getElementById('payment-users-list');
     const balancesList = document.getElementById('payment-balances-list');
 
+    const payeeValidationWarning = document.getElementById('payee-validation-warning');
+    const balanceValidationWarning = document.getElementById('balance-validation-warning');
+
     function validateRadio(radioBtns) {
         let isChecked = Array.from(radioBtns).some(button => button.checked);
         return isChecked;
@@ -230,7 +203,6 @@
 
     function showBalanceSelector() {
         let payeeRadioBtns = document.getElementsByName('payment-payee');
-        let payeeValidationWarning = document.getElementById('payee-validation-warning');
 
         if (validateRadio(payeeRadioBtns)) {
             hideAllValidationWarnings();
@@ -246,7 +218,6 @@
 
     function showPaymentForm() {
         let balanceRadioBtns = document.getElementsByName('payment-balance');
-        let balanceValidationWarning = document.getElementById('balance-validation-warning');
 
         if (validateRadio(balanceRadioBtns)) {
             hideAllValidationWarnings();
@@ -262,15 +233,38 @@
     }
 
     function setPaymentUser(userItem) {
-        // TODO: Update payee profile photo
+        hideValidationWarning(payeeValidationWarning);
 
         let payeeUsername = userItem.dataset.username;
+        let payeeUserId = userItem.dataset.userId
 
+        // Get and display the available balance options for the selected user
+        $.ajax({
+            url: "{{ route('payments.get-balances-with-user') }}",
+            method: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'payment_id': '{{ $payment?->id }}',
+                'group_id': '{{ $group?->id }}',
+                'friend_user_id': payeeUserId,
+            },
+            success: function(html) {
+                balances = $('#payment-balances-list');
+                balances.replaceWith(html);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+
+        // TODO: Update payee profile photo
         userBtn.querySelector('.expense-round-btn-text').textContent = payeeUsername;
-        updateBalanceOptions(userItem.dataset.userId);
+        //updateBalanceOptions(payeeUserId);
     }
 
     function setPaymentBalance(balanceItem) {
+        hideValidationWarning(balanceValidationWarning);
+
         let groupName = balanceItem.dataset.groupName;
         let balance = balanceItem.dataset.balance;
 
@@ -284,7 +278,7 @@
         }
     }
 
-    function updateBalanceOptions(userId) {
+    /*function updateBalanceOptions(userId) {
         let balanceItems = balancesList.querySelectorAll('.payment-group-selector-item, .payment-group-selector-item-disabled');
 
         balanceItems.forEach(function(item) {
@@ -308,7 +302,7 @@
                 break;
             }
         }
-    }
+    }*/
 
     function toggleMediaDropdown() {
         dateDropdown.classList.remove('expense-expand-dropdown-open');

@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Redirect;
 class PaymentsController extends Controller
 {
     const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
+    const SETTLE_ALL_BALANCES = -1;
 
     /**
      * Displays the create payment form.
@@ -44,12 +45,17 @@ class PaymentsController extends Controller
         $users_selection = $current_user->friends()
             ->select('users.*', DB::raw('SUM(balances.balance) as total_balance'))
             ->join('balances', 'users.id', 'balances.friend')
-            ->where('balances.user_id', $current_user->id)
-            ->groupBy('users.id')
+            ->where('balances.user_id', $current_user->id);
+
+        if ($group) {
+            $users_selection = $users_selection->where('balances.group_id', $group->id);
+        }
+
+        $users_selection = $users_selection->groupBy('users.id')
             ->orderBy('users.username', 'asc')
             ->get();
 
-        $balances_selection = $current_user->friends()
+        $balances_selection = []; /*$current_user->friends()
             ->select('groups.name as group_name', 'balances.*')
             ->join('balances', 'users.id', 'balances.friend')
             ->join('groups', 'balances.group_id', 'groups.id')
@@ -61,10 +67,10 @@ class PaymentsController extends Controller
                     ELSE 1
                 END, groups.name ASC
             ", [Group::DEFAULT_GROUP])
-            ->get();
+            ->get();*/
 
         return view('payments.create', [
-            'expense' => null,
+            'payment' => null,
             'group' => $group,
             'friend' => $friend,
             'today' => $today,
@@ -84,19 +90,16 @@ class PaymentsController extends Controller
 
         $payment_validated = $request->validated();
 
-        // Create the payment
-
-        // Get the group from the payment balance
-        $payment_group = Balance::find($payment_validated['payment-balance'])->value('group_id');
-
-        // Get the user_id of the payee
+        // Get the user_id of the payee and balance_id of the balance
         $payee_id = $payment_validated['payment-payee'];
+        $payment_balance_id = (int)$payment_validated['payment-balance'];
+
+        // Create the payment
 
         $payment_data = [
             'amount' => $payment_validated['payment-amount'],
             'payer' => $current_user->id,
-            'group_id' => $payment_group, // TODO: remove this when group_id is removed from the expenses table
-            'expense_type_id' => ExpenseType::PAYMENT,
+            'expense_type_id' => $payment_balance_id === static::SETTLE_ALL_BALANCES ? ExpenseType::SETTLE_ALL_BALANCES : ExpenseType::PAYMENT,
             'category_id' => Category::PAYMENT_CATEGORY,
             'note' => $payment_validated['payment-note'],
             'date' => $payment_validated['payment-date'],
@@ -107,11 +110,26 @@ class PaymentsController extends Controller
 
         $payment = Expense::create($payment_data);
 
-        // Add the expense group
-        ExpenseGroup::create([
-            'expense_id' => $payment->id,
-            'group_id' => $payment_group,
-        ]);
+        // Add the payment group(s)
+        if ($payment_balance_id === static::SETTLE_ALL_BALANCES) {
+            $payment_balances = Balance::where('user_id', $current_user->id)
+                ->where('friend', $payee_id)
+                ->get();
+
+            foreach($payment_balances as $balance) {
+                ExpenseGroup::create([
+                    'expense_id' => $payment->id,
+                    'group_id' => $balance->group_id,
+                ]);
+            }
+        } else {
+            $payment_group_id = Balance::find($payment_validated['payment-balance'])->group_id;
+
+            ExpenseGroup::create([
+                'expense_id' => $payment->id,
+                'group_id' => $payment_group_id,
+            ]);
+        }
 
         // Add the payee as the participant
         ExpenseParticipant::create([
@@ -127,15 +145,15 @@ class PaymentsController extends Controller
         // Send payment notifications
         $payment->sendExpenseNotifications();
 
-        return Redirect::route('expenses')->with('status', 'payment-created');
+        return Redirect::route('payments.show', $payment->id)->with('status', 'payment-created');
     }
 
     /**
      * Displays the payment page.
      */
-    public function show($expense_id): View
+    public function show($payment_id): View
     {
-        $payment = Expense::where('id', $expense_id)->first();
+        $payment = Expense::where('id', $payment_id)->first();
 
         // Get formatted dates and times
         $payment->formatted_created_date = Carbon::parse($payment->created_at)->diffForHumans();
@@ -165,7 +183,106 @@ class PaymentsController extends Controller
         ]);
     }
 
-    // TODO: update payment
+    /**
+     * Displays the update payment form.
+     */
+    public function edit(Expense $payment): View
+    {
+        $current_user = auth()->user();
+
+        $today = Carbon::now()->isoFormat('YYYY-MM-DD');
+        $formatted_today = Carbon::now()->isoFormat('MMMM D, YYYY');
+
+        $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
+
+        $users_selection = $current_user->friends()
+            ->select('users.*', DB::raw('SUM(balances.balance) as total_balance'))
+            ->join('balances', 'users.id', 'balances.friend')
+            ->where('balances.user_id', $current_user->id)
+            ->groupBy('users.id')
+            ->orderBy('users.username', 'asc')
+            ->get();
+
+        $balances_selection = $current_user->friends()
+            ->select('groups.name as group_name', 'balances.*')
+            ->join('balances', 'users.id', 'balances.friend')
+            ->join('groups', 'balances.group_id', 'groups.id')
+            ->where('balances.user_id', $current_user->id)
+            ->orderBy('users.username', 'asc')
+            ->orderByRaw("
+                CASE
+                    WHEN groups.id = ? THEN 0
+                    ELSE 1
+                END, groups.name ASC
+            ", [Group::DEFAULT_GROUP])
+            ->get();
+
+        return view('payments.edit', [
+            'payment' => $payment,
+            'today' => $today,
+            'formatted_today' => $formatted_today,
+            'default_group' => $default_group,
+            'users_selection' => $users_selection,
+            'balances_selection' => $balances_selection,
+        ]);
+    }
+
+    /**
+     * Updates the payment details.
+     */
+    public function update(CreatePaymentRequest $request, Expense $payment): RedirectResponse
+    {
+
+
+        // Update the payments's "updated_at" timestamp in case only the payee was updated,
+        // and not the payment itself
+        $payment->touch();
+
+        return Redirect::route('payments.show', $payment->id)->with('status', 'payment-updated');
+    }
+
+    /**
+     * Returns the payments.partials.payment-balances view with all of the current user's balances 
+     * with the user specified in the request.
+     */
+    public function getBalancesWithUser(Request $request): View
+    {
+        $payment = Expense::find($request->input('payment_id'));
+        $group = $request->input('group_id') ? Group::find($request->input('group_id')) : null;
+        $friend_user_id = $request->input('friend_user_id');
+
+        $current_user = auth()->user();
+
+        $users_selection = $current_user->friends()
+            ->select('users.*', DB::raw('SUM(balances.balance) as total_balance'))
+            ->join('balances', 'users.id', 'balances.friend')
+            ->where('balances.user_id', $current_user->id)
+            ->where('balances.friend', $friend_user_id)
+            ->groupBy('users.id')
+            ->orderBy('users.username', 'asc')
+            ->get();
+
+        $balances_selection = $current_user->friends()
+            ->select('groups.name as group_name', 'balances.*')
+            ->join('balances', 'users.id', 'balances.friend')
+            ->join('groups', 'balances.group_id', 'groups.id')
+            ->where('balances.user_id', $current_user->id)
+            ->where('balances.friend', $friend_user_id)
+            ->orderByRaw("
+                CASE
+                    WHEN groups.id = ? THEN 0
+                    ELSE 1
+                END, groups.name ASC
+            ", [Group::DEFAULT_GROUP])
+            ->get();
+
+        return view('payments.partials.payment-balances', [
+            'payment' => $payment,
+            'group' => $group,
+            'users_selection' => $users_selection,
+            'balances_selection' => $balances_selection,
+        ]);
+    }
 
     /**
      * Confirm that the payment was received. Update the notifications and adjust the balances.

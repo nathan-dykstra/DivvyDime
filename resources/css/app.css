@@ -1958,6 +1958,18 @@ input[type="search"]::-webkit-search-cancel-button {
 
 /* Payment Edit */
 
+.payment-added-in-group {
+    font-weight: 400;
+    font-size: 0.9em;
+    line-height: 1em;
+    width: fit-content;
+    color: var(--text-shy);
+    border-radius: 0.3rem;
+    border: 1px solid var(--secondary-grey-hover);
+    padding: 3px 5px;
+    background-color: var(--secondary-grey-hover);
+}
+
 
 .payment-user-selector-item, .payment-group-selector-item  {
     display: flex;
