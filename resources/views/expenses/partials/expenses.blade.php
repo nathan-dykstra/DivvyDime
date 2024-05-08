@@ -1,10 +1,10 @@
 <div class="expenses">
     @foreach ($expenses as $expense)
         @if ($expense->payer === auth()->user()->id) <!-- Current User paid for the expense -->
-            <div class="expense" onclick="openLink('{{ route('expenses.show', $expense->id) }}')">
+            <div class="expense" onclick="openLink('{{ $expense->is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id) }}')">
                 <div>
                     <div class="expense-name">
-                        @if ($expense->is_payment || $expense->is_settle_all_balances)
+                        @if ($expense->is_payment)
                             <div class="expense-amount text-small">{{ __('You paid ') }}<span class="bold-username">{{ $expense->payee->username }}</span>{{ __(' $') . $expense->amount }}</div>
                         @else
                             <h4>{{ $expense->name }}</h4>
@@ -16,7 +16,7 @@
                         @endif
                     </div>
 
-                    @if (!($expense->is_payment || $expense->is_settle_all_balances))
+                    @if (!$expense->is_payment)
                         <div class="expense-amount text-small">{{ ($expense->is_reimbursement ? __('You received $') : __('You paid $')) . $expense->amount }}</div>
                     @endif
 
@@ -30,7 +30,7 @@
                         <div class="text-small">{{ __('You owe') }}</div>
                         <div class="user-amount-value">{{ __('$') . $expense->lent }}</div>
                     </div>
-                @elseif ($expense->is_payment || $expense->is_settle_all_balances)
+                @elseif ($expense->is_payment)
                     <div class="user-amount text-success">
                         <div class="text-small">{{ __('You paid') }}</div>
                         <div class="user-amount-value">{{ __('$') . $expense->lent }}</div>
@@ -43,10 +43,10 @@
                 @endif
             </div>
         @else <!-- Friend paid for the expense -->
-            <div class="expense" onclick="openLink('{{ route('expenses.show', $expense->id) }}')">
+            <div class="expense" onclick="openLink('{{ $expense->is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id) }}')">
                 <div>
                     <div class="expense-name">
-                        @if ($expense->is_payment || $expense->is_settle_all_balances)
+                        @if ($expense->is_payment)
                             <div class="expense-amount text-small">
                                 <span class="bold-username">{{ $expense->payer_user->username }}</span>
                                 {{ __(' paid ') }}
@@ -67,7 +67,7 @@
                         @endif
                     </div>
 
-                    @if (!($expense->is_payment || $expense->is_settle_all_balances))
+                    @if (!$expense->is_payment)
                         <div class="expense-amount text-small"><span class="bold-username">{{ $expense->payer_user->username }}</span>{{ ($expense->is_reimbursement ? __(' received $') : __(' paid $')) . $expense->amount }}</div> 
                     @endif
 
@@ -84,7 +84,7 @@
                             <div class="text-small">{{ __('You receive') }}</div>
                             <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
                         </div>
-                    @elseif ($expense->is_payment || $expense->is_settle_all_balances)
+                    @elseif ($expense->is_payment)
                         <div class="user-amount text-warning">
                             <div class="text-small">{{ __('You received') }}</div>
                             <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>

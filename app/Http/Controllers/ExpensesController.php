@@ -252,7 +252,7 @@ class ExpensesController extends Controller
     }
 
     /**
-     * Displays the Expense page.
+     * Displays the expense page.
      */
     public function show($expense_id): View
     {
@@ -266,13 +266,16 @@ class ExpensesController extends Controller
         $expense->formatted_updated_date = Carbon::parse($expense->updated_at)->diffForHumans();
         $expense->updated_date = Carbon::parse($expense->updated_at)->format('M d, Y');
         $expense->updated_time = Carbon::parse($expense->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
+        $expense->formatted_date = Carbon::parse($expense->date)->format('M d, Y');
 
-        // Get the creator and payer of the Expense
+        // Get the creator, updator, and payer of the expense
         $expense->creator_user = User::find($expense->creator);
         $expense->updator_user = User::find($expense->updator);
         $expense->payer_user = User::find($expense->payer);
 
         $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
+
+        $expense->group = $expense->groups->first();
 
         $participants = ExpenseParticipant::where('expense_id', $expense->id)
             ->join('users', 'expense_participants.user_id', 'users.id')
@@ -285,22 +288,14 @@ class ExpensesController extends Controller
             ", [$current_user->id])
             ->get();
 
-        // If this Expense is a Payment, display the Payment screen rather than the Expense screen
-        if ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) {
-            return view('payments.show', [
-                'expense' => $expense,
-                'participant' => $participants[0],
-            ]);
-        } else {
-            return view('expenses.show', [
-                'expense' => $expense,
-                'participants' => $participants,
-            ]);
-        }
+        return view('expenses.show', [
+            'expense' => $expense,
+            'participants' => $participants,
+        ]);
     }
 
     /**
-     * Displays the update Expense form.
+     * Displays the update expense form.
      */
     public function edit(Expense $expense): View
     {
@@ -356,7 +351,7 @@ class ExpensesController extends Controller
     }
 
     /**
-     * Updates the Expense details.
+     * Updates the expense details.
      */
     public function update(CreateExpenseRequest $request, Expense $expense): RedirectResponse
     {
@@ -634,7 +629,7 @@ class ExpensesController extends Controller
 
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
             $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
-            $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
+            $expense->is_payment = ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES);
             $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
 
             return $expense;

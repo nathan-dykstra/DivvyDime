@@ -24,8 +24,10 @@ use Illuminate\Support\Facades\Redirect;
 
 class PaymentsController extends Controller
 {
+    const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
+
     /**
-     * Displays the create Payment form.
+     * Displays the create payment form.
      */
     public function create(Request $request): View
     {
@@ -82,7 +84,7 @@ class PaymentsController extends Controller
 
         $payment_validated = $request->validated();
 
-        // Create the Payment
+        // Create the payment
 
         // Get the group from the payment balance
         $payment_group = Balance::find($payment_validated['payment-balance'])->value('group_id');
@@ -122,12 +124,45 @@ class PaymentsController extends Controller
             'is_settled' => 0,
         ]);
 
-        //Expense::updateBalances($payment, $payee_id, $payment->amount);
-
-        // Send Payment Notifications
+        // Send payment notifications
         $payment->sendExpenseNotifications();
 
         return Redirect::route('expenses')->with('status', 'payment-created');
+    }
+
+    /**
+     * Displays the payment page.
+     */
+    public function show($expense_id): View
+    {
+        $payment = Expense::where('id', $expense_id)->first();
+
+        // Get formatted dates and times
+        $payment->formatted_created_date = Carbon::parse($payment->created_at)->diffForHumans();
+        $payment->created_date = Carbon::parse($payment->created_at)->format('M d, Y');
+        $payment->created_time = Carbon::parse($payment->created_at)->setTimezone(self::TIMEZONE)->format('g:i a');
+        $payment->formatted_updated_date = Carbon::parse($payment->updated_at)->diffForHumans();
+        $payment->updated_date = Carbon::parse($payment->updated_at)->format('M d, Y');
+        $payment->updated_time = Carbon::parse($payment->updated_at)->setTimezone(self::TIMEZONE)->format('g:i a');
+        $payment->formatted_date = Carbon::parse($payment->date)->format('M d, Y');
+
+        // Get the creator, updator, and payer of the payment
+        $payment->creator_user = User::find($payment->creator);
+        $payment->updator_user = User::find($payment->updator);
+        $payment->payer_user = User::find($payment->payer);
+
+        $payment->is_settle_all_balances = $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+
+        $payment->group = $payment->groups->first();
+
+        $payment->payee = ExpenseParticipant::where('expense_id', $payment->id)
+            ->join('users', 'expense_participants.user_id', 'users.id')
+            ->select('users.*', 'expense_participants.share')
+            ->first();
+
+        return view('payments.show', [
+            'payment' => $payment,
+        ]);
     }
 
     // TODO: update payment
@@ -184,7 +219,7 @@ class PaymentsController extends Controller
     }
 
     /**
-     * Deletes the Payment.
+     * Deletes the payment.
      */
     public function destroy(Expense $payment): RedirectResponse
     {

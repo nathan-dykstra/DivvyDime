@@ -570,7 +570,7 @@ class GroupsController extends Controller
 
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
             $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
-            $expense->is_payment = $expense->expense_type_id === ExpenseType::PAYMENT;
+            $expense->is_payment = ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES);
             $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
 
             return $expense;

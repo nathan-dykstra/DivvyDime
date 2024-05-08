@@ -192,43 +192,6 @@
     </div>
 </div>
 
-<style>
-    .payment-user-photos-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 1em;
-        margin-bottom: 1em;
-    }
-
-    .payment-user {
-        border-radius: var(--border-radius);
-    }
-
-    .payment-amount-container {
-        padding-bottom: 2em;
-        border-bottom: 1px solid var(--border-grey);
-        display: flex;
-        justify-content: center;
-    }
-
-    .payment-amount {
-        width: 250px;
-    }
-
-    .payment-select-user {
-
-    }
-
-    .payment-user-amount {
-
-    }
-
-    .payment-arrow {
-        color: var(--text-shy);
-    }
-</style>
-
 <script>
     const paymentChooseUser = document.getElementById('payment-choose-user');
     const paymentChooseBalance = document.getElementById('payment-choose-balance');

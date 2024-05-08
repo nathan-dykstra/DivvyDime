@@ -32,42 +32,32 @@
         <x-session-status>{{ __('Expense updated.') }}</x-session-status>
     @endif
 
-    <div class="expense-info-container">
+    <h1>{{ __('$') . $expense->amount }}</h1>
+    <div class="expense-info-date-group-category">
+        <div class="text-shy text-thin-caps expense-info-date">{{ $expense->formatted_date }}</div>
+        <a class="metric-group metric-group-hover" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
+        <a class="metric-group">{{ __('Category') }}</a>
+    </div>
+
+    <div class="expense-info-container margin-top-lg">
         <div>
-            <div class="expense-info-amount">
-                {{ __('$') . $expense->amount }}
-            </div>
-    
-            <div class="expense-info-added-date text-shy">
-                {{ __('Added ') }}
-                <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->created_date . __(' at ') . $expense->created_time }}">
-                    <span class="width-content">{{ $expense->formatted_created_date }}</span>
-                </x-tooltip>
-                {{ __(' by ') }}<span >{{ $expense->creator_user->username }}</span>
-            </div>
-    
-            @if ($expense->created_at->toDateTimeString() !== $expense->updated_at->toDateTimeString())
-                <div class="text-shy">
-                    {{ __('Updated ') }}
-                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->updated_date . __(' at ') . $expense->updated_time }}">
-                        <span class="width-content">{{ $expense->formatted_updated_date }}</span>
-                    </x-tooltip>
-                    {{ __(' by ') }}<span >{{ $expense->updator_user->username }}</span>
-                </div>
-            @endif
-    
-            <div class="expense-info-breakdown margin-top-lg">
+            <div class="expense-info-breakdown">
                 <div class="expense-info-breakdown-left">
                     <div class="profile-circle-sm-placeholder"></div>
                     <div class="expense-info-breakdown-line-container">
                         <div class="expense-info-breakdown-line"></div>
                     </div>
                 </div>
-    
+
                 <div class="expense-info-breakdown-right">
                     <div class="expense-info-breakdown-payer-container">
                         <div class="expense-info-breakdown-payer">
-                            <span>{{ $expense->payer === auth()->user()->id ? __("You") : $expense->payer_user->username }}</span>
+                                @if ($expense->payer === auth()->user()->id)
+                                    {{ __('You') }}
+                                @else
+                                    <span class="bold-username">{{ $expense->payer_user->username }}</span>
+                                @endif
+                            </span>
                             @if ($expense->is_reimbursement)
                                 {{ __(' received ') }}
                             @else
@@ -76,11 +66,15 @@
                             {{ __('$') . $expense->amount }}
                         </div>
                     </div>
-    
+
                     <div class="space-top-xs">
                         @foreach ($participants as $participant)
                             <div class="expense-info-participant text-shy">
-                                {{ $participant->id === auth()->user()->id ? __('You') : $participant->username }}
+                                @if ($participant->id === auth()->user()->id)
+                                    {{ __('You') }}
+                                @else
+                                    <span class="bold-username">{{ $participant->username }}</span>
+                                @endif
                                 @if ($participant->id !== $expense->payer)
                                     @if ($expense->is_reimbursement)
                                         {{ $participant->id === auth()->user()->id ? __(' receive ') : __(' receives ') }}
@@ -118,6 +112,26 @@
                 </div>
             @endif
         </div>  
+    </div>
+
+    <div class="horizontal-center margin-top-lg">
+        <div class="expense-info-added-date text-shy">
+            {{ __('Added ') }}
+            <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->created_date . __(' at ') . $expense->created_time }}">
+                <span class="width-content">{{ $expense->formatted_created_date }}</span>
+            </x-tooltip>
+            {{ __(' by ') }}<span class="bold-username">{{ $expense->creator_user->username }}</span>
+        </div>
+    
+        @if ($expense->created_at->toDateTimeString() !== $expense->updated_at->toDateTimeString())
+            <div class="text-shy">
+                {{ __('Updated ') }}
+                <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->updated_date . __(' at ') . $expense->updated_time }}">
+                    <span class="width-content">{{ $expense->formatted_updated_date }}</span>
+                </x-tooltip>
+                {{ __(' by ') }}<span class="bold-username">{{ $expense->updator_user->username }}</span>
+            </div>
+        @endif
     </div>
 
     @include('expenses.partials.expense-delete-modal')
