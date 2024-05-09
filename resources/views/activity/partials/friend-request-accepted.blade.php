@@ -1,4 +1,4 @@
-<div class="notification">
+<div class="notification notification-link" onclick="openLink('{{ route('friends.show', $notification->sender) }}')">
     @if ($notification->creator === $notification->recipient) <!-- Current User accepted the friend request -->
         <div class="notification-grid">
             <div class="notification-content">

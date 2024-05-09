@@ -55,19 +55,21 @@ class PaymentsController extends Controller
             ->orderBy('users.username', 'asc')
             ->get();
 
-        $balances_selection = []; /*$current_user->friends()
-            ->select('groups.name as group_name', 'balances.*')
-            ->join('balances', 'users.id', 'balances.friend')
-            ->join('groups', 'balances.group_id', 'groups.id')
-            ->where('balances.user_id', $current_user->id)
-            ->orderBy('users.username', 'asc')
-            ->orderByRaw("
-                CASE
-                    WHEN groups.id = ? THEN 0
-                    ELSE 1
-                END, groups.name ASC
-            ", [Group::DEFAULT_GROUP])
-            ->get();*/
+        if ($friend) {
+            $balances_selection = Balance::select('groups.name as group_name', 'balances.*')
+                ->join('groups', 'balances.group_id', 'groups.id')
+                ->where('balances.user_id', $current_user->id)
+                ->where('balances.friend', $friend->id)
+                ->orderByRaw("
+                    CASE
+                        WHEN groups.id = ? THEN 0
+                        ELSE 1
+                    END, groups.name ASC
+                ", [Group::DEFAULT_GROUP])
+                ->get();
+        } else {
+            $balances_selection = [];
+        }
 
         return view('payments.create', [
             'payment' => null,
@@ -262,9 +264,7 @@ class PaymentsController extends Controller
             ->orderBy('users.username', 'asc')
             ->get();
 
-        $balances_selection = $current_user->friends()
-            ->select('groups.name as group_name', 'balances.*')
-            ->join('balances', 'users.id', 'balances.friend')
+        $balances_selection = Balance::select('groups.name as group_name', 'balances.*')
             ->join('groups', 'balances.group_id', 'groups.id')
             ->where('balances.user_id', $current_user->id)
             ->where('balances.friend', $friend_user_id)

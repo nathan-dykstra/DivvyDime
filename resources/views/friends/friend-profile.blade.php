@@ -4,7 +4,7 @@
             <h2>{{ $friend->username }}</h2>
             <div class="btn-container-end">
                 <x-primary-button icon="fa-solid fa-receipt icon" :href="route('expenses.create', ['friend' => $friend->id])">{{ __('Add Expense') }}</x-primary-button>
-                <x-primary-button icon="fa-solid fa-scale-balanced icon">{{ __('Settle Up') }}</x-primary-button>
+                <x-primary-button icon="fa-solid fa-scale-balanced icon" :href="route('payments.create', ['friend' => $friend->id])">{{ __('Settle Up') }}</x-primary-button>
             </div>
         </div>
     </x-slot>

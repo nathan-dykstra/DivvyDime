@@ -11,6 +11,8 @@
 
     @if (session('status') === 'expense-deleted')
         <x-session-status>{{ __('Expense deleted.') }}</x-session-status>
+    @elseif (session('status') === 'payment-deleted')
+        <x-session-status>{{ __('Payment deleted.') }}</x-session-status>
     @endif
 
     <div class="section-search">

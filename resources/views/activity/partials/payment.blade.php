@@ -2,7 +2,15 @@
     @if ($notification->payee->id === $notification->recipient) <!-- Current user receiving the payment -->
         <div class="notification-content">
             <div>
-                <div><span class="bold-username">{{ $notification->sender_username }}</span>{{ __(' paid you $') . number_format($notification->expense->amount, 2) . __(' in ') }}<span class="bold-username">{{ $notification->group->name }}</span></div>
+                <div>
+                    <span class="bold-username">{{ $notification->sender_username }}</span>
+                    {{ __(' paid you $') . number_format($notification->expense->amount, 2) }}
+                    @if ($notification->is_settle_all_balances)
+                        {{ __(' to settle all balances') }}
+                    @else
+                        {{ __(' in ') }}<span class="bold-username">{{ $notification->group->name }}</span>
+                    @endif
+                </div>
 
                 <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                     <div class="text-shy width-content">{{ $notification->formatted_date }}</div>
@@ -26,7 +34,14 @@
                         @else
                             <span class="bold-username">{{ $notification->sender_username }}</span>
                         @endif
-                        {{ __(' paid ') }}<span class="bold-username">{{ $notification->payee->username }}</span>{{ __(' $') . number_format($notification->expense->amount, 2) . __(' in ') }}<span class="bold-username">{{ $notification->group->name }}</span>
+                        {{ __(' paid ') }}
+                        <span class="bold-username">{{ $notification->payee->username }}</span>
+                        {{ __(' $') . number_format($notification->expense->amount, 2) }}
+                        @if ($notification->is_settle_all_balances)
+                            {{ __(' to settle all balances') }}
+                        @else
+                            {{ __(' in ') }}<span class="bold-username">{{ $notification->group->name }}</span>
+                        @endif
                     </div>
 
                     <div class="text-sm text-warning"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This payment is pending') }}</div>

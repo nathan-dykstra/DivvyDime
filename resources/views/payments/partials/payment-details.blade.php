@@ -11,16 +11,14 @@
 
             <div class="payment-choose-user space-bottom-lg {{ $friend ? 'hidden' : '' }}" id="payment-choose-user">
                 <div>
-                    @if ($group)
-                        <div class="margin-bottom-sm">
-                            <div class="btn-container-start payment-added-in-group">
-                                {{ __('In "') . $group->name . __('"') }}
-                                <x-icon-button icon="fa-solid fa-xmark fa-sm" href="{{ route('payments.create') }}"/>
-                            </div>
-                        </div>
-                    @endif
-
                     <h4 class="margin-bottom-sm">{{ __('Who did you pay?') }}</h4>
+
+                    <div class="margin-bottom-sm {{ $group ? '' : 'hidden' }}" id="payment-results-for-group">
+                        <div class="btn-container-start payment-added-in-group">
+                            <div>{{ __('Showing results for ') }}<span class="bold-username">{{ $group?->name }}</span></div>
+                            <x-icon-button icon="fa-solid fa-xmark fa-sm" href="{{ route('payments.create') }}"/>
+                        </div>
+                    </div>
                 </div>
 
                 <ul id="payment-users-list">
@@ -50,17 +48,26 @@
                 </ul>
 
                 <div class="btn-container-start">
-                    <x-primary-button onclick="showBalanceSelector()">{{ __('Next') }}</x-primary-button>
+                    <x-primary-button id="payment-user-next-btn" onclick="{{ $group ? 'showPaymentForm()' : 'showBalanceSelector()' }}">{{ __('Next') }}</x-primary-button>
                 </div>
             </div>
 
             <div class="payment-choose-balance space-bottom-lg {{ $group || !$friend ? 'hidden' : '' }}" id="payment-choose-balance">
-                <h4 class="margin-bottom-sm">{{ __('Choose a balance to settle') }}</h4>
+                <div>
+                    <h4 class="margin-bottom-sm">{{ __('Choose a balance to settle') }}</h4>
+
+                    <div class="margin-bottom-sm {{ $friend ? '' : 'hidden' }}" id="payment-results-for-user">
+                        <div class="btn-container-start payment-added-in-group">
+                            <div>{{ __('Showing results for ') }}<span class="bold-username">{{ $friend?->username }}</span></div>
+                            <x-icon-button icon="fa-solid fa-xmark fa-sm" href="{{ route('payments.create') }}"/>
+                        </div>
+                    </div>
+                </div>
 
                 @include('payments.partials.payment-balances')
 
                 <div class="btn-container-start">
-                    <x-primary-button onclick="showPayeeSelector()">{{ __('Back') }}</x-primary-button>
+                    <x-primary-button class="{{ $friend ? 'hidden' : '' }}" id="payment-balance-back-btn" onclick="showPayeeSelector()">{{ __('Back') }}</x-primary-button>
                     <x-primary-button onclick="showPaymentForm()">{{ __('Next') }}</x-primary-button>
                 </div>
             </div>
@@ -187,6 +194,11 @@
     const payeeValidationWarning = document.getElementById('payee-validation-warning');
     const balanceValidationWarning = document.getElementById('balance-validation-warning');
 
+    const showingResultsForGroup = document.getElementById('payment-results-for-group');
+    const showingResultsForUser = document.getElementById('payment-results-for-user');
+    const userNextBtn = document.getElementById('payment-user-next-btn');
+    const balanceBackBtn = document.getElementById('payment-balance-back-btn');
+
     function validateRadio(radioBtns) {
         let isChecked = Array.from(radioBtns).some(button => button.checked);
         return isChecked;
@@ -194,6 +206,11 @@
 
     function showPayeeSelector() {
         hideAllValidationWarnings();
+
+        userNextBtn.onclick = showBalanceSelector;
+
+        showingResultsForUser.classList.add('hidden');
+        balanceBackBtn.classList.remove('hidden');
 
         paymentChooseUser.classList.remove('hidden');
 
@@ -234,6 +251,9 @@
 
     function setPaymentUser(userItem) {
         hideValidationWarning(payeeValidationWarning);
+
+        showingResultsForUser.classList.add('hidden');
+        balanceBackBtn.classList.remove('hidden');
 
         let payeeUsername = userItem.dataset.username;
         let payeeUserId = userItem.dataset.userId

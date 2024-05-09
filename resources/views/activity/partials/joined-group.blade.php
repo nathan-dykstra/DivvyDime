@@ -1,4 +1,4 @@
-<div class="notification">
+<div class="notification notification-link" onclick="openLink('{{ route('groups.show', $notification->group->id) }}')">
     @if ($notification->creator === $notification->recipient) <!-- Current User accepted the invite (joined the Group) -->
         <div class="notification-grid">
             <div class="notification-content">

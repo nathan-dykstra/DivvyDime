@@ -14,7 +14,12 @@
                         @else
                             <span class="bold-username">{{ $notification->payee->username }}</span>
                         @endif
-                        {{ __(' $') . number_format($notification->expense->amount, 2) . __(' in ') }}<span class="bold-username">{{ $notification->group->name }}</span>
+                        {{ __(' $') . number_format($notification->expense->amount, 2) }}
+                        @if ($notification->is_settle_all_balances)
+                            {{ __(' to settle all balances') }}
+                        @else
+                            {{ __(' in ') }}<span class="bold-username">{{ $notification->group->name }}</span>
+                        @endif
                     </div>
 
                     <div class="text-sm text-success"><i class="fa-solid fa-check fa-sm icon"></i>{{ __('This payment was confirmed') }}</div>
