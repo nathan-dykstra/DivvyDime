@@ -11,7 +11,12 @@
             <div class="text-small">{{ __('You owe') }}</div>
             <div class="user-amount-value">{{ __('$') . number_format(abs($friend->overall_balance), 2) }}</div>
         </div>
-    @else
+    @elseif ($friend->is_settled_up)
         <span class="text-shy">{{ __('Settled up') }}</span>
+    @else
+        <div class="user-amount text-success">
+            <div class="text-small">{{ __('You owe ') }}</div>
+            <div class="user-amount-value">{{ __('$0.00') }}</div>
+        </div>
     @endif
 </div>

@@ -122,6 +122,7 @@ class PaymentsController extends Controller
                 ExpenseGroup::create([
                     'expense_id' => $payment->id,
                     'group_id' => $balance->group_id,
+                    'group_amount' => -1 * $balance->balance,
                 ]);
             }
         } else {

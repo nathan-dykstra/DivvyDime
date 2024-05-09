@@ -115,6 +115,15 @@ class GroupsController extends Controller
             ->where('user_id', $current_user->id)
             ->sum('balance');
 
+        if ($overall_balance == 0) {
+            $group->is_settled_up = !Balance::where('user_id', $current_user->id)
+                ->where('group_id', $group->id)
+                ->whereNot('balance', 0)
+                ->exists();
+        } else {
+            $group->is_settled_up = false;
+        }
+
         $balances_count = Balance::where('balances.group_id', $group->id)
             ->where('balances.user_id', $current_user->id)
             ->count();
@@ -132,7 +141,6 @@ class GroupsController extends Controller
             ->select('balances.balance', 'users.username')
             ->where('balances.group_id', $group->id)
             ->where('balances.user_id', $current_user->id)
-            //->whereNot('balances.balance', 0)
             ->limit($balances_shown_limit)
             ->orderByRaw("
                 CASE 
@@ -532,6 +540,15 @@ class GroupsController extends Controller
             $group->overall_balance = Balance::where('group_id', $group->id)
                 ->where('user_id', auth()->user()->id)
                 ->sum('balance');
+
+            if ($group->overall_balance == 0) {
+                $group->is_settled_up = !Balance::where('user_id', auth()->user()->id)
+                    ->where('group_id', $group->id)
+                    ->whereNot('balance', 0)
+                    ->exists();
+            } else {
+                $group->is_settled_up = false;
+            }
 
             return $group;
         });

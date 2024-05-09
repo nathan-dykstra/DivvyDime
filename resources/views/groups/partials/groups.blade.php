@@ -20,8 +20,10 @@
                     <span class="text-success">{{ __('You are owed $') . number_format($group->overall_balance, 2) }}</span>
                 @elseif ($group->overall_balance < 0)
                     <span class="text-warning">{{ __('You owe $') . number_format(abs($group->overall_balance), 2) }}</span>
-                @else
+                @elseif ($group->is_settled_up)
                     <span class="text-success">{{ __('Your balances are settled') }}</span>
+                @else
+                    <span class="text-success">{{ __('You owe $0.00') }}</span>
                 @endif
             </div>
         </a>

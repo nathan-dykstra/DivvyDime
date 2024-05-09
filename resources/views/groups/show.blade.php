@@ -47,10 +47,15 @@
                 <span class="text-small">{{ __('Overall, you owe') }}</span>
                 <span class="metric-number">{{ __('$') . number_format(abs($overall_balance), 2) }}</span>
             </div>
+        @elseif ($group->is_settled_up)
+            <div class="metric-container text-success">
+                <span class="text-small">{{ __('Overall, you are') }}</span>
+                <span class="metric-number">{{ __('Settled Up!') }}</span>
+            </div>
         @else
             <div class="metric-container text-success">
                 <span class="text-small">{{ __('Overall, you owe') }}</span>
-                <span class="metric-number">{{ __('$') . number_format(abs($overall_balance), 2) }}</span>
+                <span class="metric-number">{{ __('$0.00') }}</span>
             </div>
         @endif
         

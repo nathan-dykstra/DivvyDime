@@ -20,9 +20,15 @@
                 <span class="text-small">{{ __('Overall, you owe ') }}<span class="bold-username">{{ $friend->username }}</span></span>
                 <span class="metric-number">{{ __('$') . number_format(abs($overall_balance), 2) }}</span>
             </div>
+        @elseif ($friend->is_settled_up)
+            <div class="metric-container text-success">
+                <span class="text-small">{{ __('You and ') }}<span class="bold-username">{{ $friend->username }}</span>{{ __(' are') }}</span>
+                <span class="metric-number">{{ __('Settled Up!') }}</span>
+            </div>
         @else
             <div class="metric-container text-success">
-                <span class="text-small">{{ __('Your balances are settled') }}</span>
+                <span class="text-small">{{ __('Overall, you owe ') }}<span class="bold-username">{{ $friend->username }}</span></span>
+                <span class="metric-number">{{ __('$0.00') }}</span>
             </div>
         @endif
 
@@ -42,7 +48,8 @@
             @else
                 <div class="metric-container">
                     <a href="{{ route('groups.show', $group_balance->group_id) }}" class="metric-group metric-group-hover">{{ $group_balance->name }}</a>
-                    <span class="text-primary text-small">{{ __('You are settled up') }}</span>
+                    <span class="text-primary text-small">{{ __('You and ') }}<span class="bold-username">{{ $friend->username }}</span>{{ __(' are') }}</span>
+                    <span class="text-success metric-number">{{ __('Settled Up!') }}</span>
                 </div>
             @endif
         @endforeach

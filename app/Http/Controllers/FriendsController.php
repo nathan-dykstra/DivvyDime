@@ -56,16 +56,26 @@ class FriendsController extends Controller
             ->where('friend', $friend->id)
             ->sum('balance');
 
+        if ($overall_balance == 0) {
+            $friend->is_settled_up = !Balance::where('user_id', $current_user->id)
+                ->where('friend', $friend->id)
+                ->whereNot('balance', 0)
+                ->exists();
+        } else {
+            $friend->is_settled_up = false;
+        }
+
         $group_balances = Balance::select('groups.name', 'groups.id as group_id', 'balances.*')
             ->join('groups', 'balances.group_id', 'groups.id')
             ->where('balances.user_id', $current_user->id)
             ->where('balances.friend', $friend->id)
             ->orderByRaw("
-                CASE
-                    WHEN groups.id = ? THEN 0
-                    ELSE 1
-                END, groups.name ASC
-            ", [Group::DEFAULT_GROUP])
+                CASE 
+                    WHEN balance = 0 THEN 1
+                    ELSE 0
+                END, 
+                balances.balance ASC
+            ")
             ->get();
 
         $expenses = $friend->expenses()
@@ -319,6 +329,15 @@ class FriendsController extends Controller
             $friend->overall_balance = Balance::where('user_id', auth()->user()->id)
                 ->where('friend', $friend->id)
                 ->sum('balance');
+
+            if ($friend->overall_balance == 0) {
+                $friend->is_settled_up = !Balance::where('user_id', auth()->user()->id)
+                    ->where('friend', $friend->id)
+                    ->whereNot('balance', 0)
+                    ->exists();
+            } else {
+                $friend->is_settled_up = false;
+            }
 
             $friend->group_balances = Balance::select('groups.name', 'balances.*')
                 ->join('groups', 'balances.group_id', 'groups.id')
