@@ -220,7 +220,7 @@ class PaymentsController extends Controller
             ", [Group::DEFAULT_GROUP])
             ->get();
 
-        $payment->formatted_date = Carbon::parse($payment->date)->isoFormat('MMMM D, YYYY');
+        $payment->formatted_date = Carbon::parse($payment->date)->isoFormat('MMMM DD, YYYY');
         $payment->payer_user = User::find($payment->payer);
         $payment->recipient_user = User::find($payment->participants->first()->id);
 

@@ -20,9 +20,7 @@
                         <div class="expense-amount text-small">{{ ($expense->is_reimbursement ? __('You received $') : __('You paid $')) . $expense->amount }}</div>
                     @endif
 
-                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date }}">
-                        <div class="text-shy width-content">{{ $expense->formatted_date }}</div>
-                    </x-tooltip>
+                    <div class="text-shy text-thin-caps">{{ $expense->formatted_date }}</div>
                 </div>
 
                 @if ($expense->is_reimbursement)
@@ -71,9 +69,7 @@
                         <div class="expense-amount text-small"><span class="bold-username">{{ $expense->payer_user->username }}</span>{{ ($expense->is_reimbursement ? __(' received $') : __(' paid $')) . $expense->amount }}</div> 
                     @endif
 
-                    <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->date }}">
-                        <div class="text-shy width-content">{{ $expense->formatted_date }}</div>
-                    </x-tooltip>
+                    <div class="text-shy text-thin-caps">{{ $expense->formatted_date }}</div>
                 </div>
 
                 @if ($expense->borrowed == 0)

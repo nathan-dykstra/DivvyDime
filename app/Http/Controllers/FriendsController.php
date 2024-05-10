@@ -100,9 +100,7 @@ class FriendsController extends Controller
         $expenses = $expenses->map(function ($expense) use ($current_user, $friend_id) {
             $expense->payer_user = User::where('id', $expense->payer)->first();
 
-            $expense->formatted_date = Carbon::parse($expense->date)->diffForHumans();
-
-            $expense->date = Carbon::parse($expense->date)->format('M d, Y');
+            $expense->formatted_date = Carbon::parse($expense->date)->isoFormat('MMM DD, YYYY');
 
             $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
                 ->where('user_id', $current_user->id)
