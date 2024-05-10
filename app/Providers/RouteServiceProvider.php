@@ -29,7 +29,6 @@ class RouteServiceProvider extends ServiceProvider
         $this->routes(function () {
             // Load all route files from specified folders recursively
 
-            // Can be accessed by any admin or user without a specific role
             foreach ($this->phpFilesInFolder(base_path('/routes/web')) as $route_file) {
                 $this->addWebRoutes($route_file, ['auth']);
             }
@@ -57,7 +56,7 @@ class RouteServiceProvider extends ServiceProvider
 
     protected function addWebRoutes(string $route_file_path, array $middleware = []): void
     {
-        $middleware = array_unique(array_merge(['web', 'group.authorize', 'friend.authorize', 'expense.authorize'], $middleware));
+        $middleware = array_unique(array_merge(['web', 'group.authorize', 'friend.authorize', 'expense.authorize', 'payment.authorize'], $middleware));
         Route::middleware($middleware)->group($route_file_path);
     }
 

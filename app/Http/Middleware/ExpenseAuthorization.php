@@ -51,19 +51,21 @@ class ExpenseAuthorization
             }
         }
 
-        if ($request->input('group')) {
-            $group = Group::find($request->input('group'));
-
-            if (!in_array($current_user->id, $group->members()->pluck('users.id')->toArray())) {
-                abort(403, "Uh oh! You can't create an expense with that group.");
+        if ($request->routeIs('expenses.*')) {
+            if ($request->input('group')) {
+                $group = Group::find($request->input('group'));
+    
+                if (!in_array($current_user->id, $group->members()->pluck('users.id')->toArray())) {
+                    abort(403, "Uh oh! You can't create an expense in that group.");
+                }
             }
-        }
 
-        if ($request->input('friend')) {
-            $friend = User::find($request->input('friend'));
-
-            if (!in_array($current_user->id, $friend?->friends()->pluck('users.id')->toArray() ?? [])) {
-                abort(403, "Uh oh! You can't create an expense with that user.");
+            if ($request->input('friend')) {
+                $friend = User::find($request->input('friend'));
+    
+                if (!in_array($current_user->id, $friend?->friends()->pluck('users.id')->toArray() ?? [])) {
+                    abort(403, "Uh oh! You can't create an expense with that user.");
+                }
             }
         }
 

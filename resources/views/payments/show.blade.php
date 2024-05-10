@@ -4,24 +4,26 @@
             <h2>{{ __('Payment') }}</h2>
 
             <div class="btn-container-end">
-                <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('payments.edit', $payment)">{{ __('Edit') }}</x-primary-button>
+                @if (auth()->user()->id === $payment->creator)
+                    <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('payments.edit', $payment)">{{ __('Edit') }}</x-primary-button>
 
-                <x-dropdown>
-                    <x-slot name="trigger">
-                        <x-primary-button icon="fa-solid fa-ellipsis-vertical" />
-                    </x-slot>
+                    <x-dropdown>
+                        <x-slot name="trigger">
+                            <x-primary-button icon="fa-solid fa-ellipsis-vertical" />
+                        </x-slot>
 
-                    <x-slot name="content">
-                        <a class="dropdown-item">
-                            <i class="fa-solid fa-camera"></i>
-                            <div>{{ __('Add Image') }}</div>
-                        </a>
-                        <a class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
-                            <i class="fa-solid fa-trash-can"></i>
-                            <div>{{ __('Delete') }}</div>
-                        </a>
-                    </x-slot>
-                </x-dropdown>
+                        <x-slot name="content">
+                            <a class="dropdown-item">
+                                <i class="fa-solid fa-camera"></i>
+                                <div>{{ __('Add Image') }}</div>
+                            </a>
+                            <a class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
+                                <i class="fa-solid fa-trash-can"></i>
+                                <div>{{ __('Delete') }}</div>
+                            </a>
+                        </x-slot>
+                    </x-dropdown>
+                @endif
             </div>
         </div>
     </x-slot>
