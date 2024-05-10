@@ -82,20 +82,20 @@
 
     <div class="horizontal-center margin-top-lg">
         <div class="text-shy">
-            {{ __('Added ') }}
             <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $payment->created_date . __(' at ') . $payment->created_time }}">
+                {{ __('Added ') }}
                 <span class="width-content">{{ $payment->formatted_created_date }}</span>
+                {{ __(' by ') }}<span class="bold-username">{{ $payment->creator_user->username }}</span>
             </x-tooltip>
-            {{ __(' by ') }}<span class="bold-username">{{ $payment->creator_user->username }}</span>
         </div>
-    
+
         @if ($payment->created_at->toDateTimeString() !== $payment->updated_at->toDateTimeString())
             <div class="text-shy">
-                {{ __('Updated ') }}
                 <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $payment->updated_date . __(' at ') . $payment->updated_time }}">
+                    {{ __('Updated ') }}
                     <span class="width-content">{{ $payment->formatted_updated_date }}</span>
+                    {{ __(' by ') }}<span class="bold-username">{{ $payment->updator_user->username }}</span>
                 </x-tooltip>
-                {{ __(' by ') }}<span class="bold-username">{{ $payment->updator_user->username }}</span>
             </div>
         @endif
     </div>

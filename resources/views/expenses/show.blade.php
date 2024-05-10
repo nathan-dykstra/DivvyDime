@@ -116,20 +116,20 @@
 
     <div class="horizontal-center margin-top-lg">
         <div class="expense-info-added-date text-shy">
-            {{ __('Added ') }}
             <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->created_date . __(' at ') . $expense->created_time }}">
+                {{ __('Added ') }}
                 <span class="width-content">{{ $expense->formatted_created_date }}</span>
+                {{ __(' by ') }}<span class="bold-username">{{ $expense->creator_user->username }}</span>
             </x-tooltip>
-            {{ __(' by ') }}<span class="bold-username">{{ $expense->creator_user->username }}</span>
         </div>
-    
+
         @if ($expense->created_at->toDateTimeString() !== $expense->updated_at->toDateTimeString())
             <div class="text-shy">
-                {{ __('Updated ') }}
                 <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $expense->updated_date . __(' at ') . $expense->updated_time }}">
+                    {{ __('Updated ') }}
                     <span class="width-content">{{ $expense->formatted_updated_date }}</span>
+                    {{ __(' by ') }}<span class="bold-username">{{ $expense->updator_user->username }}</span>
                 </x-tooltip>
-                {{ __(' by ') }}<span class="bold-username">{{ $expense->updator_user->username }}</span>
             </div>
         @endif
     </div>
