@@ -1,4 +1,4 @@
-<div class="notification notification-link" onclick="openLink('{{ route('payments.show', $notification->expense->id) }}')">        
+<div class="notification notification-link" data-notification-id="{{ $notification->id }}" onclick="openLink('{{ route('payments.show', $notification->expense->id) }}')">        
     @if ($notification->payee->id === $notification->recipient) <!-- Current user receiving the payment -->
         <div class="notification-content">
             <div>

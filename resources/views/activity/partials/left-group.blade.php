@@ -1,4 +1,4 @@
-<div class="notification">
+<div class="notification" data-notification-id="{{ $notification->id }}">
     @if ($notification->creator === $notification->recipient) <!-- You left the group -->
         <div class="notification-grid">
             <div class="notification-content">
@@ -21,7 +21,7 @@
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div><span class="bold-username">{{ $notification->username }}</span>{{ __(' left ') }}<span class="bold-username">{{ $notification->group->name }}</span></div>
+                    <div><span class="bold-username">{{ $notification->sender_username }}</span>{{ __(' left ') }}<span class="bold-username">{{ $notification->group->name }}</span></div>
 
                     <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                         <div class="text-shy width-content">{{ $notification->formatted_date }}</div>

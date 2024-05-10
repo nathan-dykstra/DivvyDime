@@ -1,9 +1,9 @@
-<div class="notification">
+<div class="notification" data-notification-id="{{ $notification->id }}">
     @if ($notification->creator === $notification->recipient) <!-- Current User sent the friend request -->
         <div class="notification-grid">
             <div class="notification-content">
                 <div>
-                    <div>{{ __('You sent ') }}<span class="bold-username">{{ $notification->username }}</span>{{ __(' a friend request') }}</div>
+                    <div>{{ __('You sent ') }}<span class="bold-username">{{ $notification->sender_username }}</span>{{ __(' a friend request') }}</div>
 
                     <div class="text-sm text-warning"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This request is pending.') }}</div>
 
@@ -22,7 +22,7 @@
     @else <!-- Current User receiving the friend request -->
         <div class="notification-content">
             <div>
-                <div><span class="bold-username">{{ $notification->username }}</span>{{ __(' sent you a friend request') }}</div>
+                <div><span class="bold-username">{{ $notification->sender_username }}</span>{{ __(' sent you a friend request') }}</div>
                 
                 <x-tooltip side="bottom" icon="fa-solid fa-calendar-days" tooltip="{{ $notification->date . ' at ' . $notification->formatted_time }}">
                     <div class="text-shy width-content">{{ $notification->formatted_date }}</div>

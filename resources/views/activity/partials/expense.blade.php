@@ -1,4 +1,4 @@
-<div class="notification notification-link" onclick="openLink('{{ route('expenses.show', $notification->expense->id) }}')">
+<div class="notification notification-link" data-notification-id="{{ $notification->id }}" onclick="openLink('{{ route('expenses.show', $notification->expense->id) }}')">
     <div class="notification-grid">
         <div class="notification-content">
             <div>

@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2>{{ __('Activity') }}</h2>
-    </x-slot>
+        <div class="btn-container-apart">
+            <h2>{{ __('Activity') }}</h2>
 
-    <div class="section-search">
-        <div class="restrict-max-width">
-            <x-searchbar-secondary placeholder="Search Activity" id="search-activity"></x-searchbar-secondary>
+            <div class="btn-container-end">
+                <x-primary-button onclick="clearAllNotifications()">{{ __('Clear All') }}</x-primary-button>
+            </div>
         </div>
-    </div>
+    </x-slot>
 
     <div class="activity-list-container">
         @include('activity.partials.notifications')
@@ -15,26 +15,23 @@
 </x-app-layout>
 
 <script>
-    activitySearchbar = document.getElementById("search-activity");
-    activitySearchbar.addEventListener('input', function(event) {
-        var searchString = event.target.value;
+    function refreshNotificationsView() {
+        let updatedNotifications = $('.notifications');
 
         $.ajax({
-            url: "{{ route('activity.search') }}",
-            method: 'POST',
+            url: "{{ route('activity.get-updated-notifications') }}",
+            method: 'GET',
             data: {
                 '_token': '{{ csrf_token() }}',
-                'search_string': searchString,
             },
             success: function(html) {
-                notifications = $('.notifications');
-                notifications.replaceWith(html);
+                updatedNotifications.replaceWith(html);
             },
             error: function(error) {
                 console.log(error);
             }
         });
-    });
+    }
 
     function acceptFriendRequest(notificationId) {
         $.ajax({
@@ -44,21 +41,7 @@
                 '_token': '{{ csrf_token() }}',
             },
             success: function(response) {
-                notifications = $('.notifications');
-
-                $.ajax({
-                    url: "{{ route('activity.get-updated-notifications') }}",
-                    method: 'GET',
-                    data: {
-                        '_token': '{{ csrf_token() }}',
-                    },
-                    success: function(html) {
-                        notifications.replaceWith(html);
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
+                refreshNotificationsView();
             },
             error: function(error) {
                 console.log(error);
@@ -93,21 +76,7 @@
                 'group_id': groupId,
             },
             success: function(response) {
-                notifications = $('.notifications');
-
-                $.ajax({
-                    url: "{{ route('activity.get-updated-notifications') }}",
-                    method: 'GET',
-                    data: {
-                        '_token': '{{ csrf_token() }}',
-                    },
-                    success: function(html) {
-                        notifications.replaceWith(html);
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
+                refreshNotificationsView();
             },
             error: function(error) {
                 console.log(error);
@@ -144,21 +113,7 @@
                 'notification_id': notificationId,
             },
             success: function(response) {
-                notifications = $('.notifications');
-
-                $.ajax({
-                    url: "{{ route('activity.get-updated-notifications') }}",
-                    method: 'GET',
-                    data: {
-                        '_token': '{{ csrf_token() }}',
-                    },
-                    success: function(html) {
-                        notifications.replaceWith(html);
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
+                refreshNotificationsView();
             },
             error: function(error) {
                 console.log(error);
@@ -168,6 +123,12 @@
 
     function rejectPayment(event, rejectBtn, notificationId) {
         event.stopPropagation();
+
+        // TODO
+    }
+
+    function removeNotificationElement(notificationElement) {
+        notificationElement.classList.add('slide-out');
     }
 
     function deleteNotification(event, notificationId) {
@@ -180,8 +141,59 @@
                 '_token': '{{ csrf_token() }}',
             },
             success: function(response) {
-                notificationElement = $(event.target).closest('.notification');
-                $(notificationElement).remove();
+                let notificationElement = event.target.closest('.notification');
+                let notifications = document.querySelectorAll('.notification');
+                let indexToDelete = Array.from(notifications).indexOf(notificationElement);
+
+                removeNotificationElement(notificationElement);
+
+                setTimeout(() => {
+                    notificationElement.remove();
+
+                    // Translate notifications below the deleted notification up
+                    for (let i = indexToDelete + 1; i < notifications.length; i++) {
+                        notifications[i].style.transform = 'translateY(-' + notificationElement.offsetHeight + 'px)';
+                        notifications[i].style.transform = '';
+                    }
+                }, 400);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        })
+    }
+
+    function clearAllNotifications() {
+        $.ajax({
+            url: "{{ route('activity.clear-all') }}",
+            method: 'DELETE',
+            data: {
+                '_token': '{{ csrf_token() }}',
+            },
+            success: function(response) {
+                let notifications = document.querySelectorAll('.notification');
+
+                let delay = 0;
+                let notificationsDeleted = 0;
+
+                // Clear each notification with cascading effect
+                notifications.forEach(notification => {
+                    if (response.deletedNotificationIds.includes(parseInt(notification.dataset.notificationId))) {
+                        setTimeout(() => {
+                            removeNotificationElement(notification);
+
+                            notificationsDeleted++;
+
+                            // After all notifications are cleared, refresh the view
+                            if (notificationsDeleted === response.deletedNotificationIds.length) {
+                                refreshNotificationsView();
+                            }
+
+                        }, delay);
+
+                        delay += 50;
+                    }
+                });
             },
             error: function(error) {
                 console.log(error);

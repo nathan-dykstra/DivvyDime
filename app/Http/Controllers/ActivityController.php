@@ -65,6 +65,41 @@ class ActivityController extends Controller
         ]);
     }
 
+
+    /**
+     * Deletes all notifications except actionable notifications (friend request, group
+     * invite, payment confirmation)
+     */
+    public function clearAll(Request $request)
+    {
+        $deleted_notification_ids = [];
+
+        $notifications_to_delete = Notification::where('recipient', auth()->user()->id)
+            ->whereNot(function ($query) {
+                $query->where('notification_type_id', NotificationType::FRIEND_REQUEST)
+                    ->whereColumn('recipient', '!=', 'creator');
+            })
+            ->whereNot(function ($query) {
+                $query->where('notification_type_id', NotificationType::INVITED_TO_GROUP)
+                    ->whereColumn('recipient', '!=', 'creator');
+            })
+            ->whereNot(function ($query) {
+                $query->where('notification_type_id', NotificationType::PAYMENT)
+                    ->whereColumn('recipient', '!=', 'creator');
+            })
+            ->get();
+
+        foreach($notifications_to_delete as $notification) {
+            $deleted_notification_ids[] = $notification->id;
+            $notification->delete();
+        }
+
+        return response()->json([
+            'message' => 'Notifications deleted!',
+            'deletedNotificationIds' => $deleted_notification_ids,
+        ]);
+    }
+
     /**
      * Filters the notifications in the Activity section.
      */
