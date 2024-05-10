@@ -4,5 +4,5 @@
     {{ $attributes->merge(['class' => 'session-status validation-warning hidden', 'id' => $id]) }}
 >
     <p class="text-warning">{{ $slot }}</p>
-    <x-topnav-button onclick="closeValidationWarning(this)">{{ __('Dismiss') }}</x-topnav-button>
+    <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="closeValidationWarning(this)"/>
 </div>

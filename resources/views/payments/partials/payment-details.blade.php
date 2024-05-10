@@ -1,6 +1,7 @@
 <div class="container margin-bottom-lg">
     <x-validation-warning id="payee-validation-warning">{{ __('Select a payee!') }}</x-validation-warning>
     <x-validation-warning id="balance-validation-warning">{{ __('Select a balance!') }}</x-validation-warning>
+    <x-validation-warning id="settle-all-balances-validation-warning">{{ __('You cannot change the amount when selecting "Settle All Balances"') }}</x-validation-warning>
 
     <div class="restrict-max-width">
         <form method="post" action="{{ $payment ? route('payments.update', $payment) : route('payments.store') }}">
@@ -9,7 +10,7 @@
                 @method('patch')
             @endif
 
-            <div class="payment-choose-user space-bottom-lg {{ $friend ? 'hidden' : '' }}" id="payment-choose-user">
+            <div class="payment-choose-user space-bottom-lg {{ $payment || $friend ? 'hidden' : '' }}" id="payment-choose-user">
                 <div>
                     <h4 class="margin-bottom-sm">{{ __('Who did you pay?') }}</h4>
 
@@ -26,7 +27,7 @@
                         <li>
                             <label class="payment-user-selector-item" for="choose-user-item-{{ $user->id }}" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}" onclick="setPaymentUser(this)">
                                 <div class="payment-user-selector-radio">
-                                    <input type="radio" id="choose-user-item-{{ $user->id }}" class="radio" name="payment-payee" value="{{ $user->id }}" {{ $payment?->payer === $user->id || $friend?->id == $user->id ? 'checked' : '' }}/>
+                                    <input type="radio" id="choose-user-item-{{ $user->id }}" class="radio" name="payment-payee" value="{{ $user->id }}" {{ $payment?->recipient_user->id === $user->id || $friend?->id == $user->id ? 'checked' : '' }}/>
                                     <div class="user-photo-name">
                                         <div class="profile-circle-sm-placeholder"></div>
                                         <div class="split-equal-item-name">{{ $user->username }}</div>
@@ -52,7 +53,7 @@
                 </div>
             </div>
 
-            <div class="payment-choose-balance space-bottom-lg {{ $group || !$friend ? 'hidden' : '' }}" id="payment-choose-balance">
+            <div class="payment-choose-balance space-bottom-lg {{ $payment || $group || !$friend ? 'hidden' : '' }}" id="payment-choose-balance">
                 <div>
                     <h4 class="margin-bottom-sm">{{ __('Choose a balance to settle') }}</h4>
 
@@ -72,10 +73,10 @@
                 </div>
             </div>
 
-            <div class="payment-form {{ $group && $friend ? '' : 'hidden' }} space-top-lg" id="payment-form">
+            <div class="payment-form {{ $payment || ($group && $friend) ? '' : 'hidden' }} space-top-lg" id="payment-form">
                 <div>
                     <div class="payment-user-photos-container">
-                        <div class="payment-user"> <!-- TODO: show current user's profile photo -->
+                        <div class="payment-user"> <!-- TODO: show payer and payee user's profile photos -->
                             <div class="profile-circle-lg-placeholder"></div>
                         </div>
     
@@ -87,11 +88,22 @@
                     </div>
     
                     <div class="expense-paid-split">
-                        {{ __('You paid') }}
-    
+                        <div>
+                            @if ($payment)
+                                <span class="bold-username">{{ $payment->payer_user->username }}</span>
+                            @else
+                                {{ __('You') }}
+                            @endif
+                            {{ __(' paid') }}
+                        </div>
+
                         <x-primary-button class="expense-round-btn" id="payment-select-recipient" onclick="showPayeeSelector()">
                             <div class="expense-round-btn-text">
-                                {{ $friend ? $friend->username : __('Choose Recipient') }}
+                                @if ($payment)
+                                    {{ $payment->recipient_user->username }}
+                                @else
+                                    {{ $friend ? $friend->username : __('Choose Recipient') }}
+                                @endif
                             </div>
                         </x-primary-button>
                     </div>
@@ -99,7 +111,9 @@
 
                 <div class="payment-amount-container">
                     <div class="expense-input-container payment-amount">
-                        <span class="expense-currency">{{ __('$') }}</span><input id="payment-amount" class="expense-form-amount" name="payment-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('payment-amount', $payment ? $payment->amount : '') }}" autocomplete="off" required />
+                        <span class="expense-currency">{{ __('$') }}</span>
+                        <input id="payment-amount-placeholder" class="expense-form-amount hidden" onclick="handleAmountClick()" disabled/>
+                        <input id="payment-amount" class="expense-form-amount" name="payment-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('payment-amount', $payment ? $payment->amount : '') }}" autocomplete="off" required />
                     </div>
                 </div>
 
@@ -115,7 +129,7 @@
                                             {{ $default_group->name }}
                                         @endif
                                     @else <!-- Updating an existing Payment -->
-                                        {{ $payment->group()->first()->name }}
+                                        {{ $payment->groups->first()->name }}
                                     @endif
                                 </div>
                             </x-primary-button>
@@ -126,7 +140,7 @@
                         <div class="expense-group-date-media">
                             <x-primary-button class="expense-round-btn expense-round-btn-equal-width" id="payment-date-btn" onclick="toggleDateDropdown()">
                                 <div class="expense-round-btn-text">
-                                    {{ $formatted_today }}
+                                    {{ $payment?->formatted_date ?? $formatted_today }}
                                 </div>
                             </x-primary-button>
                         </div>
@@ -136,11 +150,11 @@
 
                             <div class="expense-datepicker-container">
                                 <!-- Flowbite Tailwind CSS Datepicker -->
-                                <div id="flowbite-datepicker" inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $today }}"></div>
+                                <div id="flowbite-datepicker" inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $payment ? $payment->date : $today }}"></div>
                             </div>
                         </div>
 
-                        <input type="hidden" id="payment-date" name="payment-date" value="{{ $today }}" />
+                        <input type="hidden" id="payment-date" name="payment-date" value="{{ $payment ? $payment->date : $today }}" />
                     </div>
 
                     <div>
@@ -193,6 +207,9 @@
 
     const payeeValidationWarning = document.getElementById('payee-validation-warning');
     const balanceValidationWarning = document.getElementById('balance-validation-warning');
+    const settleAllBalancesValidationWarning = document.getElementById('settle-all-balances-validation-warning');
+
+    const amountPlaceholder = document.getElementById('payment-amount-placeholder');
 
     const showingResultsForGroup = document.getElementById('payment-results-for-group');
     const showingResultsForUser = document.getElementById('payment-results-for-user');
@@ -279,7 +296,8 @@
 
         // TODO: Update payee profile photo
         userBtn.querySelector('.expense-round-btn-text').textContent = payeeUsername;
-        //updateBalanceOptions(payeeUserId);
+        currentAmountInput.classList.remove('hidden');
+        amountPlaceholder.classList.add('hidden');
     }
 
     function setPaymentBalance(balanceItem) {
@@ -293,36 +311,17 @@
         if (balance < 0) {
             balance = Math.abs(balance).toFixed(2);
             currentAmountInput.value = balance;
+            currentAmountInput.classList.add('hidden');
+            amountPlaceholder.value = balance;
+            amountPlaceholder.classList.remove('hidden');
         } else {
             currentAmountInput.value = "";
         }
     }
 
-    /*function updateBalanceOptions(userId) {
-        let balanceItems = balancesList.querySelectorAll('.payment-group-selector-item, .payment-group-selector-item-disabled');
-
-        balanceItems.forEach(function(item) {
-            if (item.dataset.userId === userId) {
-                item.classList.remove('hidden');
-            } else {
-                item.classList.add('hidden');
-                item.querySelector('input[name="payment-balance"]').checked = false;
-            }
-        })
-
-        // Select the first non-hidden balance item
-
-        let balanceRadios = document.querySelectorAll('input[name="payment-balance"]');
-
-        for (let i = 0; i < balanceRadios.length; i++) {
-            let radio = balanceRadios[i];
-
-            if (!radio.classList.contains('hidden')) {
-                radio.click();
-                break;
-            }
-        }
-    }*/
+    function handleAmountClick(event) {
+        showValidationWarning(settleAllBalancesValidationWarning);
+    }
 
     function toggleMediaDropdown() {
         dateDropdown.classList.remove('expense-expand-dropdown-open');
