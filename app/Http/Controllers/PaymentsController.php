@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use PhpParser\Node\Stmt\Nop;
 
 class PaymentsController extends Controller
 {
@@ -67,8 +68,14 @@ class PaymentsController extends Controller
                     END, groups.name ASC
                 ", [Group::DEFAULT_GROUP])
                 ->get();
+
+            $balances_selection = $this->getDisplayBalances($balances_selection);
+
+            $total_balance = $balances_selection->sum('display_balance');
         } else {
             $balances_selection = [];
+
+            $total_balance = 0;
         }
 
         return view('payments.create', [
@@ -79,6 +86,7 @@ class PaymentsController extends Controller
             'formatted_today' => $formatted_today,
             'default_group' => $default_group,
             'users_selection' => $users_selection,
+            'total_balance' => $total_balance,
             'balances_selection' => $balances_selection,
         ]);
     }
@@ -198,6 +206,13 @@ class PaymentsController extends Controller
 
         $default_group = Group::where('id', Group::DEFAULT_GROUP)->first();
 
+        $payee = $payment->participants->first();
+
+        $payment->formatted_date = Carbon::parse($payment->date)->isoFormat('MMMM DD, YYYY');
+        $payment->is_settle_all_balances = $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+        $payment->payer_user = User::find($payment->payer);
+        $payment->recipient_user = User::find($payee->id);
+
         $users_selection = $current_user->friends()
             ->select('users.*', DB::raw('SUM(balances.balance) as total_balance'))
             ->join('balances', 'users.id', 'balances.friend')
@@ -206,12 +221,10 @@ class PaymentsController extends Controller
             ->orderBy('users.username', 'asc')
             ->get();
 
-        $balances_selection = $current_user->friends()
-            ->select('groups.name as group_name', 'balances.*')
-            ->join('balances', 'users.id', 'balances.friend')
+        $balances_selection = Balance::select('groups.name as group_name', 'balances.*')
             ->join('groups', 'balances.group_id', 'groups.id')
             ->where('balances.user_id', $current_user->id)
-            ->orderBy('users.username', 'asc')
+            ->where('balances.friend', $payee->id)
             ->orderByRaw("
                 CASE
                     WHEN groups.id = ? THEN 0
@@ -220,9 +233,19 @@ class PaymentsController extends Controller
             ", [Group::DEFAULT_GROUP])
             ->get();
 
-        $payment->formatted_date = Carbon::parse($payment->date)->isoFormat('MMMM DD, YYYY');
-        $payment->payer_user = User::find($payment->payer);
-        $payment->recipient_user = User::find($payment->participants->first()->id);
+        // Display balances as they were before the payment was created
+        $balances_selection = $this->getDisplayBalances($balances_selection, $payment);
+
+        $total_balance = $balances_selection->sum('display_balance');
+
+        // Ensure total balance displayed for the current payee is based on the display balances,
+        // not the actual balances
+        foreach($users_selection as $user) {
+            if ($user->id === $payee->id) {
+                $user->total_balance = $total_balance;
+                break;
+            }
+        }
 
         return view('payments.edit', [
             'payment' => $payment,
@@ -230,6 +253,7 @@ class PaymentsController extends Controller
             'formatted_today' => $formatted_today,
             'default_group' => $default_group,
             'users_selection' => $users_selection,
+            'total_balance' => $total_balance,
             'balances_selection' => $balances_selection,
             'group' => null,
             'friend' => null,
@@ -241,7 +265,95 @@ class PaymentsController extends Controller
      */
     public function update(CreatePaymentRequest $request, Expense $payment): RedirectResponse
     {
+        $current_user = auth()->user();
 
+        $payment_validated = $request->validated();
+
+        // Undo the balance adjustments from the initial state of the payment
+        if ($payment->is_confirmed) {
+            $payment->undoBalanceAdjustments();
+        }
+
+        // Get the user_id of the payee and balance_id of the balance
+        $payee_id = $payment_validated['payment-payee'];
+        $payment_balance_id = (int)$payment_validated['payment-balance'];
+
+        // Determine whether the payment will need to be re-confirmed
+        $resend_confirmation = false;
+        if ($payee_id != $payment->participants->first()->id || $payment_validated['payment-amount'] != $payment->amount) {
+            $resend_confirmation = true;
+        }
+
+        // Update the payment
+
+        $payment_data = [
+            'amount' => $payment_validated['payment-amount'],
+            'payer' => $current_user->id,
+            'expense_type_id' => $payment_balance_id === static::SETTLE_ALL_BALANCES ? ExpenseType::SETTLE_ALL_BALANCES : ExpenseType::PAYMENT,
+            'category_id' => Category::PAYMENT_CATEGORY,
+            'note' => $payment_validated['payment-note'],
+            'date' => $payment_validated['payment-date'],
+            'creator' => $current_user->id,
+            'updator' => $current_user->id,
+        ];
+
+        $payment->update($payment_data);
+
+        // Update the payment group(s)
+
+        $payment_groups = [];
+
+        if ($payment_balance_id === static::SETTLE_ALL_BALANCES) {
+            $payment_balances = Balance::where('user_id', $current_user->id)
+                ->where('friend', $payee_id)
+                ->get();
+
+            foreach($payment_balances as $balance) {
+                $payment_groups[] = [
+                    'group_id' => $balance->group_id,
+                    'group_amount' => -1 * $balance->balance
+                ];
+            }
+        } else {
+            $payment_groups = [
+                [
+                    'group_id' => Balance::find($payment_validated['payment-balance'])->group_id,
+                    'group_amount' => null,
+                ]
+            ];
+        }
+
+        $payment->groups()->sync($payment_groups);
+        $payment->load('groups'); // Refresh the relationship to avoid problems with old cached data
+
+        // Update the payee
+        ExpenseParticipant::where('expense_id', $payment->id)->update([
+            'user_id' => $payee_id,
+            'share' => $payment->amount,
+        ]);
+
+        if ($resend_confirmation) {
+            // Set the payment as unconfirmed
+            $payment->update(['is_confirmed' => 0]);
+
+            // Delete the old payment notifications
+
+            $notifications_to_delete = Notification::whereHas('attributes', function ($query) use ($payment) {
+                $query->where('expense_id', $payment->id);
+            })->get();
+
+            foreach ($notifications_to_delete as $notification) {
+                $notification->delete();
+            }
+
+            // Send the updated payment notifications
+            $payment->sendExpenseNotifications();
+        } else {
+            if ($payment->is_confirmed) {
+                // The payee and amount were not changed, so the balances can be update immediately
+                Expense::updateBalances($payment, $payment->participants->first()->id, $payment->amount);
+            }
+        }
 
         // Update the payments's "updated_at" timestamp in case only the payee was updated,
         // and not the payment itself
@@ -256,14 +368,16 @@ class PaymentsController extends Controller
      */
     public function getBalancesWithUser(Request $request): View
     {
+        $current_user = auth()->user();
+
         $payment = Expense::find($request->input('payment_id'));
+        $payment->is_settle_all_balances = $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+
         $group = $request->input('group_id') ? Group::find($request->input('group_id')) : null;
         $friend_user_id = $request->input('friend_user_id');
 
-        $current_user = auth()->user();
-
         $users_selection = $current_user->friends()
-            ->select('users.*', DB::raw('SUM(balances.balance) as total_balance'))
+            ->select('users.*')
             ->join('balances', 'users.id', 'balances.friend')
             ->where('balances.user_id', $current_user->id)
             ->where('balances.friend', $friend_user_id)
@@ -283,10 +397,15 @@ class PaymentsController extends Controller
             ", [Group::DEFAULT_GROUP])
             ->get();
 
+        $balances_selection = $this->getDisplayBalances($balances_selection, $payment);
+
+        $total_balance = $balances_selection->sum('display_balance');
+
         return view('payments.partials.payment-balances', [
             'payment' => $payment,
             'group' => $group,
             'users_selection' => $users_selection,
+            'total_balance' => $total_balance,
             'balances_selection' => $balances_selection,
         ]);
     }
@@ -350,5 +469,34 @@ class PaymentsController extends Controller
         $payment->delete();
 
         return Redirect::route('expenses')->with('status', 'payment-deleted');
+    }
+
+    /**
+     * If the payment doesn't exist or exists but is not confirmed, then return the actual
+     * payer-to-payee balances. If the payment does exist and is confirmed, then return the 
+     * state of the payer-to-payee balances before the payment.
+     */
+    protected function getDisplayBalances($balances, $payment = null)
+    {
+        $balances = $balances->map(function ($balance) use ($payment) {
+            if ($payment && $payment?->is_confirmed && in_array($balance->group_id, $payment->groups->pluck('id')->toArray())) {
+                if ($payment->is_settle_all_balances) {
+                    $group_amount = ExpenseGroup::where('expense_id', $payment->id)->where('group_id', $balance->group_id)->value('group_amount');
+                    $balance->display_balance = $balance->balance - $group_amount;
+                } else {
+                    $balance->display_balance = $balance->balance - $payment->amount;
+                }
+            } else {
+                $balance->display_balance = $balance->balance;
+            }
+
+            return $balance;
+        });
+
+        return $balances;
+    }
+
+    protected function getDisplayTotalBalance($balances, $payment = null) {
+        
     }
 }

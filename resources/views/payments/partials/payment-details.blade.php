@@ -1,7 +1,7 @@
 <div class="container margin-bottom-lg">
     <x-validation-warning id="payee-validation-warning">{{ __('Select a payee!') }}</x-validation-warning>
     <x-validation-warning id="balance-validation-warning">{{ __('Select a balance!') }}</x-validation-warning>
-    <x-validation-warning id="settle-all-balances-validation-warning">{{ __('You cannot change the amount when selecting "Settle All Balances"') }}</x-validation-warning>
+    <x-validation-warning id="settle-all-balances-validation-warning">{{ __('You cannot change the amount when "Settle All Balances" is selected!') }}</x-validation-warning>
 
     <div class="restrict-max-width">
         <form method="post" action="{{ $payment ? route('payments.update', $payment) : route('payments.store') }}">
@@ -90,7 +90,11 @@
                     <div class="expense-paid-split">
                         <div>
                             @if ($payment)
-                                <span class="bold-username">{{ $payment->payer_user->username }}</span>
+                                @if ($payment->payer_user->id === auth()->user()->id)
+                                    {{ __('You') }}
+                                @else
+                                    <span class="bold-username">{{ $payment->payer_user->username }}</span> <!-- Note: currently only creator can edit so this will never be used -->
+                                @endif
                             @else
                                 {{ __('You') }}
                             @endif
@@ -112,8 +116,8 @@
                 <div class="payment-amount-container">
                     <div class="expense-input-container payment-amount">
                         <span class="expense-currency">{{ __('$') }}</span>
-                        <input id="payment-amount-placeholder" class="expense-form-amount hidden" onclick="handleAmountClick()" disabled/>
-                        <input id="payment-amount" class="expense-form-amount" name="payment-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('payment-amount', $payment ? $payment->amount : '') }}" autocomplete="off" required />
+                        <span id="payment-amount-placeholder" class="payment-amount-placeholder {{ $payment?->is_settle_all_balances ? '' : 'hidden' }}" onclick="handleAmountClick()">{{ $payment ? $payment->amount : '' }}</span>
+                        <input id="payment-amount" class="expense-form-amount {{ $payment?->is_settle_all_balances ? 'hidden' : '' }}" name="payment-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('payment-amount', $payment ? $payment->amount : '') }}" autocomplete="off" required />
                     </div>
                 </div>
 
@@ -129,7 +133,7 @@
                                             {{ $default_group->name }}
                                         @endif
                                     @else <!-- Updating an existing Payment -->
-                                        {{ $payment->groups->first()->name }}
+                                        {{ $payment->is_settle_all_balances ? __('Settle All Balances') : $payment->groups->first()->name }}
                                     @endif
                                 </div>
                             </x-primary-button>
@@ -296,11 +300,13 @@
 
         // TODO: Update payee profile photo
         userBtn.querySelector('.expense-round-btn-text').textContent = payeeUsername;
+
+        // Ensure amount input is active and not still a fixed value
         currentAmountInput.classList.remove('hidden');
         amountPlaceholder.classList.add('hidden');
     }
 
-    function setPaymentBalance(balanceItem) {
+    function setPaymentBalance(balanceItem, isSettleAllBalances = false) {
         hideValidationWarning(balanceValidationWarning);
 
         let groupName = balanceItem.dataset.groupName;
@@ -311,12 +317,19 @@
         if (balance < 0) {
             balance = Math.abs(balance).toFixed(2);
             currentAmountInput.value = balance;
-            currentAmountInput.classList.add('hidden');
-            amountPlaceholder.value = balance;
-            amountPlaceholder.classList.remove('hidden');
         } else {
             currentAmountInput.value = "";
         }
+
+        // Determine whether the amount input should be replaced with a fixed value
+        if (isSettleAllBalances) {
+            currentAmountInput.classList.add('hidden');
+            amountPlaceholder.textContent = balance;
+            amountPlaceholder.classList.remove('hidden');
+        } else {
+            currentAmountInput.classList.remove('hidden');
+            amountPlaceholder.classList.add('hidden');
+        }  
     }
 
     function handleAmountClick(event) {

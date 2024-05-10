@@ -2026,6 +2026,16 @@ input[type="search"]::-webkit-search-cancel-button {
     width: 250px;
 }
 
+.payment-amount-placeholder {
+    color: var(--text-primary);
+    border: none;
+    width: 100%;
+    padding: 0 8px;
+    font-size: 1.75em;
+    font-weight: 800;
+    background-color: var(--secondary-grey);
+}
+
 .payment-select-user {
 
 }

@@ -4,7 +4,7 @@
             <h2>{{ __('Payment') }}</h2>
 
             <div class="btn-container-end">
-                @if (auth()->user()->id === $payment->creator)
+                @if (auth()->user()->id === $payment->payer)
                     <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('payments.edit', $payment)">{{ __('Edit') }}</x-primary-button>
 
                     <x-dropdown>
@@ -46,6 +46,14 @@
             @endif
             <a class="metric-group">{{ __('Category') }}</a>
         </div>
+
+        @if (auth()->user()->id === $payment->payer || auth()->user()->id === $payment->payee->id)
+            @if ($payment->is_confirmed)
+                <div class="text-sm text-success margin-top-sm"><i class="fa-solid fa-check fa-sm icon"></i>{{ __('This payment was confirmed') }}</div>
+            @else
+                <div class="text-sm text-warning margin-top-sm"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This payment is pending') }}</div>
+            @endif
+        @endif
     </div>
 
     <div class="margin-top-lg space-top-sm">
