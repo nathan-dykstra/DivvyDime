@@ -371,7 +371,9 @@ class PaymentsController extends Controller
         $current_user = auth()->user();
 
         $payment = Expense::find($request->input('payment_id'));
-        $payment->is_settle_all_balances = $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+        if ($payment) {
+            $payment->is_settle_all_balances = $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+        }
 
         $group = $request->input('group_id') ? Group::find($request->input('group_id')) : null;
         $friend_user_id = $request->input('friend_user_id');

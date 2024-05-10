@@ -184,11 +184,12 @@
 
                             notificationsDeleted++;
 
-                            // After all notifications are cleared, refresh the view
-                            if (notificationsDeleted === response.deletedNotificationIds.length) {
-                                refreshNotificationsView();
-                            }
-
+                            setTimeout(() => {
+                                // After all notifications are cleared, refresh the view
+                                if (notificationsDeleted === response.deletedNotificationIds.length) {
+                                    refreshNotificationsView();
+                                }
+                            }, 400);
                         }, delay);
 
                         delay += 50;
