@@ -4,11 +4,13 @@ namespace App\Listeners;
 
 use App\Events\UserDeleting;
 use App\Models\Balance;
+use App\Models\Expense;
+use App\Models\ExpenseParticipant;
 use App\Models\Friend;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Notification;
-use App\Models\NotificationType;
+use App\Models\User;
 use App\Models\UserPreference;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -28,8 +30,55 @@ class DeleteUserDependents
      */
     public function handle(UserDeleting $event): void
     {
-        // TODO: Change all expenses involving the User to "DivvyDime User"
-        // TODO: Delete any non-group expenses where the other User is already deleted (i.e. the other User is now "DivvyDime User")
+        // Delete all of the user's non-group expenses that are no longer associated with
+        // any other DivvyDime user
+
+        $expenses_to_delete = Expense::whereHas('groups', function ($query) {
+                $query->where('groups.id', Group::DEFAULT_GROUP);
+            })
+            ->where(function ($query) use ($event) {
+                $query->where('expenses.payer', $event->user->id)
+                    ->whereDoesntHave('participants', function ($query) {
+                        $query->where('users.id', '!=', User::DEFAULT_USER);
+                    });
+            })
+            ->orWhere(function ($query) use ($event) {
+                $query->whereHas('participants', function ($query) use ($event) {
+                        $query->where('users.id', $event->user->id);
+                    })
+                    ->where('expenses.payer', User::DEFAULT_USER)
+                    ->whereDoesntHave('participants', function ($query) use ($event) {
+                        $query->where('users.id', '!=', $event->user->id)
+                              ->where('users.id', '!=', User::DEFAULT_USER);
+                    });
+            })
+            ->get();
+
+        foreach ($expenses_to_delete as $expense) {
+            $expense->delete();
+        }
+
+        // Update all of the user's remaining expenses to the default DivvyDime user
+
+        // Expenses (payer)
+        Expense::where('payer', $event->user->id)->update([
+            'payer' => User::DEFAULT_USER,
+        ], ['timestamps' => false]);
+
+        // Expenses (creator)
+        Expense::where('creator', $event->user->id)->update([
+            'creator' => User::DEFAULT_USER,
+        ], ['timestamps' => false]);
+
+        // Expenses (updator)
+        Expense::where('updator', $event->user->id)->update([
+            'updator' => User::DEFAULT_USER,
+        ], ['timestamps' => false]);
+
+        // Expenses (participant)
+        ExpenseParticipant::where('user_id', $event->user->id)->update([
+            'user_id' => User::DEFAULT_USER,
+        ], ['timestamps' => false]);
 
         // Delete all of the user's received notifications
 
@@ -43,12 +92,12 @@ class DeleteUserDependents
         // Change all of the user's sent notifications to "DivvyDime User"
 
         Notification::where('sender', $event->user->id)->update([
-            'sender' => 1, // TODO: Change this from "1" to "DivvyDime User"
-        ]);
+            'sender' => User::DEFAULT_USER,
+        ], ['timestamps' => false]);
 
         Notification::where('creator', $event->user->id)->update([
-            'creator' => 1, // TODO: Change this from "1" to "DivvyDime User"
-        ]);
+            'creator' => User::DEFAULT_USER,
+        ], ['timestamps' => false]);
 
         // Delete user's friendships
         Friend::where('user1_id', $event->user->id)->orWhere('user2_id', $event->user->id)->delete();

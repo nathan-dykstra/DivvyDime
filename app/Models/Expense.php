@@ -126,16 +126,24 @@ class Expense extends Model
 
             if ($expense->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments for reimbursement
                 // Increase the participant to payer balance by the participant's share
-                $participant_payer_balance->increment('balance', $amount);
+                if ($participant_payer_balance) {
+                    $participant_payer_balance->increment('balance', $amount);
+                }
 
                 // Decrease the payer to participant balance by the participant's share
-                $payer_participant_balance->decrement('balance', $amount);
+                if ($payer_participant_balance) {
+                    $payer_participant_balance->decrement('balance', $amount);
+                }
             } else {
                 // Decrease the participant to payer balance by the participant's share
-                $participant_payer_balance->decrement('balance', $amount);
+                if ($participant_payer_balance) {
+                    $participant_payer_balance->decrement('balance', $amount);
+                }
 
                 // Increase the payer to participant balance by the participant's share
-                $payer_participant_balance->increment('balance', $amount);
+                if ($payer_participant_balance) {
+                    $payer_participant_balance->increment('balance', $amount);
+                }
             }
         }
     }
@@ -183,29 +191,37 @@ class Expense extends Model
                     $participant_share = ExpenseParticipant::where('expense_id', $this->id)
                         ->where('user_id', $participant->id)
                         ->value('share');
-    
+
                     $participant_payer_balance = Balance::where('user_id', $participant->id)
                         ->where('friend', $this->payer)
                         ->where('group_id', $this->groups->first()->id)
                         ->first();
-    
+
                     $payer_participant_balance = Balance::where('user_id', $this->payer)
                         ->where('friend', $participant->id)
                         ->where('group_id', $this->groups->first()->id)
                         ->first();
-                    
+
                     if ($this->expense_type_id === ExpenseType::REIMBURSEMENT) { // Reverse the direction of the adjustments
                         // Decrease the participant to payer Balance by the participant's share
-                        $participant_payer_balance->decrement('balance', $participant_share);
-    
+                        if ($participant_payer_balance) {
+                            $participant_payer_balance->decrement('balance', $participant_share);
+                        }
+
                         // Increase the payer to participant Balance by the participant's share
-                        $payer_participant_balance->increment('balance', $participant_share);
+                        if ($payer_participant_balance) {
+                            $payer_participant_balance->increment('balance', $participant_share);
+                        }
                     } else {
                         // Increase the participant to payer Balance by the participant's share
-                        $participant_payer_balance->increment('balance', $participant_share);
-    
+                        if ($participant_payer_balance) {
+                            $participant_payer_balance->increment('balance', $participant_share);
+                        }
+
                         // Decrease the payer to participant Balance by the participant's share
-                        $payer_participant_balance->decrement('balance', $participant_share);
+                        if ($payer_participant_balance) {
+                            $payer_participant_balance->decrement('balance', $participant_share);
+                        }
                     }
                 }
             }

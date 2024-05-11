@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateUserRequest;
 use App\Models\Friend;
 use App\Models\Group;
 use App\Models\GroupInvite;
@@ -19,7 +20,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
@@ -55,14 +55,8 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(CreateUserRequest $request): RedirectResponse
     {
-        $request->validate([
-            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
         // Create the new User
         $user = $this->createUser($request);
 
@@ -76,14 +70,8 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request from a friend invite.
      */
-    public function storeFromInvite(Request $request, $token = null): RedirectResponse
+    public function storeFromInvite(CreateUserRequest $request, $token = null): RedirectResponse
     {
-        $request->validate([
-            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
         // Create the new User
         $user = $this->createUser($request);
 
@@ -124,14 +112,8 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request from a Group invite.
      */
-    public function storeFromGroupInvite(Request $request, $token = null): RedirectResponse
+    public function storeFromGroupInvite(CreateUserRequest $request, $token = null): RedirectResponse
     {
-        $request->validate([
-            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
         // Create the new User
         $user = $this->createUser($request);
 

@@ -3,7 +3,9 @@
 <x-guest-layout>
     <div class="container">
         <div class="guest-app-logo margin-bottom-lg">
-            <h1>DivvyDime</h1>
+            <a href="{{ route('dashboard') }}">
+                <h1>DivvyDime</h1>
+            </a>
         </div>
 
         <div class="margin-bottom-sm">

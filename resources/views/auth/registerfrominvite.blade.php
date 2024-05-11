@@ -1,7 +1,9 @@
 <x-guest-layout>
     <div class="container">
         <div class="guest-app-logo margin-bottom-lg">
-            <h1>DivvyDime</h1>
+            <a href="/">
+                <h1>DivvyDime</h1>
+            </a>
         </div>
 
         <form method="POST" action="{{ $invite->group_id !== null ? route('register.store-from-group-invite', $invite->token) : route('register.storefrominvite', $invite->token) }}">

@@ -13,6 +13,8 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    const DEFAULT_USER = 1;
+
     /**
      * Defines the User to UserPreference relationship.
      */
