@@ -6,7 +6,6 @@ use App\Events\GroupDeleting;
 use App\Models\Balance;
 use App\Models\GroupMember;
 use App\Models\Notification;
-use App\Models\NotificationAttribute;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 

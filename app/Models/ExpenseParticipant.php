@@ -9,6 +9,14 @@ class ExpenseParticipant extends Model
 {
     use HasFactory;
 
+    /**
+     * Defines the ExpenseParticipant to Expense relationship
+     */
+    public function expense()
+    {
+        return $this->belongsTo(Expense::class);
+    }
+
     protected $fillable = [
         'expense_id',
         'user_id',

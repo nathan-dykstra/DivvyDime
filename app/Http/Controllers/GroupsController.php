@@ -412,8 +412,6 @@ class GroupsController extends Controller
     {
         $current_user = auth()->user();
 
-        // TODO: Change all of the current user's group expenses to "DivvyDime User"
-
         if ($group->owner === $current_user->id) {
             // Group ownership needs to change
             if ($group->members()->count() > 1 ) {
@@ -469,6 +467,52 @@ class GroupsController extends Controller
 
             GroupMember::where('group_id', $group->id)->where('user_id', $current_user->id)->delete();
         }
+
+        // Update all of the user's group expenses to the default DivvyDime user
+
+        // Expenses (payer)
+        Expense::whereHas('groups', function ($query) use ($group) {
+                $query->where('groups.id', $group->id);
+            })
+            ->where('payer', $current_user->id)
+            ->update([
+                'payer' => User::DEFAULT_USER,
+            ], ['timestamps' => false]);
+
+        // Expenses (creator)
+        Expense::whereHas('groups', function ($query) use ($group) {
+                $query->where('groups.id', $group->id);
+            })
+            ->where('creator', $current_user->id)
+            ->update([
+                'creator' => User::DEFAULT_USER,
+            ], ['timestamps' => false]);
+
+        // Expenses (updator)
+        Expense::whereHas('groups', function ($query) use ($group) {
+                $query->where('groups.id', $group->id);
+            })
+            ->where('updator', $current_user->id)
+            ->update([
+                'updator' => User::DEFAULT_USER,
+            ], ['timestamps' => false]);
+
+        // Expenses (participant)
+        ExpenseParticipant::whereHas('expense.groups', function ($query) use ($group) {
+                $query->where('groups.id', $group->id);
+            })
+            ->where('user_id', $current_user->id)
+            ->update([
+                'user_id' => User::DEFAULT_USER,
+            ], ['timestamps' => false]);
+
+        // Delete all of the user's group balances
+        Balance::where('group_id', $group->id)
+            ->where(function ($query) use ($current_user) {
+                $query->where('user_id', $current_user->id)
+                    ->orWhere('friend', $current_user->id);
+            })
+            ->delete();
 
         Session::flash('status', 'left-group');
 

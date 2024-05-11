@@ -37,20 +37,22 @@ class DeleteUserDependents
                 $query->where('groups.id', Group::DEFAULT_GROUP);
             })
             ->where(function ($query) use ($event) {
-                $query->where('expenses.payer', $event->user->id)
-                    ->whereDoesntHave('participants', function ($query) {
-                        $query->where('users.id', '!=', User::DEFAULT_USER);
-                    });
-            })
-            ->orWhere(function ($query) use ($event) {
-                $query->whereHas('participants', function ($query) use ($event) {
-                        $query->where('users.id', $event->user->id);
-                    })
-                    ->where('expenses.payer', User::DEFAULT_USER)
-                    ->whereDoesntHave('participants', function ($query) use ($event) {
-                        $query->where('users.id', '!=', $event->user->id)
-                              ->where('users.id', '!=', User::DEFAULT_USER);
-                    });
+                $query->where(function ($query) use ($event) {
+                    $query->where('expenses.payer', $event->user->id)
+                        ->whereDoesntHave('participants', function ($query) {
+                                $query->where('users.id', '!=', User::DEFAULT_USER);
+                            });
+                        })
+                        ->orWhere(function ($query) use ($event) {
+                            $query->whereHas('participants', function ($query) use ($event) {
+                                    $query->where('users.id', $event->user->id);
+                                })
+                                ->where('expenses.payer', User::DEFAULT_USER)
+                                ->whereDoesntHave('participants', function ($query) use ($event) {
+                                    $query->where('users.id', '!=', $event->user->id)
+                                          ->where('users.id', '!=', User::DEFAULT_USER);
+                                });
+                        });
             })
             ->get();
 
