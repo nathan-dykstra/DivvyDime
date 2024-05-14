@@ -20,6 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -307,7 +308,7 @@ class GroupsController extends Controller
                 ]);
 
                 $url = URL::temporarySignedRoute(
-                    'register.from-group-invite', now()->addMinutes(300), ['token' => $token]
+                    'register.from-group-invite', now()->addMinutes(Config::get('auth.invite.expire', 120)), ['token' => $token]
                 );
 
                 Notification::route('mail', $email)->notify(new GroupInviteNotification($url, $inviter->username, $group->name));

@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -201,17 +202,17 @@ class FriendsController extends Controller
             do {
                 $token = Str::random(20);
             } while (Invite::where('token', $token)->first());
-    
+
             Invite::create([
                 'token' => $token,
                 'email' => $request->input('friend_email'),
                 'inviter' => $inviter->id,
             ]);
-    
+
             $url = URL::temporarySignedRoute(
-                'register.frominvite', now()->addMinutes(300), ['token' => $token]
+                'register.frominvite', now()->addMinutes(Config::get('auth.invite.expire', 120)), ['token' => $token]
             );
-    
+
             Notification::route('mail', $request->input('friend_email'))->notify(new InviteNotification($url, $inviter->username));
         }
 

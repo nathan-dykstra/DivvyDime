@@ -112,4 +112,19 @@ return [
 
     'password_timeout' => 10800,
 
+    /**
+     * Email verification expire time
+     */
+
+     'verification' => [
+        'expire' => 1440, // 24 hours in minutes
+    ],
+
+    /**
+     * Group and friend invite expire time
+     */
+
+    'invite' => [
+        'expire' => 2880, // 48 hours in minutes
+    ],
 ];
