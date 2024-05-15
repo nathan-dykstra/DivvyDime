@@ -392,11 +392,12 @@ class GroupsController extends Controller
      */
     public function removeMember(Request $request, Group $group)
     {
-        $member_id = $request->input('member_id');
+        $member = User::find($request->input('member_id'));
 
-        // TODO: Change all member's group expenses to "DivvyDime User"
+        // Update expenses to default user and delete balances
+        $this->updateExpensesOnGroupExit($group, $member);
 
-        GroupMember::where('group_id', $group->id)->where('user_id', $member_id)->delete();
+        GroupMember::where('group_id', $group->id)->where('user_id', $member->id)->delete();
 
         Session::flash('status', 'member-removed');
 
@@ -411,7 +412,7 @@ class GroupsController extends Controller
      */
     public function leaveGroup(Request $request, Group $group)
     {
-        $current_user = auth()->user();
+        $current_user = $request->user();
 
         if ($group->owner === $current_user->id) {
             // Group ownership needs to change
@@ -469,51 +470,8 @@ class GroupsController extends Controller
             GroupMember::where('group_id', $group->id)->where('user_id', $current_user->id)->delete();
         }
 
-        // Update all of the user's group expenses to the default DivvyDime user
-
-        // Expenses (payer)
-        Expense::whereHas('groups', function ($query) use ($group) {
-                $query->where('groups.id', $group->id);
-            })
-            ->where('payer', $current_user->id)
-            ->update([
-                'payer' => User::DEFAULT_USER,
-            ], ['timestamps' => false]);
-
-        // Expenses (creator)
-        Expense::whereHas('groups', function ($query) use ($group) {
-                $query->where('groups.id', $group->id);
-            })
-            ->where('creator', $current_user->id)
-            ->update([
-                'creator' => User::DEFAULT_USER,
-            ], ['timestamps' => false]);
-
-        // Expenses (updator)
-        Expense::whereHas('groups', function ($query) use ($group) {
-                $query->where('groups.id', $group->id);
-            })
-            ->where('updator', $current_user->id)
-            ->update([
-                'updator' => User::DEFAULT_USER,
-            ], ['timestamps' => false]);
-
-        // Expenses (participant)
-        ExpenseParticipant::whereHas('expense.groups', function ($query) use ($group) {
-                $query->where('groups.id', $group->id);
-            })
-            ->where('user_id', $current_user->id)
-            ->update([
-                'user_id' => User::DEFAULT_USER,
-            ], ['timestamps' => false]);
-
-        // Delete all of the user's group balances
-        Balance::where('group_id', $group->id)
-            ->where(function ($query) use ($current_user) {
-                $query->where('user_id', $current_user->id)
-                    ->orWhere('friend', $current_user->id);
-            })
-            ->delete();
+        // Update expenses to default user and delete balances
+        $this->updateExpensesOnGroupExit($group, $current_user);
 
         Session::flash('status', 'left-group');
 
@@ -571,6 +529,59 @@ class GroupsController extends Controller
         $groups = $this->augmentGroups($groups);
 
         return view('groups.partials.groups', ['groups' => $groups]);
+    }
+
+    /**
+     * Change all of $user's expenses in $group to the default DivvyDime user,
+     * and delete all their group balances.
+     */
+    protected function updateExpensesOnGroupExit($group, $user)
+    {
+        // Update all of the user's group expenses to the default DivvyDime user
+
+        // Expenses (payer)
+        Expense::whereHas('groups', function ($query) use ($group) {
+                $query->where('groups.id', $group->id);
+            })
+            ->where('payer', $user->id)
+            ->update([
+                'payer' => User::DEFAULT_USER,
+            ], ['timestamps' => false]);
+
+        // Expenses (creator)
+        Expense::whereHas('groups', function ($query) use ($group) {
+                $query->where('groups.id', $group->id);
+            })
+            ->where('creator', $user->id)
+            ->update([
+                'creator' => User::DEFAULT_USER,
+            ], ['timestamps' => false]);
+
+        // Expenses (updator)
+        Expense::whereHas('groups', function ($query) use ($group) {
+                $query->where('groups.id', $group->id);
+            })
+            ->where('updator', $user->id)
+            ->update([
+                'updator' => User::DEFAULT_USER,
+            ], ['timestamps' => false]);
+
+        // Expenses (participant)
+        ExpenseParticipant::whereHas('expense.groups', function ($query) use ($group) {
+                $query->where('groups.id', $group->id);
+            })
+            ->where('user_id', $user->id)
+            ->update([
+                'user_id' => User::DEFAULT_USER,
+            ], ['timestamps' => false]);
+
+        // Delete all of the user's group balances
+        Balance::where('group_id', $group->id)
+            ->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                    ->orWhere('friend', $user->id);
+            })
+            ->delete();
     }
 
     /**

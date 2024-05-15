@@ -23,10 +23,6 @@ class Group extends Model
     /**
      * Defines the Group to Expense relationship.
      */
-    /*public function expenses()
-    {
-        return $this->hasMany(Expense::class);
-    }*/
     public function expenses()
     {
         return $this->belongsToMany(Expense::class, 'expense_groups');

@@ -117,7 +117,7 @@ return [
      */
 
      'verification' => [
-        'expire' => 1440, // 24 hours in minutes
+        'expire' => 2880, // 48 hours in minutes
     ],
 
     /**
@@ -125,6 +125,6 @@ return [
      */
 
     'invite' => [
-        'expire' => 2880, // 48 hours in minutes
+        'expire' => 10080, // 7 days in minutes
     ],
 ];

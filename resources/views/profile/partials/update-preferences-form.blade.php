@@ -16,12 +16,10 @@
                     <i class="fa-solid fa-circle-half-stroke" id="dark-setting-icon"></i>
                     {{ __('System') }}
                 </div>
-                <div class="theme-setting-gap"></div>
                 <div class="theme-setting" id="light-setting" data-theme="light" onclick="setTheme(this, 'light')">
                     <i class="fa-solid fa-sun" id="light-setting-icon"></i>
                     {{ __('Light') }}
                 </div>
-                <div class="theme-setting-gap"></div>
                 <div class="theme-setting" id="light-setting" data-theme="dark" onclick="setTheme(this, 'dark')">
                     <i class="fa-solid fa-moon" id="dark-setting-icon"></i>
                     {{ __('Dark') }}
@@ -45,10 +43,9 @@
 
 <style>
     .theme-container {
-        display: flex;
-        justify-content: space-between;
-        flex-direction: row;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1em;
         width: 100%;
         margin-top: 4px;
     }
@@ -63,8 +60,15 @@
         border-radius: var(--border-radius);
         background-color: var(--background);
         color: var(--text-heading);
-        padding: 8px 16px;
+        padding: 8px;
         transition: border 0.3s ease-in-out, background-color 0.3s ease-in-out, outline 0.1s;
+    }
+
+    @media screen and (max-width: 768px) {
+        .theme-setting {
+            flex-direction: column;
+            gap: 6px;
+        }
     }
 
     .theme-setting-active {
@@ -97,6 +101,8 @@
     const themeBtns = Array.from(themeContainer.children);
     themeBtns.forEach(btn => {
         if (btn.dataset.theme === theme) {
+            btn.classList.add("theme-setting-active")
+        } else if (!theme && btn.dataset.theme === "light") {
             btn.classList.add("theme-setting-active")
         } else {
             btn.classList.remove("theme-setting-active");

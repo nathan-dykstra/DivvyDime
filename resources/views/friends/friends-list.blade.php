@@ -22,7 +22,7 @@
 
     <div class="section-search">
         <div class="restrict-max-width">
-            <x-searchbar-secondary placeholder="Search Friends" id="search-friends"></x-searchbar-secondary>
+            <x-searchbar-secondary placeholder="Search Friends" id="search-friends"/>
         </div>
     </div>
 

@@ -14,10 +14,6 @@ class Expense extends Model
     /**
      * Defines the Expense to Group relationship.
      */
-    /*public function group()
-    {
-        return $this->belongsTo(Group::class);
-    }*/
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'expense_groups');
@@ -101,7 +97,9 @@ class Expense extends Model
                     ->where('group_id', $balance->group_id)
                     ->value('group_amount');
 
-                $balance->decrement('balance', $group_amount);
+                if ($balance) {
+                    $balance->decrement('balance', $group_amount);
+                }
             }
 
             // Increment each payer to participant balance by the amount from that group in expense_groups
@@ -111,7 +109,9 @@ class Expense extends Model
                     ->where('group_id', $balance->group_id)
                     ->value('group_amount');
 
-                $balance->increment('balance', $group_amount);
+                if ($balance) {
+                    $balance->increment('balance', $group_amount);
+                }
             }
         } else {
             $participant_payer_balance = Balance::where('user_id', $user_id)
@@ -173,8 +173,10 @@ class Expense extends Model
                     $group_amount = ExpenseGroup::where('expense_id', $this->id)
                         ->where('group_id', $balance->group_id)
                         ->value('group_amount');
-
-                    $balance->increment('balance', $group_amount);
+                    
+                    if ($balance) {
+                        $balance->increment('balance', $group_amount);
+                    }
                 }
 
                 // Decrement each payer to participant balance by the amount from that group in expense_groups
@@ -184,7 +186,9 @@ class Expense extends Model
                         ->where('group_id', $balance->group_id)
                         ->value('group_amount');
 
-                    $balance->decrement('balance', $group_amount);
+                    if ($balance) {
+                        $balance->decrement('balance', $group_amount);
+                    }
                 }
             } else {
                 if ($participant->id !== $this->payer) {
