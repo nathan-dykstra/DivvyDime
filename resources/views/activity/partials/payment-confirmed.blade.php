@@ -3,13 +3,13 @@
             <div class="notification-content">
                 <div>
                     <div>
-                        @if ($notification->creator === $notification->recipient) <!-- Current user added the payment -->
+                        @if ($notification->expense->payer === $notification->recipient) <!-- Current user added the payment -->
                             {{ __('You') }}
                         @else
                             <span class="bold-username">{{ $notification->sender_username }}</span>
                         @endif
                         {{ __(' paid ') }}
-                        @if ($notification->recipient === auth()->user()->id)
+                        @if ($notification->payee->id === $notification->recipient)
                             {{ __('you') }}
                         @else
                             <span class="bold-username">{{ $notification->payee->username }}</span>

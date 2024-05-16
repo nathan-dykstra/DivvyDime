@@ -507,13 +507,6 @@ class PaymentsController extends Controller
         return $balances;
     }
 
-    /** 
-     * TODO: check if this needs to be implemented?
-     */
-    protected function getDisplayTotalBalance($balances, $payment = null) {
-        
-    }
-
     /**
      * confirmPayment() accepts requests from the payment notification and the payment page. 
      * It then passes the necessary details to this function to actually confirm the payment.
