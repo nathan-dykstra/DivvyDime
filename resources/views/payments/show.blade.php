@@ -32,6 +32,10 @@
         <x-session-status>{{ __('Payment created.') }}</x-session-status>
     @elseif (session('status') === 'payment-updated')
         <x-session-status>{{ __('Payment updated.') }}</x-session-status>
+    @elseif (session('status') === 'payment-confirmed')
+        <x-session-status>{{ __('Payment confirmed.') }}</x-session-status>
+    @elseif (session('status') === 'payment-rejected')
+        <x-session-status>{{ __('Payment rejected.') }}</x-session-status>
     @endif
 
     <div>
@@ -47,12 +51,55 @@
             <a class="metric-group">{{ __('Category') }}</a>
         </div>
 
-        @if (auth()->user()->id === $payment->payer || auth()->user()->id === $payment->payee->id)
-            @if ($payment->is_confirmed)
-                <div class="text-sm text-success margin-top-sm"><i class="fa-solid fa-check fa-sm icon"></i>{{ __('This payment was confirmed') }}</div>
-            @else
-                <div class="text-sm text-warning margin-top-sm"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This payment is pending') }}</div>
-            @endif
+        @if (auth()->user()->id === $payment->payer && $payment->is_rejected)
+            <!-- Payment rejected (payer): Show options -->
+            <div class="info-container red-background-text margin-top-sm">
+                <div>
+                    <i class="fa-solid fa-triangle-exclamation fa-lg text-warning"></i>
+                </div>
+                <div class="space-top-xs">
+                    <span class="bold-username">{{ $payment->payee->username }}</span>{{ __(' rejected your payment. Make sure you sent the money and the payment information you added is correct.') }}
+
+                    <div class="btn-container-start">
+                        <x-secondary-button href="{{ route('payments.edit', $payment) }}">{{ __('Edit Payment') }}</x-secondary-button>
+                    </div>
+                </div>
+            </div>
+        @elseif (auth()->user()->id === $payment->payer && !$payment->is_confirmed)
+            <!-- Payment pending (payer) -->
+            <div class="text-sm text-yellow margin-top-sm"><i class="fa-solid fa-triangle-exclamation fa-sm icon"></i>{{ __('This payment is pending') }}</div>
+        @elseif (auth()->user()->id === $payment->payee->id && !$payment->is_confirmed && !$payment->is_rejected)
+            <!-- Payment pending (payee): Show options -->
+            <div class="info-container yellow-background-text margin-top-sm">
+                <div>
+                    <i class="fa-solid fa-triangle-exclamation fa-lg text-yellow"></i>
+                </div>
+                <div class="space-top-xs">
+                    {{ __('Did you receive this payment from ') }}<span class="bold-username">{{ $payment->payer_user->username }}</span>{{ __('? Your balances will not be adjusted until you confirm the payment.') }}
+
+                    <div class="btn-container-start">
+                        <x-secondary-button onclick="submitConfirmPayment()">{{ __('Confirm') }}</x-secondary-button>
+                        <x-secondary-button onclick="submitRejectPayment()">{{ __('Reject') }}</x-secondary-button>
+                    </div>
+                </div>
+            </div>
+        @elseif (auth()->user()->id === $payment->payee->id && $payment->is_rejected)
+            <!-- Payment rejected (payee): Show options -->
+            <div class="info-container red-background-text margin-top-sm">
+                <div>
+                    <i class="fa-solid fa-triangle-exclamation fa-lg text-warning"></i>
+                </div>
+                <div class="space-top-xs">
+                    {{ __('You rejected this payment from ') }}<span class="bold-username">{{ $payment->payer_user->username }}</span>{{ __('. If you change your mind, you can still confirm the payment.') }}
+
+                    <div class="btn-container-start">
+                        <x-secondary-button onclick="submitConfirmPayment()">{{ __('Confirm Payment') }}</x-secondary-button>
+                    </div>
+                </div>
+            </div>
+        @else 
+            <!-- Payment confirmed (both) -->
+            <div class="text-sm text-success margin-top-sm"><i class="fa-solid fa-check fa-sm icon"></i>{{ __('This payment was confirmed') }}</div>
         @endif
     </div>
 
@@ -108,5 +155,27 @@
         @endif
     </div>
 
+    <form id="confirm-payment-form" action="{{ route('payments.confirm', $payment) }}" method="POST">
+        @csrf
+
+        <input type="hidden" name="payment_id" value="{{ $payment->id }}"/>
+    </form>
+
+    <form id="reject-payment-form" action="{{ route('payments.reject', $payment) }}" method="POST">
+        @csrf
+
+        <input type="hidden" name="payment_id" value="{{ $payment->id }}"/>
+    </form>
+
     @include('payments.partials.payment-delete-modal')
 </x-app-layout>
+
+<script>
+    function submitConfirmPayment() {
+        $('#confirm-payment-form').submit();
+    }
+
+    function submitRejectPayment() {
+        $('#reject-payment-form').submit();
+    }
+</script>

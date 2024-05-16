@@ -417,42 +417,29 @@ class PaymentsController extends Controller
      */
     public function confirmPayment(Request $request)
     {
-        $payee_notification = Notification::find($request->input('notification_id'));
+        if ($request->has('notification_id')) {
+            $payee_notification = Notification::find($request->input('notification_id'));
 
-        $payment = Expense::find($payee_notification->attributes()->value('expense_id'));
+            $payment = Expense::find($payee_notification->attributes()->value('expense_id'));
 
-        // Update the expenses.is_confirmed field
-        $payment->update([
-            'is_confirmed' => 1,
-        ]);
+            $this->confirmPaymentLogic($payment, $payee_notification);
 
-        // Update the balances
-        Expense::updateBalances($payment, $payee_notification->recipient, $payment->amount);
-
-        // Update notifications
-
-        $payer_notification = Notification::updateOrCreate(
-            [
-                'notification_type_id' => NotificationType::PAYMENT,
-                'creator' => $payment->payer,
-                'sender' => $payment->payer,
-                'recipient' => $payment->payer,
-            ],
-            [
-                'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
-            ],
-        );
-
-        if ($payer_notification->wasRecentlyCreated) {
-            NotificationAttribute::create([
-                'notification_id' => $payer_notification->id,
-                'expense_id' => $payment->id,
+            return response()->json([
+                'message' => 'Payment confirmed successfully!',
             ]);
-        }
+        } else {
+            $payment = Expense::find($request->input('payment_id'));
 
-        $payee_notification->update([
-            'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
-        ]);
+            $payee_notification = Notification::where('notification_type_id', NotificationType::PAYMENT)
+                ->where('creator', $payment->payer)
+                ->where('sender', $payment->payer)
+                ->where('recipient', $payment->participants->first()->id)
+                ->first();
+
+            $this->confirmPaymentLogic($payment, $payee_notification);
+
+            return Redirect::route('payments.show', $payment->id)->with('status', 'payment-confirmed');
+        }
     }
 
     /**
@@ -460,7 +447,29 @@ class PaymentsController extends Controller
      */
     public function rejectPayment(Request $request)
     {
-        // TODO
+        if ($request->has('notification_id')) {
+            $payee_notification = Notification::find($request->input('notification_id'));
+
+            $payment = Expense::find($payee_notification->attributes()->value('expense_id'));
+
+            $this->rejectPaymentLogic($payment, $payee_notification);
+
+            return response()->json([
+                'message' => 'Payment rejected successfully!',
+            ]);
+        } else {
+            $payment = Expense::find($request->input('payment_id'));
+
+            $payee_notification = Notification::where('notification_type_id', NotificationType::PAYMENT)
+                ->where('creator', $payment->payer)
+                ->where('sender', $payment->payer)
+                ->where('recipient', $payment->participants->first()->id)
+                ->first();
+
+            $this->rejectPaymentLogic($payment, $payee_notification);
+
+            return Redirect::route('payments.show', $payment->id)->with('status', 'payment-rejected');
+        }
     }
 
     /**
@@ -498,7 +507,122 @@ class PaymentsController extends Controller
         return $balances;
     }
 
+    /** 
+     * TODO: check if this needs to be implemented?
+     */
     protected function getDisplayTotalBalance($balances, $payment = null) {
         
+    }
+
+    /**
+     * confirmPayment() accepts requests from the payment notification and the payment page. 
+     * It then passes the necessary details to this function to actually confirm the payment.
+     */
+    protected function confirmPaymentLogic($payment, $payee_notification)
+    {
+        // Update notifications
+
+        if ($payment->is_rejected) {
+            $payer_notification = Notification::updateOrCreate(
+                [
+                    'notification_type_id' => NotificationType::PAYMENT_REJECTED,
+                    'creator' => $payment->payer,
+                    'sender' => $payment->payer,
+                    'recipient' => $payment->payer,
+                ],
+                [
+                    'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+                ],
+            );
+
+            $payee_notification = Notification::updateOrCreate(
+                [
+                    'notification_type_id' => NotificationType::PAYMENT_REJECTED,
+                    'creator' => $payment->payer,
+                    'sender' => $payment->payer,
+                    'recipient' => $payment->participants->first()->id,
+                ],
+                [
+                    'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+                ],
+            );
+
+            if ($payee_notification->wasRecentlyCreated) {
+                NotificationAttribute::create([
+                    'notification_id' => $payee_notification->id,
+                    'expense_id' => $payment->id,
+                ]);
+            }
+        } else {
+            $payer_notification = Notification::updateOrCreate(
+                [
+                    'notification_type_id' => NotificationType::PAYMENT,
+                    'creator' => $payment->payer,
+                    'sender' => $payment->payer,
+                    'recipient' => $payment->payer,
+                ],
+                [
+                    'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+                ],
+            );
+
+            $payee_notification->update([
+                'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+            ]);
+        }
+
+        if ($payer_notification->wasRecentlyCreated) {
+            NotificationAttribute::create([
+                'notification_id' => $payer_notification->id,
+                'expense_id' => $payment->id,
+            ]);
+        }
+
+        // Update the payment confirmation/rejection fields
+        $payment->update([
+            'is_confirmed' => 1,
+            'is_rejected' => 0,
+        ]);
+
+        // Update the balances
+        Expense::updateBalances($payment, $payment->participants->first()->id, $payment->amount);
+    }
+
+    /**
+     * rejectPayment() accepts requests from the payment notification and the payment page. 
+     * It then passes the necessary details to this function to actually reject the payment.
+     */
+    protected function rejectPaymentLogic($payment, $payee_notification)
+    {
+        // Update the payment confirmation/rejection fields
+        $payment->update([
+            'is_confirmed' => 0,
+            'is_rejected' => 1,
+        ]);
+
+        // Update notifications
+
+        $payer_notification = Notification::updateOrCreate(
+            [
+                'notification_type_id' => NotificationType::PAYMENT,
+                'creator' => $payment->payer,
+                'sender' => $payment->payer,
+                'recipient' => $payment->payer,
+            ],
+            [
+                'notification_type_id' => NotificationType::PAYMENT_REJECTED,
+            ],
+        );
+
+        if ($payer_notification->wasRecentlyCreated) {
+            NotificationAttribute::create([
+                'notification_id' => $payer_notification->id,
+                'expense_id' => $payment->id,
+            ]);
+        }
+
+        $payee_notification->update([
+            'notification_type_id' => NotificationType::PAYMENT_REJECTED,
+        ]);
     }
 }

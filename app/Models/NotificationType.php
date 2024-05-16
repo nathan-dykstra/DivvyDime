@@ -12,6 +12,7 @@ class NotificationType extends Model
     const REMINDER = 3;
     const PAYMENT = 4;
     const PAYMENT_CONFIRMED = 5;
+    const PAYMENT_REJECTED = 13;
     const BALANCE_SETTLED = 6;
     const FRIEND_REQUEST = 7;
     const FRIEND_REQUEST_ACCEPTED = 8;

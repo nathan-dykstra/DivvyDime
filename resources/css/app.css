@@ -37,10 +37,18 @@
     --scrollbar-color: #d0d7de;
     --scrollbar-color-hover: #bec3ca;
     --mobile-nav-blur-color: rgba(246, 248, 250, 0.8);
-
+    --red-background: #f8d7da;
+    --red-text: #721c24;
+    --yellow-background: #fff3cd;
+    --yellow-text: #856404;
+    --green-background: #d4edda;
+    --green-text: #155724;
+    --blue-background: #cce5ff;
+    --blue-text: #004085;
 
     --danger: rgba(220, 38, 38, 1);
     --danger-hover: rgba(239, 68, 68, 1);
+    --bright-yellow: #ffcc4d;
     --text-white: #fff;
     --text-black: #000;
 
@@ -87,6 +95,14 @@
     --scrollbar-color: #1c1b20;
     --scrollbar-color-hover: #30363d;
     --mobile-nav-blur-color: rgba(19, 20, 21, 0.8); /* To adjust */
+    --red-background: #301a18;
+    --red-text: #f8d7da;
+    --yellow-background: #44341c;
+    --yellow-text: #fff3cd;
+    --green-background: #155724;
+    --green-text: #d4edda;
+    --blue-background: #004085;
+    --blue-text: #cce5ff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -118,6 +134,14 @@
         --scrollbar-color: #1c1b20;
         --scrollbar-color-hover: #30363d;
         --mobile-nav-blur-color: rgba(19, 20, 21, 0.8); /* To adjust */
+        --red-background: #301a18;
+        --red-text: #f8d7da;
+        --yellow-background: #44341c;
+        --yellow-text: #fff3cd;
+        --green-background: #155724;
+        --green-text: #d4edda;
+        --blue-background: #004085;
+        --blue-text: #cce5ff;
     }
 }
 
@@ -198,6 +222,30 @@ p {
 
 .text-small {
     font-size: 0.9em;
+}
+
+.red-background-text {
+    background-color: var(--red-background);
+    color: var(--red-text);
+}
+
+.blue-background-text {
+    background-color: var(--blue-background);
+    color: var(--blue-text);
+}
+
+.green-background-text {
+    background-color: var(--green-background);
+    color: var(--green-text);
+}
+
+.yellow-background-text {
+    background-color: var(--yellow-background);
+    color: var(--yellow-text);
+}
+
+.text-yellow {
+    color: var(--bright-yellow);
 }
 
 .no-focus {
@@ -362,6 +410,13 @@ p {
     padding: var(--container-padding);
     width: 100%;
     box-sizing: border-box;
+}
+
+.info-container {
+    display: flex;
+    gap: var(--container-small-padding);
+    padding: var(--container-small-padding);
+    border-radius: 0.5rem;
 }
 
 .btn-container-start {

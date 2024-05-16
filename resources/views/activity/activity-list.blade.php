@@ -121,10 +121,23 @@
         })
     }
 
-    function rejectPayment(event, rejectBtn, notificationId) {
+    function rejectPayment(event, notificationId) {
         event.stopPropagation();
 
-        // TODO
+        $.ajax({
+            url: "{{ route('payments.reject') }}",
+            method: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'notification_id': notificationId,
+            },
+            success: function(response) {
+                refreshNotificationsView();
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        })
     }
 
     function removeNotificationElement(notificationElement) {

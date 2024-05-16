@@ -284,6 +284,7 @@ class Expense extends Model
         'note',
         'date',
         'is_confirmed',
+        'is_rejected',
         'creator',
         'updator',
     ];

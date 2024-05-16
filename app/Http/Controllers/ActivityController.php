@@ -16,20 +16,6 @@ use Illuminate\Http\Request;
 class ActivityController extends Controller
 {
     const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
-    const NOTIFICATION_TYPES = [
-        'expense' => NotificationType::EXPENSE,
-        'reimbursement' => NotificationType::REIMBURSEMENT,
-        'reminder' => NotificationType::REMINDER,
-        'payment' => NotificationType::PAYMENT,
-        'payment_confirmed' => NotificationType::PAYMENT_CONFIRMED,
-        'balance_settled' => NotificationType::BALANCE_SETTLED,
-        'friend_request' => NotificationType::FRIEND_REQUEST,
-        'friend_request_accepted' => NotificationType::FRIEND_REQUEST_ACCEPTED,
-        'invited_to_group' => NotificationType::INVITED_TO_GROUP,
-        'joined_group' => NotificationType::JOINED_GROUP,
-        'left_group' => NotificationType::LEFT_GROUP,
-        'removed_from_group' => NotificationType::REMOVED_FROM_GROUP,
-    ];
 
     /**
      * Display the user's notifications.
@@ -49,7 +35,6 @@ class ActivityController extends Controller
 
         return view('activity.activity-list', [
             'notifications' => $notifications,
-            'notification_types' => self::NOTIFICATION_TYPES,
         ]);
     }
 
@@ -130,7 +115,6 @@ class ActivityController extends Controller
         $notifications = $this->augmentNotifications($notifications);
 
         return view('activity.partials.notifications', [
-            'notification_types' => self::NOTIFICATION_TYPES,
             'notifications' => $notifications,
         ]);
     }
@@ -151,7 +135,6 @@ class ActivityController extends Controller
         $notifications = $this->augmentNotifications($notifications);
 
         return view('activity.partials.notifications', [
-            'notification_types' => self::NOTIFICATION_TYPES,
             'notifications' => $notifications,
         ]);
     }
