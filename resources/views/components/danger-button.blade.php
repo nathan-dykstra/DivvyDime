@@ -45,5 +45,6 @@
     .danger-btn:focus-visible {
         outline: 3px solid var(--danger-hover);
         outline-offset: 1px;
+        border-radius: var(--border-radius);
     }
 </style>

@@ -288,10 +288,15 @@ class ExpensesController extends Controller
             ", [$current_user->id])
             ->get();
 
+        $expense_images = $expense->images()
+            ->orderBy('created_at', 'ASC')
+            ->get();
+
         return view('expenses.show', [
             'expense' => $expense,
             'participants' => $participants,
             'max_images_allowed' => Expense::MAX_IMAGES_ALLOWED,
+            'expense_images' => $expense_images,
         ]);
     }
 
@@ -603,6 +608,20 @@ class ExpensesController extends Controller
         $expenses = $this->augmentExpenses($expenses);
 
         return view('expenses.partials.expenses', ['expenses' => $expenses]);
+    }
+
+    public function updateNote(Request $request, Expense $expense)
+    {
+        $request->validate([
+            'expense-note' => ['nullable', 'string', 'max:65535'],
+        ]);
+
+        $expense_note_input = $request->input('expense-note');
+
+        $expense->note = $expense_note_input;
+        $expense->save();
+
+        return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-note-updated');
     }
 
     /**

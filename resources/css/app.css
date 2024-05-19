@@ -492,6 +492,7 @@ p {
 .primary-color-btn:focus-visible {
     outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
     outline-offset: 1px;
+    border-radius: var(--border-radius);
 }
 
 @media (min-width: 1024px) {
@@ -1350,6 +1351,13 @@ input[type="search"]::-webkit-search-cancel-button {
     width: 75px;
     height: 75px;
     border-radius: var(--border-radius-lg);
+    position: relative;
+}
+
+.expense-img-preview-container:focus-visible {
+    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline-offset: 1px;
+    border-radius: var(--border-radius);
 }
 
 .expense-img-preview {

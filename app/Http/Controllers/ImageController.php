@@ -18,7 +18,7 @@ class ImageController extends Controller
     const GROUP_IMAGE_PATH = 'images/group/';
 
     /**
-     * 
+     * Uploads a new profile image.
      */
     public function uploadProfileImage(Request $request)
     {
@@ -47,13 +47,12 @@ class ImageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Image uploaded successfully',
             'redirect' => route('profile.edit'),
         ]);
     }
 
     /**
-     * 
+     * Deletes the profile image from the server and database, and replaces with a default image.
      */
     public function deleteProfileImage(Request $request)
     {
@@ -68,7 +67,7 @@ class ImageController extends Controller
     }
 
     /**
-     * 
+     * Uploads new expense images (up to the limit specified in the Expense model)
      */
     public function uploadExpenseImages(Request $request, Expense $expense)
     {
@@ -77,21 +76,12 @@ class ImageController extends Controller
             'file.*' => ['image', 'mimes:jpeg,png,jpg', 'max:5120'],
         ]);
 
-        $current_image_count = $expense->images->count();
+        $current_expense_images_count = $expense->images->count();
+        $images = $request->file('file');
+        $expense_images_count = $current_expense_images_count + 1;
 
-        if ($current_image_count >= Expense::MAX_IMAGES_ALLOWED) {
-            Session::flash('status', 'max-images-reached');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Maximum number of image uploads reached',
-                'redirect' => route('expenses.show', $expense->id),
-            ]);
-        }
-
-        $image_count = $current_image_count + 1;
-        foreach ($request->file('file') as $image) {
-            $filename = time().'-expense-image-' . $image_count . '.' . $image->extension();
+        foreach ($images as $image) {
+            $filename = time().'-expense-image-'.$expense->id.'-'.$expense_images_count.'.'.$image->extension();
 
             // Store the new expense image
             $image->move(public_path(self::EXPENSE_IMAGE_PATH), $filename);
@@ -102,33 +92,57 @@ class ImageController extends Controller
                 'img_file' => $filename,
             ]);
 
-            $image_count++;
+            if ($expense_images_count >= Expense::MAX_IMAGES_ALLOWED && count($images) > 1) {
+                // Update the expense's updated_at timestamp
+                $expense->touch();
+
+                Session::flash('status', 'max-images-reached');
+
+                return response()->json([
+                    'success' => true,
+                    'redirect' => route('expenses.show', $expense->id),
+                ]);
+            }
+
+            $expense_images_count++;
         }
 
-        // Update the expense's updated_at timestamp if images were added
-        if ($image_count > $current_image_count) {
-            $expense->touch();
-        }
+        // Update the expense's updated_at timestamp
+        $expense->touch();
 
         Session::flash('status', 'expense-images-uploaded');
 
         return response()->json([
             'success' => true,
-            'message' => 'Images uploaded successfully',
             'redirect' => route('expenses.show', $expense->id),
         ]);
     }
 
     /**
-     * 
+     * Deletes the expense image from the server and database.
      */
-    public function deleteExpenseImage(Request $request)
+    public function deleteExpenseImage(Request $request, $expense_image_id)
     {
+        if ($expense_image_id) {
+            $expense_image = ExpenseImage::find($expense_image_id);
+            if ($expense_image) {
+                $expense_id = $expense_image->expense_id;
 
+                $expense_image->deleteExpenseImage();
+                $expense_image->delete();
+
+                $expense = Expense::find($expense_id);
+                $expense->touch();
+
+                return Redirect::route('expenses.show', $expense_id)->with('status', 'expense-image-deleted');
+            }
+        }
+
+        return Redirect::back();
     }
 
     /**
-     * 
+     * Uploads a new group image.
      */
     public function uploadGroupImage(Request $request, Group $group)
     {
@@ -155,13 +169,12 @@ class ImageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Image uploaded successfully',
             'redirect' => route('groups.settings', $group),
         ]);
     }
 
     /**
-     * 
+     * Deletes the group image from the server and database, and replaces with a default.
      */
     public function deleteGroupImage(Request $request, Group $group)
     {

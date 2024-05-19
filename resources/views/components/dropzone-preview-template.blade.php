@@ -8,7 +8,7 @@
                 </div>
             </div>
         </div>
-    
+
         <div class="dz-info">
             <p class="text-primary p-no-margin" data-dz-name></p>
             <p class="text-shy" data-dz-size></p>
@@ -19,9 +19,7 @@
         </div>
     </div>
 
-    <div class="dz-remove-btn" data-dz-remove>
-        <i class="fa-solid fa-xmark"></i>
-    </div>
+    <x-no-background-button class="dz-remove-btn" icon="fa-solid fa-xmark" data-dz-remove />
 </div>
 
 <style>
@@ -93,19 +91,8 @@
     }
 
     .dz-remove-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
         height: 32px;
-        width: 32px !important;
-        color: var(--icon-grey);
-        border-radius: var(--border-radius);
-        transition: background-color 0.1s ease;
-    }
-
-    .dz-remove-btn:hover {
-        cursor: pointer;
-        background-color: var(--secondary-grey-hover);
+        width: 32px;
     }
 
     @keyframes expandFadeIn {

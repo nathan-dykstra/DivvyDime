@@ -31,6 +31,19 @@ class ExpenseImage extends Model
         return asset(self::EXPENSE_IMAGE_PATH . $this->img_file);
     }
 
+    /**
+     * Deletes the expense image from the server.
+     */
+    public function deleteExpenseImage()
+    {
+        $image_path = public_path(self::EXPENSE_IMAGE_PATH . $this->img_file);
+
+        // Delete the image
+        if ($this->img_file && file_exists($image_path)) {
+            unlink($image_path);
+        }
+    }
+
     protected $fillable = [
         'expense_id',
         'img_file',

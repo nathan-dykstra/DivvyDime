@@ -54,5 +54,6 @@
     .primary-btn:focus-visible {
         outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
         outline-offset: 1px;
+        border-radius: var(--border-radius);
     }
 </style>

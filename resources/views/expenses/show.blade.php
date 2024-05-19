@@ -35,14 +35,16 @@
     @elseif (session('status') === 'expense-image-deleted')
         <x-session-status>{{ __('Image deleted.') }}</x-session-status>
     @elseif (session('status') === 'max-images-reached')
-        <x-session-status innerClass="text-warning">{{ __('You can only upload up to ') . $max_images_allowed . __(' images!') }}</x-session-status>
+        <x-session-status innerClass="text-warning">{{ __('Images uploaded. You can only add up to ') . $max_images_allowed . __(' images!') }}</x-session-status>
+    @elseif (session('status') === 'expense-note-updated')
+        <x-session-status>{{ __('Note updated.') }}</x-session-status>
     @endif
 
     <h1>{{ __('$') . $expense->amount }}</h1>
     <div class="expense-info-date-group-category">
         <div class="text-shy text-thin-caps expense-info-date">{{ $expense->formatted_date }}</div>
         <a class="metric-group metric-group-hover" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
-        <a class="metric-group">{{ __('Category') }}</a>
+        <!--<a class="metric-group">{{ __('Category') }}</a>--> <!-- TODO: display expense category -->
     </div>
 
     <div class="expense-info-container margin-top-lg">
@@ -122,28 +124,29 @@
                 <h4>{{ __('Note') }}</h4>
 
                 @if ($expense->note)
-                    <!-- TODO: edit button -->
+                    <x-icon-button id="expense-update-note-btn" class="text-small" icon="fa-solid fa-pen-to-square icon" onclick="showExpenseNoteForm()">{{ __('Edit') }}</x-icon-button>
                 @endif
             </div>
             
 
             <div class="margin-top-sm">
                 @if ($expense->note)
-                    <div class="text-small">
+                    <div class="text-small" id="expense-note">
                         <p class="p-no-margin">{!! nl2br(e($expense->note)) !!}</p>
                     </div>
                 @else
-                    <button id="expense-add-note-button" class="expense-empty-note" onclick="showExpenseNoteForm()">
+                    <button id="expense-add-note-btn" class="expense-empty-note" onclick="showExpenseNoteForm()">
                         {{ __('Click to add') }}
                     </button>
                 @endif
 
-                <form id="expense-update-note-form" method="post" action="" class="hidden">
+                <form id="expense-update-note-form" method="post" action="{{ route('expenses.update-note', $expense) }}" class="hidden">
                     @csrf
-                    @method('put')
+                    @method('patch')
 
-                    <x-input-label for="expense-note" class="screen-reader-only" :value="__('Note')" />
-                    <x-text-area class="p-no-margin" id="expense-note" name="expense-note" maxlength="65535" :value="$expense->note ?? ''" />
+                    <x-input-label for="expense-note-textarea" class="screen-reader-only" :value="__('Note')" />
+                    <x-text-area class="p-no-margin" id="expense-note-textarea" name="expense-note" maxlength="65535" :value="$expense->note ?? ''" />
+                    <x-input-error :messages="$errors->get('expense-note')" />
 
                     <div class="btn-container-start">
                         <x-primary-button type="submit">{{ __('Save') }}</x-primary-button>
@@ -152,14 +155,22 @@
                 </form>
             </div>
         </div>
-    
+
         <div class="container">
             <h4>{{ __('Images') }}</h4>
 
             <div class="expense-image-previews-container margin-top-sm">
-                @foreach ($expense->images as $image)
-                    <div class="expense-img-preview-container expense-img-trigger">
+                @foreach ($expense_images as $image)
+                    <div class="expense-img-preview-container expense-img-trigger" tabindex="0">
                         <img class="expense-img-preview" src="{{ $image->expense_image_url }}" alt="{{ __('Expense image') }}">
+                        <button class="expense-remove-img-btn" data-expense-img-id="{{ $image->id }}" onclick="removeExpenseImage(this)">
+                            <i class="fa-solid fa-sm fa-xmark"></i>
+                        </button>
+
+                        <form id="expense-remove-img-form" action="" method="post">
+                            @csrf
+                            @method('delete')
+                        </form>
                     </div>
                 @endforeach
 
@@ -264,8 +275,59 @@
     }
 
     .expense-img-trigger:hover {
-        cursor: pointer;
         transform: scale(1.1);
+    }
+
+    .expense-remove-img-btn {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 20px;
+        width: 20px;
+        color: var(--icon-grey);
+        background-color: var(--background-blur-color);
+        backdrop-filter: var(--background-blur-filter);
+        border: 1px solid var(--border-grey);
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s, background-color 0.3s ease-in-out;
+    }
+
+    @media screen and (max-width: 768px) {
+        .expense-remove-img-btn {
+            opacity: 1;
+        }
+
+        .expense-img-trigger:hover {
+            transform: none;
+        }
+    }
+
+    .expense-remove-img-btn:hover {
+        background-color: var(--background-blur-color-hover);
+    }
+
+    .expense-remove-img-btn:focus-visible {
+        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+        outline-offset: 1px;
+        border-radius: 50%;
+    }
+
+    .expense-remove-img-btn:focus-visible .expense-remove-img-btn {
+        opacity: 1;
+    }
+
+    .expense-img-preview-container:hover .expense-remove-img-btn {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .expense-img-preview-container:focus-visible .expense-remove-img-btn {
+        opacity: 1;
     }
 
     .expense-add-image-btn {
@@ -275,25 +337,51 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        resizeTextarea(document.getElementById('expense-note'));
-    });
-
     function showExpenseNoteForm() {
-        const addNoteBtn = document.getElementById('expense-add-note-button')
+        const addNoteBtn = document.getElementById('expense-add-note-btn')
         if (addNoteBtn) {
             addNoteBtn.classList.add('hidden');
         }
+
+        const updateNoteBtn = document.getElementById('expense-update-note-btn')
+        if (updateNoteBtn) {
+            updateNoteBtn.classList.add('hidden');
+        }
+
+        const expenseNote = document.getElementById('expense-note');
+        if (expenseNote) {
+            expenseNote.classList.add('hidden');
+        }
+
         document.getElementById('expense-update-note-form').classList.remove('hidden');
-        document.getElementById('expense-note').focus();
+        const textArea = document.getElementById('expense-note-textarea');
+        resizeTextarea(textArea);
+        textArea.focus();
     }
 
     function hideExpenseNoteForm() {
         document.getElementById('expense-update-note-form').classList.add('hidden');
 
-        const addNoteBtn = document.getElementById('expense-add-note-button')
+        const expenseNote = document.getElementById('expense-note');
+        if (expenseNote) {
+            expenseNote.classList.remove('hidden');
+        }
+
+        const addNoteBtn = document.getElementById('expense-add-note-btn')
         if (addNoteBtn) {
             addNoteBtn.classList.remove('hidden');
         }
+
+        const updateNoteBtn = document.getElementById('expense-update-note-btn')
+        if (updateNoteBtn) {
+            updateNoteBtn.classList.remove('hidden');
+        }
+    }
+
+    function removeExpenseImage(removeBtn) {
+        imgId = removeBtn.dataset.expenseImgId
+        removeImageForm = document.getElementById('expense-remove-img-form');
+        removeImageForm.action = `/images/delete-expense/${imgId}`;
+        removeImageForm.submit();
     }
 </script>
