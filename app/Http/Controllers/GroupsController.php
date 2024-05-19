@@ -82,7 +82,9 @@ class GroupsController extends Controller
             'user_id' => $current_user->id,
         ]);
 
-        return Redirect::route('groups.show', $group->id)->with('status', 'group-created');
+        $group->createDefaultGroupImage();
+
+        return Redirect::route('groups.settings', $group)->with('status', 'group-created');
     }
 
     /**
@@ -486,6 +488,8 @@ class GroupsController extends Controller
      */
     public function destroy(Request $request, Group $group)
     {
+        $group->deleteGroupImage();
+
         $group->delete();
 
         Session::flash('status', 'group-deleted');

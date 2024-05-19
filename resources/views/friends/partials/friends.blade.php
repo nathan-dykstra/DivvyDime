@@ -4,7 +4,9 @@
             @if (count($friend->group_balances) > 1)
                 <div class="expense-info-breakdown">
                     <div class="expense-info-breakdown-left">
-                        <div class="profile-circle-sm-placeholder"></div> <!-- TODO: profile image -->
+                        <div class="profile-img-sm-container">
+                            <img class="profile-img-sm" src="{{ $friend->profile_image_url }}" alt="{{ __('Profile image for ') . $friend->username }}">
+                        </div>
 
                         <div class="expense-info-breakdown-line-container">
                             <div class="expense-info-breakdown-line"></div>
@@ -31,7 +33,9 @@
                 </div>
             @else
                 <div class="friend-name-container">
-                    <div class="profile-circle-sm-placeholder"></div>
+                    <div class="profile-img-sm-container">
+                        <img class="profile-img-sm" src="{{ $friend->profile_image_url }}" alt="{{ __('Profile image for ') . $friend->username }}">
+                    </div>
                     @include('friends.partials.friend-name')
                 </div>
             @endif

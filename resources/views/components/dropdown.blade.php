@@ -57,7 +57,7 @@
         display: flex;
         flex-direction: column;
         background-color: var(--secondary-grey);
-        border-radius: var(--border-radius);
+        border-radius: var(--border-radius-lg);
         color: var(--text-primary);
         padding: 8px;
         box-shadow: var(--box-shadow);
@@ -69,7 +69,7 @@
         grid-template-columns: 20px auto;
 
         padding: 8px 16px;
-        border-radius: 0.3rem;
+        border-radius: var(--border-radius);
         transition: background-color 0.1s ease, color 0.1s ease;
 
         font-size: 0.8em;

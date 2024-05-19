@@ -93,9 +93,9 @@
     }
 
     .modal {
-        margin: 75px auto 0;
+        margin: 75px auto;
         max-width: 600px;
-        width: fit-content;
+        width: 100%;
         background-color: var(--secondary-grey);
         border-radius: var(--border-radius);
         padding: var(--container-padding);
@@ -106,6 +106,7 @@
 
     @media (max-width: 640px) {
         .modal {
+            width: calc(100% - 40px);
             margin-left: 20px;
             margin-right: 20px;
         }

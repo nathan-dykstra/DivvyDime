@@ -291,6 +291,7 @@ class ExpensesController extends Controller
         return view('expenses.show', [
             'expense' => $expense,
             'participants' => $participants,
+            'max_images_allowed' => Expense::MAX_IMAGES_ALLOWED,
         ]);
     }
 

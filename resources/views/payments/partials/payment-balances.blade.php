@@ -1,8 +1,8 @@
 <ul id="payment-balances-list">
     @if ($total_balance < 0)
         <li>
-            <label class="payment-group-selector-item" for="choose-balance-item-all" data-group-name="{{ __('Settle All Balances') }}" data-balance="{{ $total_balance }}" onclick="setPaymentBalance(this, true)">
-                <div class="payment-user-selector-radio">
+            <label class="item-list-selector" for="choose-balance-item-all" data-group-name="{{ __('Settle All Balances') }}" data-balance="{{ $total_balance }}" onclick="setPaymentBalance(this, true)">
+                <div class="item-list-selector-radio">
                     <input type="radio" id="choose-balance-item-all" class="radio" name="payment-balance" value="-1" {{ $payment?->is_settle_all_balances ? 'checked' : '' }}/>
                     <div class="user-photo-name">
                         <div class="profile-circle-sm-placeholder"></div>
@@ -19,8 +19,8 @@
 
     @foreach ($balances_selection as $balance)
         <li>
-            <label class="payment-group-selector-item" for="choose-balance-item-{{ $balance->id }}" data-group-name="{{ $balance->group_name }}" data-balance="{{ $balance->display_balance }}" onclick="setPaymentBalance(this)">
-                <div class="payment-user-selector-radio">
+            <label class="item-list-selector" for="choose-balance-item-{{ $balance->id }}" data-group-name="{{ $balance->group_name }}" data-balance="{{ $balance->display_balance }}" onclick="setPaymentBalance(this)">
+                <div class="item-list-selector-radio">
                     <input type="radio" id="choose-balance-item-{{ $balance->id }}" class="radio" name="payment-balance" value="{{ $balance->id }}" {{ (!$payment?->is_settle_all_balances && $payment?->groups->first()->id === $balance->group_id) || $group?->id === $balance->group_id ? 'checked' : '' }}/>
                     <div class="user-photo-name">
                         <div class="profile-circle-sm-placeholder"></div>
