@@ -35,7 +35,7 @@
                         <div>
                             <h3>{{ __('Members') }}</h3>
                         </div>
-                        <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'send-group-invite')" icon="fa-solid fa-user-plus icon">{{ __('Add Members') }}</x-primary-button>
+                        <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'send-group-invite')" icon="fa-solid fa-user-plus icon">{{ __('Invite') }}</x-icon-button>
                     </div>
                 </header>
     

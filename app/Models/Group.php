@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Events\GroupDeleting;
+use App\Traits\DefaultImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,6 +13,7 @@ class Group extends Model
     const GROUP_IMAGE_PATH = 'images/group/';
 
     use HasFactory;
+    use DefaultImage;
 
     /**
      * Defines the Group to GroupMember (User) relationship.
@@ -42,43 +44,19 @@ class Group extends Model
     }
 
     /**
-     * Returns the first letter of the group's name.
-     */
-    public function getInitial()
-    {
-        return strtoupper($this->name[0]);
-    }
-
-    /**
      * Creates a default image for the group with its first letter.
      */
     public function createDefaultGroupImage()
     {
         $filename = time().'-group-image-' . $this->id . '.png';
 
-        $image_path = public_path(self::GROUP_IMAGE_PATH . $filename);
+        $asset = $this->createDefaultImage(self::GROUP_IMAGE_PATH, $filename, $this->name);
 
-        $initial = $this->getInitial();
-
-        // Define a background color and text color for the avatar
-        $bg_colour = '#'.substr(md5($this->name), 0, 6); // Unique colour based on group name
-        $text_colour = '#ffffff'; // White text colour
-
-        // Create an image with the initial and colors
-        $image = imagecreate(200, 200);
-        $bg = imagecolorallocate($image, hexdec(substr($bg_colour, 1, 2)), hexdec(substr($bg_colour, 3, 2)), hexdec(substr($bg_colour, 5, 2)));
-        $text = imagecolorallocate($image, hexdec(substr($text_colour, 1, 2)), hexdec(substr($text_colour, 3, 2)), hexdec(substr($text_colour, 5, 2)));
-        imagefill($image, 0, 0, $bg);
-        imagettftext($image, 100, 0, 50, 150, $text, public_path('fonts/ARIAL.TTF'), $initial);
-
-        // Save the image file
-        imagepng($image, $image_path);
-        imagedestroy($image);
-
+        // Save the filename in the database
         $this->img_file = $filename;
         $this->save();
 
-        return asset($image_path);
+        return $asset;
     }
 
     /**

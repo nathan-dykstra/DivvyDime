@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Events\UserDeleting;
+use App\Traits\DefaultImage;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,6 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
+    use DefaultImage;
 
     const DEFAULT_USER = 1;
     const PROFILE_IMAGE_PATH = 'images/profile/';
@@ -93,43 +95,19 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Returns the user's first initial.
-     */
-    public function getInitial()
-    {
-        return strtoupper($this->username[0]);
-    }
-
-    /**
      * Creates a default profile image for the user with their first initial.
      */
     public function createDefaultProfileImage()
     {
         $filename = time().'-profile-image-' . $this->id . '.png';
 
-        $image_path = public_path(self::PROFILE_IMAGE_PATH . $filename);
+        $asset = $this->createDefaultImage(self::PROFILE_IMAGE_PATH, $filename, $this->username);
 
-        $initial = $this->getInitial();
-
-        // Define a background color and text color for the avatar
-        $bg_colour = '#'.substr(md5($this->username), 0, 6); // Unique colour based on username
-        $text_colour = '#ffffff'; // White text colour
-
-        // Create an image with the initial and colors
-        $image = imagecreate(200, 200);
-        $bg = imagecolorallocate($image, hexdec(substr($bg_colour, 1, 2)), hexdec(substr($bg_colour, 3, 2)), hexdec(substr($bg_colour, 5, 2)));
-        $text = imagecolorallocate($image, hexdec(substr($text_colour, 1, 2)), hexdec(substr($text_colour, 3, 2)), hexdec(substr($text_colour, 5, 2)));
-        imagefill($image, 0, 0, $bg);
-        imagettftext($image, 100, 0, 50, 150, $text, public_path('fonts/ARIAL.TTF'), $initial);
-
-        // Save the image file
-        imagepng($image, $image_path);
-        imagedestroy($image);
-
+        // Save the filename in the database
         $this->profile_img_file = $filename;
         $this->save();
 
-        return asset($image_path);
+        return $asset;
     }
 
     /**

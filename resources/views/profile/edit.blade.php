@@ -28,11 +28,13 @@
             </div>
         </div>
         
-        <div class="container">
-            <div class="restrict-max-width">
-                @include('profile.partials.group-settings')
+        @if (count($groups))
+            <div class="container">
+                <div class="restrict-max-width">
+                    @include('profile.partials.group-settings')
+                </div>
             </div>
-        </div>
+        @endif
 
         <div class="container">
             <div class="restrict-max-width">
