@@ -5,18 +5,20 @@ namespace App\Traits;
 trait DefaultImage
 {
     /**
-     * 
+     * Generates a default image 
      */
-    public function createDefaultImage($ilepath, $filename, $image_text, $font_size = 100)
+    public function createDefaultImage($ilepath, $filename, $image_text, $font_size = 100, $image_width = 200, $image_height = 200)
     {
         $image_path = public_path($ilepath . $filename);
         $initial = strtoupper($image_text[0]);
 
         // Background colours for the gradient
-        $bg_colour_start = '#'.substr(md5($image_text . 'start'), 0, 6); // Unique color based on username
-        $bg_colour_end = '#'.substr(md5($image_text . 'end'), 0, 6); // Another unique color based on username
+        $bg_colour_start = '#'.substr(md5($image_text . 'start'), 0, 6); // Unique colours based on username
+        $bg_colour_end = '#'.substr(md5($image_text . 'end'), 0, 6);
+        $bg_colour_start = $this->adjustColorIfTooLight($bg_colour_start); // Adjust colours if luminance is too high
+        $bg_colour_end = $this->adjustColorIfTooLight($bg_colour_end);
 
-        $image = imagecreatetruecolor(200, 200);
+        $image = imagecreatetruecolor($image_width, $image_height);
 
         // Create the gradient background
         $this->createDiagonalGradient($image, $bg_colour_start, $bg_colour_end);
@@ -32,8 +34,8 @@ trait DefaultImage
         $text_height = $bbox[1] - $bbox[7];
 
         // Calculate x and y coordinates to center the text
-        $x = (200 - $text_width) / 2;
-        $y = (200 + $text_height) / 2;
+        $x = ($image_width - $text_width) / 2;
+        $y = ($image_height + $text_height) / 2;
 
         // Add the text to the image
         imagettftext($image, $font_size, 0, $x, $y, $text, $font_path, $initial);
@@ -46,7 +48,8 @@ trait DefaultImage
     }
 
     /**
-     * 
+     * Creates a diagonal gradient from $start_colour (top left) to $end_colour
+     * (bottom right) on $image
      */
     protected function createDiagonalGradient($image, $start_colour, $end_colour)
     {
@@ -71,5 +74,32 @@ trait DefaultImage
                 imagesetpixel($image, $x, $y, $color);
             }
         }
+    }
+
+    /**
+     * Adjusts $colour if its luminance is greater than $threshold
+     */
+    protected function adjustColorIfTooLight($colour, $threshold = 0.8)
+    {
+        list($r, $g, $b) = sscanf($colour, "#%02x%02x%02x");
+        $luminance = $this->calculateLuminance($r, $g, $b);
+
+        while ($luminance > $threshold) {
+            $r = (int)($r * 0.7);
+            $g = (int)($g * 0.7);
+            $b = (int)($b * 0.7);
+            $luminance = $this->calculateLuminance($r, $g, $b);
+            $colour = sprintf("#%02x%02x%02x", $r, $g, $b);
+        }
+
+        return $colour;
+    }
+
+    /**
+     * Calculates the luminance of an RGB colour using the standard formula
+     */
+    protected function calculateLuminance($r, $g, $b)
+    {
+        return (0.2126 * $r + 0.7152 * $g + 0.0722 * $b) / 255;
     }
 }
