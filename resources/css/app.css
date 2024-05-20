@@ -1421,7 +1421,23 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .update-image:hover {
-    transform: scale(1.1, 1.1);
+    transform: scale(1.1);
+}
+
+.update-profile-image:focus-visible {
+    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline-offset: 1px;
+    border-radius: 50%;
+}
+
+.update-image:focus-visible .profile-img-update-btn  {
+    animation: fadeSlideLeft 0.3s forwards;
+    pointer-events: auto;
+}
+
+.update-image:focus-visible .profile-img-delete-btn {
+    animation: fadeSlideRight 0.3s forwards;
+    pointer-events: auto;
 }
 
 .profile-img-update-btn, .profile-img-delete-btn {
@@ -1430,23 +1446,24 @@ input[type="search"]::-webkit-search-cancel-button {
     font-size: 0.8em;
     height: 2em;
     width: 80px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--text-primary);
-    border: 1px solid var(--border-grey);
+    color: var(--text-primary) !important;
     border-radius: 1em;
-    background-color: var(--background-blur-color);
-    backdrop-filter: var(--background-blur-filter);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s, background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
-.profile-img-update-btn:focus-visible, .profile-img-delete-btn:focus-visible {
-    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
-    outline-offset: 1px;
-    box-shadow: none;
+.profile-img-update-btn:focus-visible {
+    border-radius: 1em;
+    opacity: 1;
+    transform: translateX(-2em);
+    pointer-events: auto;
+}
+
+.profile-img-delete-btn:focus-visible {
+    border-radius: 1em;
+    opacity: 1;
+    transform: translateX(2em);
+    pointer-events: auto;
 }
 
 .profile-img-update-btn {
@@ -1456,12 +1473,6 @@ input[type="search"]::-webkit-search-cancel-button {
 .profile-img-delete-btn {
     right: 0;
 }
-
-.profile-img-update-btn:hover, .profile-img-delete-btn:hover {
-    background-color: var(--background-blur-color-hover);
-    cursor: pointer;
-}
-
 
 @keyframes fadeSlideRight {
     0% {
@@ -1824,7 +1835,6 @@ input[type="search"]::-webkit-search-cancel-button {
     border-radius: 50%;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.3s, background-color 0.3s ease-in-out;
 }
 
 @media screen and (max-width: 768px) {
@@ -1839,6 +1849,7 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .expense-remove-img-btn:focus-visible {
     opacity: 1;
+    border-radius: 50%;
 }
 
 .expense-img-preview-container:hover .expense-remove-img-btn {
@@ -2599,6 +2610,12 @@ input[type="search"]::-webkit-search-cancel-button {
 
 /* Group Settings */
 
+
+.update-group-image:focus-visible {
+    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline-offset: 1px;
+    border-radius: var(--border-radius-lg);
+}
 
 .group-settings-member {
     display: flex;

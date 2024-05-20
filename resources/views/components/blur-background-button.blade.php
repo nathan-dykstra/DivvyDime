@@ -25,16 +25,16 @@
         background-color: var(--background-blur-color);
         backdrop-filter: var(--background-blur-filter);
         border: 1px solid var(--border-grey);
-        transition: opacity 0.3s, background-color 0.3s ease-in-out;
+        transition: opacity 0.3s, background-color 0.3s ease-in-out, color 0.3s ease-in-out;
     }
 
     .blur-background-btn:hover {
         background-color: var(--background-blur-color-hover);
+        cursor: pointer;
     }
 
     .blur-background-btn:focus-visible {
         outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
         outline-offset: 1px;
-        border-radius: 50%;
     }
 </style>

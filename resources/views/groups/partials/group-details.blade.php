@@ -11,12 +11,12 @@
 
             @if ($group)
                 <div class="profile-img-container">
-                    <div class="update-image">
+                    <div class="update-image update-group-image" tabindex="0">
                         <div class="group-img-lg-container">
                             <img class="group-img-lg" id="profile-img" src="{{ $group->group_image_url}}" alt="{{ __('Group image for ') . $group->name }}">
                         </div>
-                        <button class="profile-img-update-btn" x-data="" x-on:click.prevent="$dispatch('open-modal', 'upload-group-image')"><i class="fa-solid fa-pen-to-square icon"></i>{{ __('Update') }}</button>
-                        <button class="profile-img-delete-btn warning-hover" onclick="submitDeleteGroupImageForm()"><i class="fa-solid fa-trash-can icon"></i>{{ __('Delete') }}</button>
+                        <x-blur-background-button class="profile-img-update-btn" icon="fa-solid fa-pen-to-square icon" x-data="" x-on:click.prevent="$dispatch('open-modal', 'upload-group-image')">{{ __('Update') }}</x-blur-background-button>
+                        <x-blur-background-button class="profile-img-delete-btn warning-hover" icon="fa-solid fa-trash-can icon" onclick="submitDeleteGroupImageForm()">{{ __('Delete') }}</x-blur-background-button>
                     </div>
 
                     <div class="mobile-profile-img-btns-container">
