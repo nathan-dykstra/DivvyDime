@@ -25,7 +25,7 @@
         background-color: var(--background-blur-color);
         backdrop-filter: var(--background-blur-filter);
         border: 1px solid var(--border-grey);
-        transition: background-color 0.3s ease-in-out;
+        transition: opacity 0.3s, background-color 0.3s ease-in-out;
     }
 
     .blur-background-btn:hover {

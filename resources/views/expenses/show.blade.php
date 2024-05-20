@@ -128,7 +128,6 @@
                 @endif
             </div>
             
-
             <div class="margin-top-sm">
                 @if ($expense->note)
                     <div class="text-small" id="expense-note">
@@ -203,17 +202,19 @@
 
     <!-- Modals -->
 
-    <x-modal name="view-image-gallery" :show="false" focusable>
-        <div class="view-image-container">
+    <x-image-modal idPrefix="expense">
+        <x-slot name="main_image">
             <div class="modal-img-lg-container">
-                <div class="expense-img-lg-container">
+                <div id="expense-img-lg-container" class="expense-img-lg-container">
                     <img id="expense-image-lg" class="expense-img-lg" src="" alt="Expense image (large view)">
-    
-                    <x-blur-background-button id="image-modal-left" class="image-modal-left" icon="fa-solid fa-chevron-left" onclick="prevImage()" />
-                    <x-blur-background-button id="image-modal-right" class="image-modal-right" icon="fa-solid fa-chevron-right" onclick="nextImage()" />
+
+                    <x-blur-background-button id="expense-image-modal-left" class="image-modal-left" icon="fa-solid fa-chevron-left" onclick="prevImage()" />
+                    <x-blur-background-button id="expense-image-modal-right" class="image-modal-right" icon="fa-solid fa-chevron-right" onclick="nextImage()" />
                 </div>
             </div>
-            
+        </x-slot>
+
+        <x-slot name="gallery_images">
             <div class="expense-img-gallery">
                 @foreach ($expense_images as $index => $image)
                     <div class="expense-img-preview-container expense-img-trigger">
@@ -221,8 +222,8 @@
                     </div>
                 @endforeach
             </div>
-        </div>
-    </x-modal>
+        </x-slot>
+    </x-image-modal>
 
     <x-modal name="upload-expense-images" :show="false" focusable>
         <div class="space-bottom-sm">
@@ -244,183 +245,6 @@
 
     @include('expenses.partials.expense-delete-modal')
 </x-app-layout>
-
-
-<style>
-    .expense-note-media-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 32px;
-        width: 100%;
-    }
-
-    @media screen and (max-width: 768px) {
-        .expense-note-media-container {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .expense-empty-note, .expense-add-image-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 75px;
-        color: var(--text-shy);
-        border: 2px solid var(--border-grey);
-        border-radius: var(--border-radius);
-        transition: background-color 0.3s ease-in-out, border 0.3s ease-in-out, color 0.3s ease-in-out;
-    }
-
-    .expense-empty-note:hover, .expense-add-image-btn:hover {
-        background-color: var(--blue-background);
-        color: var(--blue-text);
-        border: 2px solid var(--blue-text);
-    }
-
-    .expense-empty-note:focus-visible, .expense-add-image-btn:focus-visible {
-        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
-        outline-offset: 1px;
-    }
-
-    .expense-image-previews-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .expense-img-trigger {
-        transition: transform 0.3s ease;
-    }
-
-    .expense-img-trigger:hover {
-        transform: scale(1.1);
-    }
-
-    .expense-remove-img-btn {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        height: 20px;
-        width: 20px;
-        color: var(--icon-grey);
-        border-radius: 50%;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.3s, background-color 0.3s ease-in-out;
-    }
-
-    @media screen and (max-width: 768px) {
-        .expense-remove-img-btn {
-            opacity: 1;
-        }
-
-        .expense-img-trigger:hover {
-            transform: none;
-        }
-    }
-
-    .expense-remove-img-btn:focus-visible {
-        opacity: 1;
-    }
-
-    .expense-img-preview-container:hover .expense-remove-img-btn {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .expense-img-preview-container:focus-visible .expense-remove-img-btn {
-        opacity: 1;
-    }
-
-    .expense-add-image-btn {
-        font-size: 2em;
-        width: 75px;
-    }
-
-    .view-image-container {
-        display: grid;
-        grid-template-columns: 400px auto;
-        gap: 32px;
-    }
-
-    .expense-img-gallery {
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    @media screen and (max-width: 768px) {
-        .view-image-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 32px;
-        }
-        
-        .expense-img-gallery {
-            flex-direction: row;
-            align-items: flex-start;
-            flex-wrap: wrap;
-        }
-
-        .modal-img-lg-container {
-            display: flex;
-            justify-content: center;
-        }
-
-        .image-modal-left {
-            left: -15px !important;
-        }
-
-        .image-modal-right {
-            right: -15px !important;
-        }
-    }
-
-    .modal-img-lg-container {
-        position: relative;
-    }
-
-    .modal-img-lg-container:hover .image-modal-left {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .modal-img-lg-container:hover .image-modal-right {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .image-modal-left, .image-modal-right {
-        position: absolute;
-        top: calc(50% - 15px);
-        height: 30px;
-        width: 30px;
-        opacity: 0;
-        border-radius: 50%;
-        pointer-events: none;
-        transition: opacity 0.3s, background-color 0.3s ease-in-out;
-    }
-
-    .image-modal-left {
-        left: 16px;
-    }
-
-    .image-modal-right {
-        right: 16px
-    }
-
-    .image-modal-left:focus-visible, .image-modal-right:focus-visible {
-        opacity: 1;
-    }
-
-    @media screen and (max-width: 768px) {
-        .image-modal-left, .image-modal-right {
-            opacity: 1;
-        }
-    }
-</style>
 
 <script>
     function showExpenseNoteForm() {
@@ -481,49 +305,4 @@
             }
         });
     });
-
-    let imageList = [];
-    let currentIndex = 0;
-
-    document.addEventListener('DOMContentLoaded', () => {
-        // Initialize the image list from the gallery
-        const previews = document.querySelectorAll('.modal-img-preview');
-        previews.forEach(img => imageList.push(img.src));
-    });
-
-    function setModalImage(imagePreview, index) {
-        currentIndex = index;
-        document.getElementById('expense-image-lg').src = imagePreview.src;
-        updateMainImageArrows();
-    }
-
-    function prevImage() {
-        if (currentIndex > 0) {
-            currentIndex--;
-            document.getElementById('expense-image-lg').src = imageList[currentIndex];
-            updateMainImageArrows();
-        }
-    }
-
-    function nextImage() {
-        if (currentIndex < imageList.length - 1) {
-            currentIndex++;
-            document.getElementById('expense-image-lg').src = imageList[currentIndex];
-            updateMainImageArrows();
-        }
-    }
-
-    function updateMainImageArrows() {
-        if (currentIndex === 0) {
-            document.getElementById('image-modal-left').classList.add('hidden');
-        } else {
-            document.getElementById('image-modal-left').classList.remove('hidden');
-        }
-
-        if (currentIndex === imageList.length - 1) {
-            document.getElementById('image-modal-right').classList.add('hidden');
-        } else {
-            document.getElementById('image-modal-right').classList.remove('hidden');
-        }
-    }
 </script>

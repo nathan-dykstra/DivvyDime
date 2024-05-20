@@ -51,10 +51,6 @@
         transition: transform 0.3s ease;
     }
 
-    .dz-thumbnail-container:hover {
-        transform: scale(1.1, 1.1);
-    }
-
     .dz-thumbnail {
         width: 100%;
         height: 100%;

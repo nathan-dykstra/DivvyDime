@@ -13,3 +13,4 @@ Route::delete('/payments/{payment}/destroy', [PaymentsController::class, 'destro
 Route::post('/payments/get-balances-with-user', [PaymentsController::class, 'getBalancesWithUser'])->name('payments.get-balances-with-user');
 Route::post('/payments/reject', [PaymentsController::class, 'rejectPayment'])->name('payments.reject');
 Route::post('/payments/confirm', [PaymentsController::class, 'confirmPayment'])->name('payments.confirm');
+Route::patch('/payments/{payment}/update-note', [PaymentsController::class, 'updateNote'])->name('payments.update-note');

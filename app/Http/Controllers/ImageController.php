@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\ExpenseImage;
+use App\Models\ExpenseType;
 use App\Models\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -76,6 +77,8 @@ class ImageController extends Controller
             'file.*' => ['image', 'mimes:jpeg,png,jpg', 'max:5120'],
         ]);
 
+        $expense_is_payment = $expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+
         $current_expense_images_count = $expense->images->count();
         $images = $request->file('file');
         $expense_images_count = $current_expense_images_count + 1;
@@ -94,13 +97,14 @@ class ImageController extends Controller
 
             if ($expense_images_count >= Expense::MAX_IMAGES_ALLOWED && count($images) > Expense::MAX_IMAGES_ALLOWED - $current_expense_images_count) {
                 // Update the expense's updated_at timestamp
-                $expense->touch();
+                $expense->updator = $request->user()->id;
+                $expense->save();
 
                 Session::flash('status', 'max-images-reached');
 
                 return response()->json([
                     'success' => true,
-                    'redirect' => route('expenses.show', $expense->id),
+                    'redirect' => $expense_is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id),
                 ]);
             }
 
@@ -108,13 +112,14 @@ class ImageController extends Controller
         }
 
         // Update the expense's updated_at timestamp
-        $expense->touch();
+        $expense->updator = $request->user()->id;
+        $expense->save();
 
         Session::flash('status', 'expense-images-uploaded');
 
         return response()->json([
             'success' => true,
-            'redirect' => route('expenses.show', $expense->id),
+            'redirect' => $expense_is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id),
         ]);
     }
 
@@ -132,9 +137,15 @@ class ImageController extends Controller
                 $expense_image->delete();
 
                 $expense = Expense::find($expense_id);
-                $expense->touch();
+                $expense->updator = $request->user()->id;
+                $expense->save();
 
-                return Redirect::route('expenses.show', $expense_id)->with('status', 'expense-image-deleted');
+                $expense_is_payment = $expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+                if ($expense_is_payment) {
+                    return Redirect::route('payments.show', $expense_id)->with('status', 'expense-image-deleted');
+                } else {
+                    return Redirect::route('expenses.show', $expense_id)->with('status', 'expense-image-deleted');
+                }
             }
         }
 

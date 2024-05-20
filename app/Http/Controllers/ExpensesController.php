@@ -610,6 +610,9 @@ class ExpensesController extends Controller
         return view('expenses.partials.expenses', ['expenses' => $expenses]);
     }
 
+    /**
+     * Updates the expenses.note field.
+     */
     public function updateNote(Request $request, Expense $expense)
     {
         $request->validate([
@@ -619,6 +622,7 @@ class ExpensesController extends Controller
         $expense_note_input = $request->input('expense-note');
 
         $expense->note = $expense_note_input;
+        $expense->updator = $request->user()->id;
         $expense->save();
 
         return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-note-updated');

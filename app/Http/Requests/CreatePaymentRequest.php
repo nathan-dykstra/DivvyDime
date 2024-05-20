@@ -33,8 +33,6 @@ class CreatePaymentRequest extends FormRequest
      */
     public function withValidator($validator)
     {
-        Log::info("here");
-        // Add custom validation rule
         $validator->addExtension('valid_balance_id', function ($attribute, $value, $parameters, $validator) {
             return $value == -1 || Balance::where('id', $value)->exists();
         });
