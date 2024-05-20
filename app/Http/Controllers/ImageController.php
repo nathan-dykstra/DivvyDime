@@ -92,7 +92,7 @@ class ImageController extends Controller
                 'img_file' => $filename,
             ]);
 
-            if ($expense_images_count >= Expense::MAX_IMAGES_ALLOWED && count($images) > 1) {
+            if ($expense_images_count >= Expense::MAX_IMAGES_ALLOWED && count($images) > Expense::MAX_IMAGES_ALLOWED - $current_expense_images_count) {
                 // Update the expense's updated_at timestamp
                 $expense->touch();
 

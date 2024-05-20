@@ -160,12 +160,10 @@
             <h4>{{ __('Images') }}</h4>
 
             <div class="expense-image-previews-container margin-top-sm">
-                @foreach ($expense_images as $image)
-                    <div class="expense-img-preview-container expense-img-trigger" tabindex="0">
-                        <img class="expense-img-preview" src="{{ $image->expense_image_url }}" alt="{{ __('Expense image') }}">
-                        <button class="expense-remove-img-btn" data-expense-img-id="{{ $image->id }}" onclick="removeExpenseImage(this)">
-                            <i class="fa-solid fa-sm fa-xmark"></i>
-                        </button>
+                @foreach ($expense_images as $index => $image)
+                    <div class="expense-img-preview-container expense-img-trigger">
+                        <img class="expense-img-preview" src="{{ $image->expense_image_url }}" alt="{{ __('Expense image') }}" x-data="" x-on:click.prevent="$dispatch('open-modal', 'view-image-gallery')" onclick="setModalImage(this, {{ $index }})" tabindex="0">
+                        <x-blur-background-button class="expense-remove-img-btn" icon="fa-solid fa-sm fa-xmark" data-expense-img-id="{{ $image->id }}" onclick="removeExpenseImage(event, this)" />
 
                         <form id="expense-remove-img-form" action="" method="post">
                             @csrf
@@ -204,6 +202,27 @@
     </div>
 
     <!-- Modals -->
+
+    <x-modal name="view-image-gallery" :show="false" focusable>
+        <div class="view-image-container">
+            <div class="modal-img-lg-container">
+                <div class="expense-img-lg-container">
+                    <img id="expense-image-lg" class="expense-img-lg" src="" alt="Expense image (large view)">
+    
+                    <x-blur-background-button id="image-modal-left" class="image-modal-left" icon="fa-solid fa-chevron-left" onclick="prevImage()" />
+                    <x-blur-background-button id="image-modal-right" class="image-modal-right" icon="fa-solid fa-chevron-right" onclick="nextImage()" />
+                </div>
+            </div>
+            
+            <div class="expense-img-gallery">
+                @foreach ($expense_images as $index => $image)
+                    <div class="expense-img-preview-container expense-img-trigger">
+                        <img class="expense-img-preview modal-img-preview" src="{{ $image->expense_image_url }}" alt="{{ __('Expense image') }}" onclick="setModalImage(this, {{ $index }})" tabindex="0">
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </x-modal>
 
     <x-modal name="upload-expense-images" :show="false" focusable>
         <div class="space-bottom-sm">
@@ -282,15 +301,9 @@
         position: absolute;
         top: -5px;
         right: -5px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         height: 20px;
         width: 20px;
         color: var(--icon-grey);
-        background-color: var(--background-blur-color);
-        backdrop-filter: var(--background-blur-filter);
-        border: 1px solid var(--border-grey);
         border-radius: 50%;
         pointer-events: none;
         opacity: 0;
@@ -307,17 +320,7 @@
         }
     }
 
-    .expense-remove-img-btn:hover {
-        background-color: var(--background-blur-color-hover);
-    }
-
     .expense-remove-img-btn:focus-visible {
-        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
-        outline-offset: 1px;
-        border-radius: 50%;
-    }
-
-    .expense-remove-img-btn:focus-visible .expense-remove-img-btn {
         opacity: 1;
     }
 
@@ -333,6 +336,89 @@
     .expense-add-image-btn {
         font-size: 2em;
         width: 75px;
+    }
+
+    .view-image-container {
+        display: grid;
+        grid-template-columns: 400px auto;
+        gap: 32px;
+    }
+
+    .expense-img-gallery {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    @media screen and (max-width: 768px) {
+        .view-image-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
+        
+        .expense-img-gallery {
+            flex-direction: row;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .modal-img-lg-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-modal-left {
+            left: -15px !important;
+        }
+
+        .image-modal-right {
+            right: -15px !important;
+        }
+    }
+
+    .modal-img-lg-container {
+        position: relative;
+    }
+
+    .modal-img-lg-container:hover .image-modal-left {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .modal-img-lg-container:hover .image-modal-right {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .image-modal-left, .image-modal-right {
+        position: absolute;
+        top: calc(50% - 15px);
+        height: 30px;
+        width: 30px;
+        opacity: 0;
+        border-radius: 50%;
+        pointer-events: none;
+        transition: opacity 0.3s, background-color 0.3s ease-in-out;
+    }
+
+    .image-modal-left {
+        left: 16px;
+    }
+
+    .image-modal-right {
+        right: 16px
+    }
+
+    .image-modal-left:focus-visible, .image-modal-right:focus-visible {
+        opacity: 1;
+    }
+
+    @media screen and (max-width: 768px) {
+        .image-modal-left, .image-modal-right {
+            opacity: 1;
+        }
     }
 </style>
 
@@ -378,10 +464,66 @@
         }
     }
 
-    function removeExpenseImage(removeBtn) {
+    function removeExpenseImage(event, removeBtn) {
+        event.preventDefault();
         imgId = removeBtn.dataset.expenseImgId
         removeImageForm = document.getElementById('expense-remove-img-form');
         removeImageForm.action = `/images/delete-expense/${imgId}`;
         removeImageForm.submit();
+    }
+
+    const expenseImages = document.querySelectorAll('.expense-img-preview');
+
+    expenseImages.forEach(image => {
+        image.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                image.click();
+            }
+        });
+    });
+
+    let imageList = [];
+    let currentIndex = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize the image list from the gallery
+        const previews = document.querySelectorAll('.modal-img-preview');
+        previews.forEach(img => imageList.push(img.src));
+    });
+
+    function setModalImage(imagePreview, index) {
+        currentIndex = index;
+        document.getElementById('expense-image-lg').src = imagePreview.src;
+        updateMainImageArrows();
+    }
+
+    function prevImage() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            document.getElementById('expense-image-lg').src = imageList[currentIndex];
+            updateMainImageArrows();
+        }
+    }
+
+    function nextImage() {
+        if (currentIndex < imageList.length - 1) {
+            currentIndex++;
+            document.getElementById('expense-image-lg').src = imageList[currentIndex];
+            updateMainImageArrows();
+        }
+    }
+
+    function updateMainImageArrows() {
+        if (currentIndex === 0) {
+            document.getElementById('image-modal-left').classList.add('hidden');
+        } else {
+            document.getElementById('image-modal-left').classList.remove('hidden');
+        }
+
+        if (currentIndex === imageList.length - 1) {
+            document.getElementById('image-modal-right').classList.add('hidden');
+        } else {
+            document.getElementById('image-modal-right').classList.remove('hidden');
+        }
     }
 </script>
