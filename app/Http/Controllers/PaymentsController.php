@@ -162,9 +162,14 @@ class PaymentsController extends Controller
     /**
      * Displays the payment page.
      */
-    public function show($payment_id): View
+    public function show($payment_id)
     {
-        $payment = Expense::where('id', $payment_id)->first();
+        $payment = Expense::find($payment_id);
+
+        // Handle user trying to view an expense as a payment
+        if (!($payment->expense_type_id === ExpenseType::PAYMENT || $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES)) {
+            return Redirect::route('expenses.show', $payment_id);
+        }
 
         // Get formatted dates and times
         $payment->formatted_created_date = Carbon::parse($payment->created_at)->diffForHumans();
@@ -201,8 +206,13 @@ class PaymentsController extends Controller
     /**
      * Displays the update payment form.
      */
-    public function edit(Expense $payment): View
+    public function edit(Expense $payment)
     {
+        // Handle user trying to edit an expense as a payment
+        if (!($payment->expense_type_id === ExpenseType::PAYMENT || $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES)) {
+            return Redirect::route('expenses.edit', $payment);
+        }
+
         $current_user = auth()->user();
 
         $today = Carbon::now()->isoFormat('YYYY-MM-DD');

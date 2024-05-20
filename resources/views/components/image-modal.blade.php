@@ -91,8 +91,7 @@
             }, 300); // Duration of zoom animation
 
             // Show left/right arrow buttons
-            modalImageLeft.classList.remove('hidden');
-            modalImageRight.classList.remove('hidden');
+            updateMainImageArrows();
         }
     });
 

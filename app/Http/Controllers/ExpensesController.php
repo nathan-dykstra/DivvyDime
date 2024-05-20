@@ -254,10 +254,15 @@ class ExpensesController extends Controller
     /**
      * Displays the expense page.
      */
-    public function show($expense_id): View
+    public function show($expense_id)
     {
         $current_user = auth()->user();
-        $expense = Expense::where('id', $expense_id)->first();
+        $expense = Expense::find($expense_id);
+
+        // Handle user trying to view a payment as an expense
+        if ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) {
+            return Redirect::route('payments.show', $expense_id);
+        }
 
         // Get formatted dates and times
         $expense->formatted_created_date = Carbon::parse($expense->created_at)->diffForHumans();
@@ -303,8 +308,13 @@ class ExpensesController extends Controller
     /**
      * Displays the update expense form.
      */
-    public function edit(Expense $expense): View
+    public function edit(Expense $expense)
     {
+        // Handle user trying to edit a payment as an expense
+        if ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) {
+            return Redirect::route('payments.edit', $expense);
+        }
+
         $current_user = auth()->user();
 
         $groups = $current_user->groups()
