@@ -81,6 +81,8 @@ window.loadTheme = function() {
 
 Dropzone.autoDiscover = false;
 
+// Profile image dropzone
+
 const profileDropzoneElement = document.querySelector("#profile-img-form");
 
 if (profileDropzoneElement) {
@@ -173,7 +175,25 @@ if (profileDropzoneElement) {
             profileImgDropzone.removeAllFiles();
         }, 300);
     }
+
+    // Clear dropzone when upload modal is closed
+
+    const profileImgModalContainer = document.getElementById('upload-profile-image');
+    const profileImgModalBackground = profileImgModalContainer.querySelector('.modal-transparent-bg');
+
+    profileImgModalContainer.addEventListener('click', (e) => {
+        if (e.target === profileImgModalBackground) {
+            clearProfileUploader();
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            clearProfileUploader();
+        }
+    });
 }
+
+// Expenses dropzone
 
 const expenseDropzoneElement = document.querySelector("#expense-img-form");
 
@@ -266,14 +286,32 @@ if (expenseDropzoneElement) {
     }
 
     /**
-     * Clear profile dropzone when modal is closed
+     * Clear expense dropzone when modal is closed
      */
     window.clearExpenseUploader = function() {
         setTimeout(() => {
             expenseImgDropzone.removeAllFiles();
         }, 300);
     }
+
+    // Clear dropzone when upload modal is closed
+
+    const expenseImgModalContainer = document.getElementById('upload-expense-images');
+    const expenseImgModalBackground = expenseImgModalContainer.querySelector('.modal-transparent-bg');
+
+    expenseImgModalContainer.addEventListener('click', (e) => {
+        if (e.target === expenseImgModalBackground) {
+            clearExpenseUploader();
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            clearExpenseUploader();
+        }
+    });
 }
+
+// Group dropzone
 
 const groupDropzoneElement = document.querySelector("#group-img-form");
 
@@ -360,13 +398,29 @@ if (groupDropzoneElement) {
     }
 
     /**
-     * Clear profile dropzone when modal is closed
+     * Clear group dropzone when modal is closed
      */
     window.clearGroupUploader = function() {
         setTimeout(() => {
             groupImgDropzone.removeAllFiles();
         }, 300);
     }
+
+    // Clear dropzone when upload modal is closed
+
+    const groupImgModalContainer = document.getElementById('upload-group-image');
+    const groupImgModalBackground = groupImgModalContainer.querySelector('.modal-transparent-bg');
+
+    groupImgModalContainer.addEventListener('click', (e) => {
+        if (e.target === groupImgModalBackground) {
+            clearGroupUploader();
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            clearGroupUploader();
+        }
+    });
 }
 
 /**

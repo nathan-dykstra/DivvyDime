@@ -1,4 +1,4 @@
-@props(['name', 'show' => false])
+@props(['name', 'show' => false, 'id' => null])
 
 <div
     x-data="{
@@ -32,6 +32,9 @@
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
     x-show="show"
     class="modal-container"
+    @if ($id)
+        id="{{ $id }}"
+    @endif
     style="display: {{ $show ? 'block' : 'none' }};"
 >
     <div

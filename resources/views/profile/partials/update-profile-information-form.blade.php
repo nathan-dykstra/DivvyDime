@@ -64,7 +64,7 @@
         </div>
     </form>
 
-    <x-modal name="upload-profile-image" :show="false" focusable>
+    <x-modal name="upload-profile-image" id="upload-profile-image" :show="false" focusable>
         <div class="space-bottom-sm">
             <div>
                 <h3>{{ __('Upload an image') }}</h3>

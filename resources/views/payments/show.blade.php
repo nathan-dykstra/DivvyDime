@@ -266,7 +266,7 @@
         </x-slot>
     </x-image-modal>
 
-    <x-modal name="upload-payment-images" :show="false" focusable>
+    <x-modal name="upload-payment-images" id="upload-expense-images" :show="false" focusable>
         <div class="space-bottom-sm">
             <div>
                 <h3>{{ __('Upload images') }}</h3>

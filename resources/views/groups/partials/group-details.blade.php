@@ -30,7 +30,7 @@
                     @method('delete')
                 </form>
 
-                <x-modal name="upload-group-image" :show="false" focusable>
+                <x-modal name="upload-group-image" id="upload-group-image" :show="false" focusable>
                     <div class="space-bottom-sm">
                         <div>
                             <h3>{{ __('Upload an image') }}</h3>

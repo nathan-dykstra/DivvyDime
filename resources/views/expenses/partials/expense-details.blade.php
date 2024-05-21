@@ -150,11 +150,10 @@
                         <h4 class="margin-bottom-sm">{{ __('How do you want to divvy this up?') }}</h4>
 
                         <div class="expense-split-tabs-wrapper">
-                            <button type="button" class="expense-split-tabs-scroll-btn expense-split-tabs-left-btn" onclick="splitTabsScrollLeft()"><i class="fa-solid fa-arrow-left"></i></button>
-
                             @include('expenses.partials.split-tabs.expense-tab-headers')
 
-                            <button type="button" class="expense-split-tabs-scroll-btn expense-split-tabs-right-btn" onclick="splitTabsScrollRight()"><i class="fa-solid fa-arrow-right"></i></button>
+                            <x-blur-background-button class="expense-split-tabs-scroll-btn expense-split-tabs-left-btn" icon="fa-solid fa-chevron-left" onclick="splitTabsScrollLeft()" />
+                            <x-blur-background-button class="expense-split-tabs-scroll-btn expense-split-tabs-right-btn" icon="fa-solid fa-chevron-right" onclick="splitTabsScrollRight()" />
                         </div>
 
                         <div id="expense-split-tabs-content">

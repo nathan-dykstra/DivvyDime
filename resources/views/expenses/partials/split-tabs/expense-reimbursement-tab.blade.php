@@ -1,17 +1,12 @@
 <div class="expense-split-equal-container">
     <div class="margin-bottom-sm">
-        <div class="expense-split-reimbursement-info">
-            <div class="text-shy-heading">
-                <i class="fa-solid fa-circle-info icon"></i>
-            </div>
-
+        <div class="info-container blue-background-text margin-top-sm">
             <div>
-                <div class="text-shy-heading">
-                    {{ __('About group reimbursements') }}
-                </div>
-                <div class="text-shy">
-                    {{ __('Each user selected in this menu receives a reimbursement from the user selected in the "Who paid?" menu.') }}
-                </div>
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <div class="space-top-xs">
+                <div>{{ __('About group reimbursements') }}</div>
+                <div class="text-small">{{ __('Each user selected in this menu receives a reimbursement from the user selected in the "Who paid?" menu.') }}</div>
             </div>
         </div>
     </div>
