@@ -1,7 +1,9 @@
 <div class="groups">
     @foreach ($groups as $group)
         <a class="group" href="{{ route('groups.show', $group->id) }}">
-            <div class="group-img"></div>
+            <div class="group-img-md-container">
+                <img class="group-img-md" src="{{ $group->group_image_url }}" alt="{{ __('Group image for ') . $group->name }}">
+            </div>
 
             <div class="group-details">
                 @if ($group->is_default)

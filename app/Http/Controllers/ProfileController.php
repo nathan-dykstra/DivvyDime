@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\EmailPreferenceType;
 use App\Models\Friend;
+use App\Models\Group;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -25,9 +27,12 @@ class ProfileController extends Controller
             EmailPreferenceType::NEVER => 'Never'
         ];
 
+        $groups = $request->user()->groups()->whereNot('groups.id', Group::DEFAULT_GROUP)->get();
+    
         return view('profile.edit', [
             'user' => $request->user()->load('preferences'),
             'email_preference_options' => $email_preference_options,
+            'groups' => $groups,
         ]);
     }
 
@@ -59,6 +64,8 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        $user->deleteProfileImage();
 
         Auth::logout();
 

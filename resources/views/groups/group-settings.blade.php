@@ -19,63 +19,67 @@
         <x-session-status innerClass="text-warning">{{ __('There were issues with all of the emails in your invite!') }}</x-session-status>
     @elseif (session('status') === 'member-removed')
         <x-session-status>{{ __('Member removed.') }}</x-session-status>
+    @elseif (session('status') === 'group-image-uploaded')
+        <x-session-status>{{ __('Group image uploaded.') }}</x-session-status>
+    @elseif (session('status') === 'group-image-deleted')
+        <x-session-status>{{ __('Group image deleted.') }}</x-session-status>
     @endif
 
-    @if (auth()->user()->id === $group->owner)
-        @include('groups.partials.group-details')
-    @endif
+    @include('groups.partials.group-details')
     
     <div class="container">
-        <section class="space-top-sm">
-            <header>
-                <div class="btn-container-apart">
-                    <div>
-                        <h3>{{ __('Members') }}</h3>
+        <div class="restrict-max-width">
+            <section class="space-top-sm">
+                <header>
+                    <div class="btn-container-apart">
+                        <div>
+                            <h3>{{ __('Members') }}</h3>
+                        </div>
+                        <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'send-group-invite')" icon="fa-solid fa-user-plus icon">{{ __('Invite') }}</x-icon-button>
                     </div>
-                    <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'send-group-invite')" icon="fa-solid fa-user-plus icon">{{ __('Add Members') }}</x-primary-button>
-                </div>
-            </header>
-
-            @foreach ($group_members as $member)
-                <div class="group-settings-member">
-                    <div>
-                        <div class="text-primary">{{ $member->id === auth()->user()->id ? $member->username . __(' (You)') : $member->username }}</div>
-                        <div class="text-shy">{{ $member->email }}</div>
+                </header>
+    
+                @foreach ($group_members as $member)
+                    <div class="group-settings-member">
+                        <div>
+                            <div class="text-primary">{{ $member->id === auth()->user()->id ? $member->username . __(' (You)') : $member->username }}</div>
+                            <div class="text-shy">{{ $member->email }}</div>
+                        </div>
+                        @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
+                            <div class="vertical-center">
+                                <div class="tooltip tooltip-left">
+                                    <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ 'remove-member-' . $member->id }}')" icon="fa-solid fa-user-minus icon" /> <!-- TODO: Add modal parameter to accept php variables as array to be used in the modal -->
+                                    <span class="tooltip-text" id="pin-sidebar-tooltip">{{ __('Remove ') . $member->username }}</span>
+                                </div>
+                            </div>
+                        @endif
                     </div>
-                    @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
-                        <div class="vertical-center">
-                            <div class="tooltip tooltip-left">
-                                <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ 'remove-member-' . $member->id }}')" icon="fa-solid fa-user-minus icon" /> <!-- TODO: Add modal parameter to accept php variables as array to be used in the modal -->
-                                <span class="tooltip-text" id="pin-sidebar-tooltip">{{ __('Remove ') . $member->username }}</span>
+    
+                    <!-- Remove member modal -->
+                    <x-modal :name="'remove-member-' . $member->id" focusable>
+                        <div class="space-bottom-sm">
+                            <div>
+                                <h3>{{ __('Remove ') . $member->username }}</h3>
+                                <p class="text-shy">
+                                    @if (true) <!-- TODO: handle logic for preventing removing user with outstanding balances -->
+                                        {{ __('Are you sure you want to remove this member from the group? Any group expenses that they are involved in will be updated to show a "DivvyDime User". This action cannot be undone.') }}
+                                    @else
+                                        {{ __('This user must settle all their balances in this group before they can be removed.') }}
+                                    @endif
+                                </p>
+                            </div>
+                
+                            <div class="btn-container-end">
+                                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                                @if  (true) <!-- TODO: hide button if user's group balances not settled -->
+                                    <x-danger-button onclick="removeMember({{ $member->id }})">{{ __('Remove') }}</x-danger-button>
+                                @endif
                             </div>
                         </div>
-                    @endif
-                </div>
-
-                <!-- Remove member modal -->
-                <x-modal :name="'remove-member-' . $member->id" focusable>
-                    <div class="space-bottom-sm">
-                        <div>
-                            <h3>{{ __('Remove ') . $member->username }}</h3>
-                            <p class="text-shy">
-                                @if (true) <!-- TODO: handle logic for preventing removing user with outstanding balances -->
-                                    {{ __('Are you sure you want to remove this member from the group? Any group expenses that they are involved in will be updated to show a "DivvyDime User". This action cannot be undone.') }}
-                                @else
-                                    {{ __('This user must settle all their balances in this group before they can be removed.') }}
-                                @endif
-                            </p>
-                        </div>
-            
-                        <div class="btn-container-end">
-                            <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                            @if  (true) <!-- TODO: hide button if user's group balances not settled -->
-                                <x-danger-button onclick="removeMember({{ $member->id }})">{{ __('Remove') }}</x-danger-button>
-                            @endif
-                        </div>
-                    </div>
-                </x-modal>
-            @endforeach
-        </section>
+                    </x-modal>
+                @endforeach
+            </section>
+        </div>
     </div>
 
     <!-- Group Settings Modals -->

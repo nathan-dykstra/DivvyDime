@@ -51,11 +51,9 @@
         cursor: pointer;
     }
 
-    .primary-btn:focus {
-        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
+    .primary-btn:focus-visible {
+        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
         outline-offset: 1px;
-        border: 1px solid var(--border-grey-hover);
         border-radius: var(--border-radius);
-        box-shadow: none;
     }
 </style>

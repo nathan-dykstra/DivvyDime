@@ -25,8 +25,8 @@
                 <ul id="payment-users-list">
                     @foreach ($users_selection as $user)
                         <li>
-                            <label class="payment-user-selector-item" for="choose-user-item-{{ $user->id }}" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}" onclick="setPaymentUser(this)">
-                                <div class="payment-user-selector-radio">
+                            <label class="item-list-selector" for="choose-user-item-{{ $user->id }}" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}" onclick="setPaymentUser(this)">
+                                <div class="item-list-selector-radio">
                                     <input type="radio" id="choose-user-item-{{ $user->id }}" class="radio" name="payment-payee" value="{{ $user->id }}" {{ $payment?->recipient_user->id === $user->id || $friend?->id == $user->id ? 'checked' : '' }}/>
                                     <div class="user-photo-name">
                                         <div class="profile-circle-sm-placeholder"></div>

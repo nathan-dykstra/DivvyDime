@@ -18,16 +18,14 @@
         width: 100%;
         margin-top: 4px;
         transition: border 0.3s;
-        min-height: 70px;
+        min-height: 75px;
         max-height: 300px;
     }
 
     .text-area:focus {
         outline: 2px solid var(--blue-hover); /* TODO: Change this to --primary-color */
         outline-offset: 0px;
-        border-radius: var(--border-radius);
         border: 1px solid var(--background);
-        box-shadow: none;
     }
 
     .text-area:disabled {

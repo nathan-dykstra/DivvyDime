@@ -164,6 +164,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        $user->createDefaultProfileImage();
+
         // Create UserPreference for the new User
         $user_preference = new UserPreference();
         $user->preferences()->save($user_preference);

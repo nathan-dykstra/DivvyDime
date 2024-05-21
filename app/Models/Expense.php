@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Log;
 class Expense extends Model
 {
     use HasFactory;
+    
+    const MAX_IMAGES_ALLOWED = 5;
 
     /**
      * Defines the Expense to Group relationship.
@@ -70,6 +72,14 @@ class Expense extends Model
         });
 
         return $involved_users;
+    }
+
+    /**
+     * Defines the Expense to ExpenseImage relationship.
+     */
+    public function images()
+    {
+        return $this->hasMany(ExpenseImage::class);
     }
 
     /**

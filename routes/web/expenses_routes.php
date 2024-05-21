@@ -13,3 +13,4 @@ Route::delete('/expenses/{expense}/destroy', [ExpensesController::class, 'destro
 
 Route::post('/expenses/search', [ExpensesController::class, 'search'])->name('expenses.search');
 Route::post('/expenses/search-friends-to-include', [ExpensesController::class, 'searchFriendsToInclude'])->name('expenses.search-friends-to-include');
+Route::patch('/expenses/{expense}/update-note', [ExpensesController::class, 'updateNote'])->name('expenses.update-note');

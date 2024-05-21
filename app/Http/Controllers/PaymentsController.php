@@ -162,9 +162,14 @@ class PaymentsController extends Controller
     /**
      * Displays the payment page.
      */
-    public function show($payment_id): View
+    public function show($payment_id)
     {
-        $payment = Expense::where('id', $payment_id)->first();
+        $payment = Expense::find($payment_id);
+
+        // Handle user trying to view an expense as a payment
+        if (!($payment->expense_type_id === ExpenseType::PAYMENT || $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES)) {
+            return Redirect::route('expenses.show', $payment_id);
+        }
 
         // Get formatted dates and times
         $payment->formatted_created_date = Carbon::parse($payment->created_at)->diffForHumans();
@@ -184,21 +189,30 @@ class PaymentsController extends Controller
 
         $payment->group = $payment->groups->first();
 
-        $payment->payee = ExpenseParticipant::where('expense_id', $payment->id)
-            ->join('users', 'expense_participants.user_id', 'users.id')
-            ->select('users.*', 'expense_participants.share')
-            ->first();
+        $payment_payee_id = ExpenseParticipant::where('expense_id', $payment->id)->value('user_id');
+        $payment->payee = User::find($payment_payee_id);
+
+        $payment_images = $payment->images()
+            ->orderBy('created_at', 'ASC')
+            ->get();
 
         return view('payments.show', [
             'payment' => $payment,
+            'max_images_allowed' => Expense::MAX_IMAGES_ALLOWED,
+            'payment_images' => $payment_images,
         ]);
     }
 
     /**
      * Displays the update payment form.
      */
-    public function edit(Expense $payment): View
+    public function edit(Expense $payment)
     {
+        // Handle user trying to edit an expense as a payment
+        if (!($payment->expense_type_id === ExpenseType::PAYMENT || $payment->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES)) {
+            return Redirect::route('expenses.edit', $payment);
+        }
+
         $current_user = auth()->user();
 
         $today = Carbon::now()->isoFormat('YYYY-MM-DD');
@@ -480,6 +494,24 @@ class PaymentsController extends Controller
         $payment->delete();
 
         return Redirect::route('expenses')->with('status', 'payment-deleted');
+    }
+
+    /**
+     * Updates the expenses.note field.
+     */
+    public function updateNote(Request $request, Expense $payment)
+    {
+        $request->validate([
+            'payment-note' => ['nullable', 'string', 'max:65535'],
+        ]);
+
+        $payment_note_input = $request->input('payment-note');
+
+        $payment->note = $payment_note_input;
+        $payment->updator = $request->user()->id;
+        $payment->save();
+
+        return Redirect::route('payments.show', $payment->id)->with('status', 'payment-note-updated');
     }
 
     /**
