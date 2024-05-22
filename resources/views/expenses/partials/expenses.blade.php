@@ -10,9 +10,9 @@
                             <h4>{{ $expense->name }}</h4>
                         @endif
                         @if ($expense->is_settle_all_balances)
-                            <div class="metric-group">{{ __('Settle All Balances') }}</div>
+                            <div class="info-chip info-chip-green">{{ __('Settle All Balances') }}</div>
                         @else
-                            <a class="metric-group metric-group-hover" href="{{ route('groups.show', $expense->groups()->first()->id) }}">{{ $expense->groups()->first()->name }}</a>
+                            <a class="info-chip info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->groups()->first()->id) }}">{{ $expense->groups()->first()->name }}</a>
                         @endif
                     </div>
 
@@ -59,9 +59,9 @@
                             <h4>{{ $expense->name }}</h4>
                         @endif
                         @if ($expense->is_settle_all_balances)
-                            <div class="metric-group">{{ __('Settle All Balances') }}</div>
+                            <div class="info-chip info-chip-green">{{ __('Settle All Balances') }}</div>
                         @else
-                            <a class="metric-group metric-group-hover" href="{{ route('groups.show', $expense->groups()->first()->id) }}">{{ $expense->groups()->first()->name }}</a>
+                            <a class="info-chip info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->groups()->first()->id) }}">{{ $expense->groups()->first()->name }}</a>
                         @endif
                     </div>
 

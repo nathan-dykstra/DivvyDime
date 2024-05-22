@@ -42,7 +42,7 @@
                 @foreach ($group_members as $member)
                     <div class="group-settings-member">
                         <div>
-                            <div class="text-primary">{{ $member->id === auth()->user()->id ? $member->username . __(' (You)') : $member->username }}</div>
+                            <div class="text-primary">{{ $member->username }}</div>
                             <div class="text-shy">{{ $member->email }}</div>
                         </div>
                         @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
@@ -52,6 +52,9 @@
                                     <span class="tooltip-text" id="pin-sidebar-tooltip">{{ __('Remove ') . $member->username }}</span>
                                 </div>
                             </div>
+                        @endif
+                        @if ($member->id === $group->owner)
+                            <div class="info-chip info-chip-blue">{{ __('Group Admin') }}</div>
                         @endif
                     </div>
     

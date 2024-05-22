@@ -25,7 +25,7 @@
                 <ul id="payment-users-list">
                     @foreach ($users_selection as $user)
                         <li>
-                            <label class="item-list-selector" for="choose-user-item-{{ $user->id }}" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}" onclick="setPaymentUser(this)">
+                            <label class="item-list-selector" for="choose-user-item-{{ $user->id }}" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}" onclick="setPaymentUser(this); setPaymentAmount({{ $user->total_balance }}, {{ $group ? 'true' : 'false' }})">
                                 <div class="item-list-selector-radio">
                                     <input type="radio" id="choose-user-item-{{ $user->id }}" class="radio" name="payment-payee" value="{{ $user->id }}" {{ $payment?->recipient_user->id === $user->id || $friend?->id == $user->id ? 'checked' : '' }}/>
                                     <div class="user-photo-name">
@@ -304,6 +304,12 @@
         // Ensure amount input is active and not still a fixed value
         currentAmountInput.classList.remove('hidden');
         amountPlaceholder.classList.add('hidden');
+    }
+
+    function setPaymentAmount(amount, group) {
+        if (group && amount < 0) {
+            currentAmountInput.value = Math.abs(amount).toFixed(2);
+        }
     }
 
     function setPaymentBalance(balanceItem, isSettleAllBalances = false) {

@@ -549,6 +549,64 @@ p {
     }
 }
 
+.info-chip {
+    font-weight: 400;
+    font-size: 0.9em;
+    line-height: 1em;
+    width: fit-content;
+    height: fit-content;
+    max-width: 150px;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-radius: 0.3rem;
+    padding: 3px 5px;
+}
+
+.info-chip-link {
+    transition: background-color 0.3s ease;
+}
+
+.info-chip-link:hover {
+    cursor: pointer;
+    background-color: unset;
+}
+
+.info-chip-link:focus-visible {
+    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
+    outline-offset: 1px;
+}
+
+.info-chip-grey {
+    background-color: var(--secondary-grey-hover);
+    color: var(--text-shy);
+    border: 1px solid var(--secondary-grey-hover);
+}
+
+.info-chip-blue {
+    background-color: var(--blue-background);
+    color: var(--blue-text);
+    border: 1px solid var(--blue-background);
+}
+
+.info-chip-green {
+    background-color: var(--green-background);
+    color: var(--green-text);
+    border: 1px solid var(--green-background);
+}
+
+.info-chip-yellow {
+    background-color: var(--yellow-background);
+    color: var(--yellow-text);
+    border: 1px solid var(--yellow-background);
+}
+
+.info-chip-red {
+    background-color: var(--red-background) !important;
+    color: var(--red-text) !important;
+    border: 1px solid var(--red-background) !important;
+}
+
 body::-webkit-scrollbar, textarea::-webkit-scrollbar, .modal-container::-webkit-scrollbar {
     width: var(--scrollbar-width);
 }
@@ -1626,35 +1684,7 @@ input[type="search"]::-webkit-search-cancel-button {
 /* Friend Profile */
 
 
-.metric-group {
-    font-weight: 400;
-    font-size: 0.9em;
-    line-height: 1em;
-    width: fit-content;
-    max-width: 150px;
-    text-wrap: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text-shy);
-    border-radius: 0.3rem;
-    border: 1px solid var(--secondary-grey-hover);
-    padding: 3px 5px;
-    background-color: var(--secondary-grey-hover);
-}
 
-.metric-group-hover {
-    transition: background-color 0.3s ease;
-}
-
-.metric-group-hover:hover {
-    cursor: pointer;
-    background-color: unset;
-}
-
-.metric-group-hover:focus {
-    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
-    outline-offset: 1px;
-}
 
 
 /* Expenses List */

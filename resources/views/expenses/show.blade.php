@@ -43,8 +43,8 @@
     <h1>{{ __('$') . $expense->amount }}</h1>
     <div class="expense-info-date-group-category">
         <div class="text-shy text-thin-caps expense-info-date">{{ $expense->formatted_date }}</div>
-        <a class="metric-group metric-group-hover" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
-        <!--<a class="metric-group">{{ __('Category') }}</a>--> <!-- TODO: display expense category -->
+        <a class="info-chip info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
+        <!--<a class="">{{ __('Category') }}</a>--> <!-- TODO: display expense category -->
     </div>
 
     <div class="expense-info-container margin-top-lg">

@@ -52,11 +52,11 @@
         <div class="expense-info-date-group-category">
             <div class="text-shy text-thin-caps payment-info-date">{{ $payment->formatted_date }}</div>
             @if ($payment->is_settle_all_balances)
-                <div class="metric-group">{{ __('Settle All Balances') }}</div>
+                <div class="info-chip info-chip-green">{{ __('Settle All Balances') }}</div>
             @else
-                <a class="metric-group metric-group-hover" href="{{ route('groups.show', $payment->group->id) }}">{{ $payment->group->name }}</a>
+                <a class="info-chip info-chip-link info-chip-grey" href="{{ route('groups.show', $payment->group->id) }}">{{ $payment->group->name }}</a>
             @endif
-            <!--<a class="metric-group">{{ __('Category') }}</a>--> <!-- TODO: display payment category -->
+            <!--<a class="">{{ __('Category') }}</a>--> <!-- TODO: display payment category -->
         </div>
 
         @if (auth()->user()->id === $payment->payer && $payment->is_rejected)
