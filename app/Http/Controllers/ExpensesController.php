@@ -634,6 +634,7 @@ class ExpensesController extends Controller
         $expense->note = $expense_note_input;
         $expense->updator = $request->user()->id;
         $expense->save();
+        $expense->touch(); // Make sure timestamp is updated if the updator doesn't change
 
         return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-note-updated');
     }

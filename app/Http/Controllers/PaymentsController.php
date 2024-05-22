@@ -510,6 +510,7 @@ class PaymentsController extends Controller
         $payment->note = $payment_note_input;
         $payment->updator = $request->user()->id;
         $payment->save();
+        $payment->touch(); // Make sure timestamp is updated if the updator doesn't change
 
         return Redirect::route('payments.show', $payment->id)->with('status', 'payment-note-updated');
     }
