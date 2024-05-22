@@ -4,7 +4,7 @@
     <form id="{{ $formId }}" action="{{ $formAction }}" method="post" class="dropzone space-top-xs" enctype="multipart/form-data">
         @csrf
 
-        <div>
+        <div id="dropzone-images-icon">
             <i class="{{ $icon }}"></i>
         </div>
     </form>

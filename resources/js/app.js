@@ -176,6 +176,11 @@ if (profileDropzoneElement) {
         }, 300);
     }
 
+    // Make sure click on dropzone fa-images icon triggers file input click
+    document.getElementById('dropzone-images-icon').addEventListener('click', () => {
+        profileImgDropzoneElement.click();
+    });
+
     // Clear dropzone when upload modal is closed
 
     const profileImgModalContainer = document.getElementById('upload-profile-image');
@@ -294,6 +299,11 @@ if (expenseDropzoneElement) {
         }, 300);
     }
 
+    // Make sure click on dropzone fa-images icon triggers file input click
+    document.getElementById('dropzone-images-icon').addEventListener('click', () => {
+        expenseImgDropzoneElement.click();
+    });
+
     // Clear dropzone when upload modal is closed
 
     const expenseImgModalContainer = document.getElementById('upload-expense-images');
@@ -405,6 +415,11 @@ if (groupDropzoneElement) {
             groupImgDropzone.removeAllFiles();
         }, 300);
     }
+
+    // Make sure click on dropzone fa-images icon triggers file input click
+    document.getElementById('dropzone-images-icon').addEventListener('click', () => {
+        groupImgDropzoneElement.click();
+    });
 
     // Clear dropzone when upload modal is closed
 

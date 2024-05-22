@@ -29,6 +29,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // TODO (TEMP): delete these lines once current users have a profile image
+        $user = $request->user();
+        if ($user->profile_img_file === null) {
+            $user->createDefaultProfileImage();
+        }
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
