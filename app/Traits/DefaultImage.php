@@ -2,14 +2,23 @@
 
 namespace App\Traits;
 
+use GdImage;
+
 trait DefaultImage
 {
     /**
-     * Generates a default image 
+     * Generates a default image using the first letter of $image_text
+     * @param string $filepath The path to save the image
+     * @param string $filename The name of the image file
+     * @param string $image_text The text to display on the image
+     * @param int $font_size The size of the text on the image
+     * @param int $image_width The width of the image
+     * @param int $image_height The height of the image
+     * @return string The URL of the generated image
      */
-    public function createDefaultImage($ilepath, $filename, $image_text, $font_size = 100, $image_width = 200, $image_height = 200)
+    public function createDefaultImage(string $filepath, string $filename, string $image_text, int $font_size = 100, int $image_width = 200, int $image_height = 200): string
     {
-        $image_path = public_path($ilepath . $filename);
+        $image_path = public_path($filepath . $filename);
         $initial = strtoupper($image_text[0]);
 
         // Background colours for the gradient
@@ -26,32 +35,35 @@ trait DefaultImage
         // Set up text and font
         $text_color = '#ffffff';
         $text = imagecolorallocate($image, hexdec(substr($text_color, 1, 2)), hexdec(substr($text_color, 3, 2)), hexdec(substr($text_color, 5, 2)));
-        $font_path = public_path('fonts/ARIAL.TTF');
+        $font = public_path('fonts/ARIAL.TTF');
 
         // Get the bounding box of the text
-        $bbox = imagettfbbox($font_size, 0, $font_path, $initial);
-        $text_width = $bbox[2] - $bbox[0];
-        $text_height = $bbox[1] - $bbox[7];
+        $bbox = imagettfbbox($font_size, 0, $font, $initial);
+        $text_width = $bbox[2] - $bbox[0]; // Bottom right (x) minus bottom left (x)
+        $text_height = $bbox[1] - $bbox[7]; // Top left (y) minus bottom left (y)
 
         // Calculate x and y coordinates to center the text
         $x = ($image_width - $text_width) / 2;
         $y = ($image_height + $text_height) / 2;
 
         // Add the text to the image
-        imagettftext($image, $font_size, 0, $x, $y, $text, $font_path, $initial);
+        imagettftext($image, $font_size, 0, $x, $y, $text, $font, $initial);
 
         // Save the image file
         imagepng($image, $image_path);
         imagedestroy($image);
 
-        return asset($ilepath . $filename);
+        return asset($filepath . $filename);
     }
 
     /**
      * Creates a diagonal gradient from $start_colour (top left) to $end_colour
      * (bottom right) on $image
+     * @param GdImage $image The image to apply the gradient to
+     * @param string $start_colour The colour to start the gradient
+     * @param string $end_colour The colour to end the gradient
      */
-    protected function createDiagonalGradient($image, $start_colour, $end_colour)
+    protected function createDiagonalGradient(GdImage $image, string $start_colour, string $end_colour)
     {
         list($r1, $g1, $b1) = sscanf($start_colour, "#%02x%02x%02x");
         list($r2, $g2, $b2) = sscanf($end_colour, "#%02x%02x%02x");
@@ -61,11 +73,12 @@ trait DefaultImage
 
         for ($y = 0; $y < $height; $y++) {
             for ($x = 0; $x < $width; $x++) {
-                // Calculate the interpolation factor based on the position
+                // Calculate the interpolation factor based on the current pixel's distance from the top left corner
                 $distance = sqrt($x * $x + $y * $y);
                 $max_distance = sqrt($width * $width + $height * $height);
                 $factor = $distance / $max_distance;
 
+                // Interpolate the RGB values
                 $r = (int)($r1 + ($r2 - $r1) * $factor);
                 $g = (int)($g1 + ($g2 - $g1) * $factor);
                 $b = (int)($b1 + ($b2 - $b1) * $factor);
@@ -78,8 +91,11 @@ trait DefaultImage
 
     /**
      * Adjusts $colour if its luminance is greater than $threshold
+     * @param string $colour The colour to adjust
+     * @param float $threshold The maximum luminance allowed
+     * @return string The adjusted colour
      */
-    protected function adjustColorIfTooLight($colour, $threshold = 0.8)
+    protected function adjustColorIfTooLight(string $colour, float $threshold = 0.8): string
     {
         list($r, $g, $b) = sscanf($colour, "#%02x%02x%02x");
         $luminance = $this->calculateLuminance($r, $g, $b);
@@ -97,8 +113,12 @@ trait DefaultImage
 
     /**
      * Calculates the luminance of an RGB colour using the standard formula
+     * @param int $r The red component of the colour
+     * @param int $g The green component of the colour
+     * @param int $b The blue component of the colour
+     * @return float The luminance of the colour
      */
-    protected function calculateLuminance($r, $g, $b)
+    protected function calculateLuminance(int $r, int $g, int $b): float
     {
         return (0.2126 * $r + 0.7152 * $g + 0.0722 * $b) / 255;
     }

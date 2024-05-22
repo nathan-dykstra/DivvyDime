@@ -545,7 +545,7 @@ p {
 
 @media screen and (max-width: 768px) {
     .warning-hover {
-        color: var(--text-warning);
+        color: var(--text-warning) !important;
     }
 }
 
