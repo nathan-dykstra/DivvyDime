@@ -99,6 +99,7 @@ class ImageController extends Controller
                 // Update the expense's updated_at timestamp
                 $expense->updator = $request->user()->id;
                 $expense->save();
+                $expense->touch(); // Make sure timestamp is updated if the updator doesn't change
 
                 Session::flash('status', 'max-images-reached');
 
@@ -114,6 +115,7 @@ class ImageController extends Controller
         // Update the expense's updated_at timestamp
         $expense->updator = $request->user()->id;
         $expense->save();
+        $expense->touch(); // Make sure timestamp is updated if the updator doesn't change
 
         Session::flash('status', 'expense-images-uploaded');
 
@@ -139,6 +141,7 @@ class ImageController extends Controller
                 $expense = Expense::find($expense_id);
                 $expense->updator = $request->user()->id;
                 $expense->save();
+                $expense->touch(); // Make sure timestamp is updated if the updator doesn't change
 
                 $expense_is_payment = $expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
                 if ($expense_is_payment) {
