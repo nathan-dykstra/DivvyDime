@@ -51,5 +51,8 @@ class DeleteGroupDependents
 
         // Delete Group members
         GroupMember::where('group_id', $event->group->id)->delete();
+
+        // Delete group image from the storage
+        $event->group->deleteGroupImage();
     }
 }

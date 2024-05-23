@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Events\ExpenseDeleting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 
 class Expense extends Model
 {
@@ -80,6 +79,17 @@ class Expense extends Model
     public function images()
     {
         return $this->hasMany(ExpenseImage::class);
+    }
+
+    /**
+     * Deletes the expense images (from the database and the storage)
+     */
+    public function deleteImages()
+    {
+        foreach ($this->images as $image) {
+            $image->deleteExpenseImage();
+            $image->delete();
+        }
     }
 
     /**

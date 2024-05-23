@@ -22,7 +22,7 @@ class ExpenseImage extends Model
     /**
      * Returns the URL to the user's profile image.
      */
-    public function getExpenseImageUrlAttribute()
+    public function getExpenseImageUrlAttribute(): ?string
     {
         if ($this->img_file === null) {
             return null;
