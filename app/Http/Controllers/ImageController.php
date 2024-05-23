@@ -6,6 +6,8 @@ use App\Models\Expense;
 use App\Models\ExpenseImage;
 use App\Models\ExpenseType;
 use App\Models\Group;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
@@ -13,7 +15,6 @@ use Illuminate\Support\Facades\Session;
 
 class ImageController extends Controller
 {
-    const IMAGE_BASE_PATH = 'images/';
     const PROFILE_IMAGE_PATH = 'images/profile/';
     const EXPENSE_IMAGE_PATH = 'images/expense/';
     const GROUP_IMAGE_PATH = 'images/group/';
@@ -21,7 +22,7 @@ class ImageController extends Controller
     /**
      * Uploads a new profile image.
      */
-    public function uploadProfileImage(Request $request)
+    public function uploadProfileImage(Request $request): JsonResponse
     {
         $request->validate([
             'file' => ['image', 'mimes:jpeg,png,jpg', 'max:5120'],
@@ -55,7 +56,7 @@ class ImageController extends Controller
     /**
      * Deletes the profile image from the server and database, and replaces with a default image.
      */
-    public function deleteProfileImage(Request $request)
+    public function deleteProfileImage(Request $request): RedirectResponse
     {
         $current_user = $request->user();
 
@@ -70,7 +71,7 @@ class ImageController extends Controller
     /**
      * Uploads new expense images (up to the limit specified in the Expense model)
      */
-    public function uploadExpenseImages(Request $request, Expense $expense)
+    public function uploadExpenseImages(Request $request, Expense $expense): JsonResponse
     {
         $request->validate([
             'file' => ['required', 'array', 'max:5'],
@@ -128,7 +129,7 @@ class ImageController extends Controller
     /**
      * Deletes the expense image from the server and database.
      */
-    public function deleteExpenseImage(Request $request, $expense_image_id)
+    public function deleteExpenseImage(Request $request, $expense_image_id): RedirectResponse
     {
         if ($expense_image_id) {
             $expense_image = ExpenseImage::find($expense_image_id);
@@ -158,7 +159,7 @@ class ImageController extends Controller
     /**
      * Uploads a new group image.
      */
-    public function uploadGroupImage(Request $request, Group $group)
+    public function uploadGroupImage(Request $request, Group $group): JsonResponse
     {
         $request->validate([
             'file' => ['image', 'mimes:jpeg,png,jpg', 'max:5120'],
@@ -190,7 +191,7 @@ class ImageController extends Controller
     /**
      * Deletes the group image from the server and database, and replaces with a default.
      */
-    public function deleteGroupImage(Request $request, Group $group)
+    public function deleteGroupImage(Request $request, Group $group): RedirectResponse
     {
         $group->deleteGroupImage();
 

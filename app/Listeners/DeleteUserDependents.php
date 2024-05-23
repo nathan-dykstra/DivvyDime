@@ -139,5 +139,8 @@ class DeleteUserDependents
 
         // Delete user preferences
         UserPreference::where('user_id', $event->user->id)->delete();
+
+        // Delete user profile image from the storage
+        $event->user->deleteProfileImage();
     }
 }
