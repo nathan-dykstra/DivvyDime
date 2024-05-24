@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    <div class="paid-dropdown-empty-warning hidden">
+    <div class="expense-dropdown-empty-warning hidden">
         {{ __('You must add users to the expense before you can divvy it up.') }}
     </div>
 
@@ -18,10 +18,12 @@
             @if ($group) <!-- Expense was added from a Group, so show the Group members by default -->
                 @foreach ($group->group_members as $member)
                     <li>
-                        <label class="split-amount-item" for="split-amount-item-{{ $member->id }}">
-                            <div class="user-photo-name">
-                                <div class="profile-circle-sm-placeholder"></div>
-                                <div class="split-equal-item-name">{{ $member->username }}</div>
+                        <label class="split-amount-item" for="split-amount-item-{{ $member->id }}" data-user-id="{{ $member->id }}">
+                            <div class="dropdown-user-item-img-name">
+                                <div class="profile-img-sm-container">
+                                    <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                </div>
+                                <div class="dropdown-user-item-name">{{ $member->username }}</div>
                             </div>
 
                             <x-text-input-prepend 
@@ -40,15 +42,17 @@
                 @endforeach
             @else <!-- Expense was not added from a Group (or it was added from "Individual Expenses") -->
                 <li>
-                    <label class="split-amount-item" for="split-amount-item-{{ auth()->user()->id }}">
-                        <div class="user-photo-name">
-                            <div class="profile-circle-sm-placeholder"></div>
-                            <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                    <label class="split-amount-item" for="split-amount-item-{{ $current_user->id }}" data-user-id="{{ $current_user->id }}">
+                        <div class="dropdown-user-item-img-name">
+                            <div class="profile-img-sm-container">
+                                <img src="{{ $current_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                            </div>
+                            <div class="dropdown-user-item-name">{{ $current_user->username }}</div>
                         </div>
 
                         <x-text-input-prepend 
-                            id="split-amount-item-{{ auth()->user()->id }}"
-                            name="split-amount-item-{{ auth()->user()->id }}"
+                            id="split-amount-item-{{ $current_user->id }}"
+                            name="split-amount-item-{{ $current_user->id }}"
                             type="number"
                             step="0.01"
                             min="0"
@@ -62,10 +66,12 @@
 
                 @if ($friend) <!-- Expense was added from a Friend -->
                     <li>
-                        <label class="split-amount-item" for="split-amount-item-{{ $friend->id }}">
-                            <div class="user-photo-name">
-                                <div class="profile-circle-sm-placeholder"></div>
-                                <div class="split-equal-item-name">{{ $friend->username }}</div>
+                        <label class="split-amount-item" for="split-amount-item-{{ $friend->id }}" data-user-id="{{ $friend->id }}">
+                            <div class="dropdown-user-item-img-name">
+                                <div class="profile-img-sm-container">
+                                    <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                </div>
+                                <div class="dropdown-user-item-name">{{ $friend->username }}</div>
                             </div>
 
                             <x-text-input-prepend 
@@ -86,10 +92,12 @@
         @else <!-- Updating an existing Expense -->
             @foreach ($expense->involvedUsers() as $involved_user)
                 <li>
-                    <label class="split-amount-item" for="split-amount-item-{{ $involved_user->id }}">
-                        <div class="user-photo-name">
-                            <div class="profile-circle-sm-placeholder"></div>
-                            <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                    <label class="split-amount-item" for="split-amount-item-{{ $involved_user->id }}" data-user-id="{{ $involved_user->id }}">
+                        <div class="dropdown-user-item-img-name">
+                            <div class="profile-img-sm-container">
+                                <img src="{{ $involved_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                            </div>
+                            <div class="dropdown-user-item-name">{{ $involved_user->username }}</div>
                         </div>
 
                         <x-text-input-prepend 
@@ -113,34 +121,15 @@
 
 <template id="split-amount-dropdown-item-template">
     <li>
-        <label class="split-amount-item" for="">
-            <div class="user-photo-name">
-                <div class="profile-circle-sm-placeholder"></div>
-                <div class="split-equal-item-name"></div>
+        <label class="split-amount-item" for="" data-user-id="">
+            <div class="dropdown-user-item-img-name">
+                <div class="profile-img-sm-container">
+                    <img src="" alt="User profile image" class="profile-img-sm">
+                </div>
+                <div class="dropdown-user-item-name"></div>
             </div>
 
             <x-text-input-prepend id="" name="" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" :prepend="__('$')" oninput="splitAmountUpdateTotal()" />
         </label>
     </li>
 </template>
-
-<script>
-    function splitAmountUpdateTotal() {
-        const splitAmountItems = document.querySelectorAll(".split-amount-list li");
-
-        let newTotal = 0.00;
-        let amountLeft = currentAmountInput.value === '' ? 0.00 : parseFloat(currentAmountInput.value);
-
-        splitAmountItems.forEach(function(item) {
-            const itemAmount = item.querySelector('.text-input-prepend').value;
-
-            if (itemAmount !== '') {
-                newTotal += parseFloat(itemAmount);
-                amountLeft -= parseFloat(itemAmount);
-            }
-        });
-
-        $('#split-amount-total').text(newTotal.toFixed(2));
-        $('#split-amount-left').text(amountLeft.toFixed(2));
-    }
-</script>
