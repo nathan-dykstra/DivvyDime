@@ -193,12 +193,17 @@
                             </div>
                         </div>
 
-                        <div id="expense-split-tabs">
-                            <div class="expense-split-tabs-wrapper">
-                                @include('expenses.partials.split-tabs.expense-tab-headers')
-    
-                                <x-blur-background-button class="expense-split-tabs-scroll-btn expense-split-tabs-left-btn" icon="fa-solid fa-chevron-left" onclick="splitTabsScrollLeft()" />
-                                <x-blur-background-button class="expense-split-tabs-scroll-btn expense-split-tabs-right-btn" icon="fa-solid fa-chevron-right" onclick="splitTabsScrollRight()" />
+                        <div id="expense-split-tabs-container">
+                            <div class="expense-split-tabs-container">
+                                <div class="expense-split-tabs-left-btn">
+                                    <x-blur-background-button class="expense-split-tabs-scroll-btn " icon="fa-solid fa-chevron-left" onclick="splitTabsScroll('left')" />
+                                </div>
+                                <div class="expense-split-tabs-wrapper">
+                                    @include('expenses.partials.split-tabs.expense-tab-headers')
+                                </div>
+                                <div class="expense-split-tabs-right-btn">
+                                    <x-blur-background-button class="expense-split-tabs-scroll-btn" icon="fa-solid fa-chevron-right" onclick="splitTabsScroll('right')" />
+                                </div>
                             </div>
     
                             <div id="expense-split-tabs-content">
@@ -410,6 +415,7 @@
     const mediaDropdown = document.getElementById('expense-media-dropdown');
 
     const paidDropdownList = document.getElementById('expense-paid-dropdown-list');
+    const splitTabsContainer = document.getElementById('expense-split-tabs-container');
     const splitTabs = document.getElementById('expense-split-tabs');
     const splitTabsContent = document.getElementById('expense-split-tabs-content');
     const groupDropdownList = document.getElementById('expense-group-dropdown-list');
@@ -432,10 +438,7 @@
     const dateBtn = document.getElementById('expense-date-btn');
     const mediaBtn = document.getElementById('expense-media-btn');
 
-    const scrollStep = 200;
-    const scrollDuration = 300;
-
-    var selectedDropdownItemIndex = 0;
+    let selectedDropdownItemIndex = 0;
 
     involvedFriendsInput.addEventListener('input', function(event) {
         const searchString = event.target.value;
@@ -844,13 +847,13 @@
     function showEmptyDropdownWarnings() {
         paidDropdown.querySelector('.expense-dropdown-empty-warning').classList.remove('hidden');
         splitDropdown.querySelector('.expense-dropdown-empty-warning').classList.remove('hidden');
-        splitTabs.classList.add('hidden');
+        splitTabsContainer.classList.add('hidden');
     }
 
     function hideEmptyDropdownWarnings() {
         paidDropdown.querySelector('.expense-dropdown-empty-warning').classList.add('hidden');
         splitDropdown.querySelector('.expense-dropdown-empty-warning').classList.add('hidden');
-        splitTabs.classList.remove('hidden');
+        splitTabsContainer.classList.remove('hidden');
     }
 
     // Update the amount breakdowns shown in the "Split" dropdown lists
@@ -938,10 +941,12 @@
         const currentParticipantCount = document.querySelectorAll('.split-reimbursement-item-checkbox:checked').length;
         const amountPerParticipant = currentParticipantCount === 0 || currentAmountInput.value === '' ? 0 : parseFloat(currentAmountInput.value) / currentParticipantCount;
 
-        document.querySelector('.split-equal-price-breakdown').textContent = amountPerParticipant.toFixed(2);
-        document.getElementById('split-equal-participant-count').textContent = currentParticipantCount;
-        document.getElementById('split-equal-participant-count-label').textContent = currentParticipantCount === 1 ? ' person' : ' people';
+        document.getElementById('split-reimbursement-price-breakdown').textContent = amountPerParticipant.toFixed(2);
+        document.getElementById('split-reimbursement-participant-count').textContent = currentParticipantCount;
+        document.getElementById('split-reimbursement-participant-count-label').textContent = currentParticipantCount === 1 ? ' person' : ' people';
     }
+
+    // Set the expense payer, split, group, and date
 
     function setExpensePayer(payer) {
         newPayer = parseInt(payer.dataset.userId);
@@ -949,7 +954,6 @@
         paidBtn.querySelector('.expense-round-btn-text').textContent = payer.dataset.username;
     }
 
-    // TODO: fix this function
     function setExpenseSplit(tab) {
         // Update the selected tab
         splitTabs.querySelector('.expense-split-tab-active').classList.remove('expense-split-tab-active');
@@ -957,37 +961,15 @@
 
         // Display the selected tab's content
         tabContent = document.getElementById(tab.dataset.tabId);
-        $(splitTabsContent).children().addClass('hidden');
+        Array.from(splitTabsContent.children).forEach(child => child.classList.add('hidden'));
         tabContent.classList.remove('hidden');
 
         // Update the split button and form input
-        $(splitBtn).children('.expense-round-btn-text').text(tab.dataset.tabName);
+        splitBtn.querySelector('.expense-round-btn-text').textContent = tab.dataset.tabName;
         currentSplitInput.value = tab.dataset.expenseTypeId;
 
         // Scroll so the selected tab is fully visible (if necessary)
-
-        const currentPosition = splitTabs.scrollLeft;
-        const containerWidth = splitTabs.offsetWidth;
-        const tabWidth = tab.offsetWidth;
-        const tabLeft = tab.offsetLeft;
-        const tabRight = tabLeft + tabWidth;
-
-        const nearLeftEdge = tabLeft - splitTabs.scrollLeft < 32;
-        const nearRightEdge = splitTabs.scrollLeft + containerWidth - tabLeft - tabWidth < 32;
-
-        if (nearLeftEdge) { // Scroll left so selected tab is fully visible
-            const scrollAmount = -(currentPosition + 32 - tabLeft);
-            const newPosition = currentPosition + scrollAmount;
-            $(splitTabs).animate({ scrollLeft: newPosition }, scrollDuration);
-            $('.expense-split-tabs-left-btn').css('display', newPosition > 0 ? 'block' : 'none');
-            $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - newPosition > splitTabs.clientWidth ? 'block' : 'none');
-        } else if (nearRightEdge) { // Scroll right so selected tab is fully visible
-            const scrollAmount = tabRight - (currentPosition + containerWidth - 32);
-            const newPosition = currentPosition + scrollAmount;
-            $(splitTabs).animate({ scrollLeft: newPosition }, scrollDuration);
-            $('.expense-split-tabs-left-btn').css('display', newPosition > 0 ? 'block' : 'none');
-            $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - newPosition > splitTabs.clientWidth ? 'block' : 'none');
-        }
+        splitTabsScrollToCurrentTab();
     }
 
     function setExpenseGroup(group) {
@@ -1054,63 +1036,91 @@
         dateBtn.querySelector('.expense-round-btn-text').textContent = formattedDate;
     })
 
-    // TODO: fix split tabs scrolling
+    // "Split" dropdown tabs functions
 
-    function splitTabsScrollLeft() {
-        const direction = 'left';
-        splitTabsScroll(direction);
-    }
+    const splitTabsWrapper = document.querySelector('.expense-split-tabs-wrapper');
 
-    function splitTabsScrollRight() {
-        const direction = 'right';
-        splitTabsScroll(direction);
-    }
+    splitTabsWrapper.addEventListener('touchstart', (event) => {
+        const startX = event.touches[0].pageX;
+        const scrollLeft = splitTabsWrapper.scrollLeft;
 
-    function splitTabsScroll(direction) {
-        const scrollAmount = direction === 'left' ? -scrollStep : scrollStep;
-        const currentPosition = splitTabs.scrollLeft;
-        const newPosition = currentPosition + scrollAmount;
+        function onTouchMove(e) {
+            const x = e.touches[0].pageX;
+            const walk = x - startX;
+            splitTabsWrapper.scrollLeft = scrollLeft - walk;
+        }
 
-        $(splitTabs).animate({ scrollLeft: newPosition }, scrollDuration);
+        function onTouchEnd() {
+            splitTabsWrapper.removeEventListener('touchmove', onTouchMove);
+            splitTabsWrapper.removeEventListener('touchend', onTouchEnd);
+        }
 
-        // Update scroll arrows
-        $('.expense-split-tabs-left-btn').css('display', newPosition > 0 ? 'block' : 'none');
-        $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - newPosition > splitTabs.clientWidth ? 'block' : 'none');
-    }
+        splitTabsWrapper.addEventListener('touchmove', onTouchMove);
+        splitTabsWrapper.addEventListener('touchend', onTouchEnd);
+    });
 
     function splitTabsScrollToCurrentTab() {
         const activeTab = document.querySelector('.expense-split-tab-active');
 
-        const containerWidth = splitTabs.offsetWidth;
-        const tabWidth = activeTab.offsetWidth;
-        const tabLeft = activeTab.offsetLeft;
+        // Get the position and size of the active tab
+        const tabRect = activeTab.getBoundingClientRect();
+        const tabListRect = splitTabs.getBoundingClientRect();
 
-        const nearLeftEdge = tabLeft - splitTabs.scrollLeft < 32;
-        const nearRightEdge = splitTabs.scrollLeft + containerWidth - tabLeft - tabWidth < 32;
+        // Calculate the offset to center the active tab
+        const tabListScrollLeft = splitTabsWrapper.scrollLeft;
+        const offsetLeft = tabRect.left - tabListRect.left;
+        const offsetCenter = offsetLeft - (tabListRect.width / 2) + (tabRect.width / 2);
 
-        // If the selected tab is not near the left/right edge, there is no need to scroll (it's already fully visible)
-        if (!nearLeftEdge && !nearRightEdge) {
-            // Update scroll arrows (for initial load)
-            $('.expense-split-tabs-left-btn').css('display', splitTabs.scrollLeft > 0 ? 'block' : 'none');
-            $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - splitTabs.scrollLeft > splitTabs.clientWidth ? 'block' : 'none');
-            return;
+        // Ensure the scroll position keeps the tab fully visible if near the edges
+        const maxScrollLeft = splitTabs.scrollWidth - tabListRect.width;
+        const scrollPosition = Math.min(Math.max(offsetCenter, 0), maxScrollLeft);
+
+        // Scroll the container to the calculated position
+        splitTabsWrapper.scrollTo({ left: scrollPosition, behavior: 'smooth' });
+
+        updateSplitTabArrows();
+    }
+
+    function splitTabsScroll(direction) {
+        const scrollAmount = 200;
+        const currentScroll = splitTabsWrapper.scrollLeft;
+
+        if (direction === 'left') {
+            splitTabsWrapper.scrollTo({ left: currentScroll - scrollAmount, behavior: 'smooth' });
+        } else if (direction === 'right') {
+            splitTabsWrapper.scrollTo({ left: currentScroll + scrollAmount, behavior: 'smooth' });
         }
 
-        // Calculate the scroll position to center the selected tab
-        const scrollPosition = tabLeft - (containerWidth - tabWidth) / 2;
-
-        // Ensure scroll position is within valid range
-        const minScroll = 0;
-        const maxScroll = splitTabs.scrollWidth - containerWidth;
-        const finalScroll = Math.max(minScroll, Math.min(maxScroll, scrollPosition));
-
-        // Scroll to bring the selected tab into view
-        splitTabs.scrollLeft = finalScroll;
-
-        // Update scroll arrows
-        $('.expense-split-tabs-left-btn').css('display', finalScroll > 0 ? 'block' : 'none');
-        $('.expense-split-tabs-right-btn').css('display', splitTabs.scrollWidth - finalScroll > splitTabs.clientWidth ? 'block' : 'none');
+        updateSplitTabArrows();
     }
+
+    function updateSplitTabArrows() {
+        const leftBtn = document.querySelector('.expense-split-tabs-left-btn');
+        const rightBtn = document.querySelector('.expense-split-tabs-right-btn');
+
+        if (splitTabsWrapper.scrollLeft > 0) {
+            leftBtn.classList.remove('hidden');
+        } else {
+            leftBtn.classList.add('hidden');
+        }
+
+        if (splitTabsWrapper.scrollWidth - splitTabsWrapper.clientWidth - splitTabsWrapper.scrollLeft > 1) {
+            rightBtn.classList.remove('hidden');
+        } else {
+            rightBtn.classList.add('hidden');
+        }
+    }
+
+    splitTabsWrapper.addEventListener('scroll', updateSplitTabArrows);
+    window.addEventListener('resize', updateSplitTabArrows);
+
+    Array.from(splitTabs.children).forEach(tab => {
+        tab.addEventListener('keydown', function() {
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                setExpenseSplit(tab);
+            }
+        });
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         // Scroll to bring the selected tab into view on initial load
@@ -1119,7 +1129,7 @@
         // Resize the "Note" textarea to fit it's content
         resizeTextarea(currentNoteInput);
 
-        // Update the "split-x" dropdown list "select/deselect all" checkboxes with the initial selection state
+        // Update the "Split" dropdown list "Select All" checkboxes with the initial selection state
         updateSplitDropdownSelectAll();
     })
 </script>

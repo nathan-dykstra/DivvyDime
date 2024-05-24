@@ -97,7 +97,7 @@
 
     .modal {
         margin: 75px auto;
-        max-width: 600px;
+        max-width: 36rem;
         width: 100%;
         background-color: var(--secondary-grey);
         border-radius: var(--border-radius);
