@@ -28,9 +28,9 @@
                             <label class="item-list-selector" for="choose-user-item-{{ $user->id }}" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}" onclick="setPaymentUser(this); setPaymentAmount({{ $user->total_balance }}, {{ $group ? 'true' : 'false' }})">
                                 <div class="item-list-selector-radio">
                                     <input type="radio" id="choose-user-item-{{ $user->id }}" class="radio" name="payment-payee" value="{{ $user->id }}" {{ $payment?->recipient_user->id === $user->id || $friend?->id == $user->id ? 'checked' : '' }}/>
-                                    <div class="user-photo-name">
+                                    <div class="dropdown-user-item-img-name">
                                         <div class="profile-circle-sm-placeholder"></div>
-                                        <div class="split-equal-item-name">{{ $user->username }}</div>
+                                        <div class="dropdown-user-item-name">{{ $user->username }}</div>
                                     </div>
                                 </div>
 
@@ -149,7 +149,7 @@
                             </x-primary-button>
                         </div>
 
-                        <div class="expense-expand-dropdown" id="payment-date-dropdown">
+                        <div class="expand-dropdown" id="payment-date-dropdown">
                             <h4 class="margin-bottom-sm">{{ __('When did you send the payment?') }}</h4>
 
                             <div class="expense-datepicker-container">
@@ -165,13 +165,14 @@
                         <div class="expense-group-date-media">
                             <x-primary-button class="expense-round-btn expense-round-btn-equal-width" id="payment-media-btn" onclick="toggleMediaDropdown()">
                                 <div class="expense-round-btn-text">
-                                    {{ __('Add Note/Media') }}
+                                    {{ __('Add note') }}
                                 </div>
                             </x-primary-button>
                         </div>
 
-                        <div class="expense-expand-dropdown" id="payment-media-dropdown">
-                            <h4 class="margin-bottom-sm">{{ __('Add a note or an image') }}</h4>
+                        <div class="expand-dropdown" id="payment-media-dropdown">
+                            <h4>{{ __('Add a note') }}</h4>
+                            <p class="text-shy margin-bottom-sm">{{ __('Images can be added once the payment is saved.') }}</p>
 
                             <x-input-label for="payment-note" :value="__('Note')" />
                             <x-text-area id="payment-note" name="payment-note" maxlength="65535" :value="old('payment-note', $payment->note ?? '')" />
@@ -343,15 +344,15 @@
     }
 
     function toggleMediaDropdown() {
-        dateDropdown.classList.remove('expense-expand-dropdown-open');
+        dateDropdown.classList.remove('expand-dropdown-open');
 
-        mediaDropdown.classList.toggle('expense-expand-dropdown-open');
+        mediaDropdown.classList.toggle('expand-dropdown-open');
     }
 
     function toggleDateDropdown() {
-        mediaDropdown.classList.remove('expense-expand-dropdown-open');
+        mediaDropdown.classList.remove('expand-dropdown-open');
 
-        dateDropdown.classList.toggle('expense-expand-dropdown-open');
+        dateDropdown.classList.toggle('expand-dropdown-open');
     }
 
     datePicker.addEventListener('changeDate', function(event) {

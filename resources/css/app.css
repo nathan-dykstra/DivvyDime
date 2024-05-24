@@ -531,7 +531,7 @@ p {
     border-radius: 50%;
 }
 
-.user-photo-name {
+.dropdown-user-item-img-name {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -2200,7 +2200,7 @@ input[type="search"]::-webkit-search-cancel-button {
     width: 250px !important;
 }
 
-.expense-expand-dropdown {
+.expand-dropdown {
     overflow: hidden;
     width: 100%;
     max-height: 0;
@@ -2208,7 +2208,7 @@ input[type="search"]::-webkit-search-cancel-button {
     transition: max-height 0.3s, padding 0.3s, margin 0.3s, opacity 0.3s;
 }
 
-.expense-expand-dropdown-open {
+.expand-dropdown-open {
     max-height: 500px;
     border-top: 1px solid var(--border-grey);
     border-bottom: 1px solid var(--border-grey);
@@ -2238,16 +2238,6 @@ input[type="search"]::-webkit-search-cancel-button {
     color: var(--text-primary-highlight);
 }
 
-.paid-dropdown-empty-warning {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    padding: 8px 16px;
-    color: var(--text-warning);
-    border: 1px solid var(--border-grey);
-    border-radius: var(--border-radius);
-}
-
 .expense-group-date-media-container {
     display: flex;
     flex-direction: column;
@@ -2266,54 +2256,86 @@ input[type="search"]::-webkit-search-cancel-button {
     justify-content: center;
 }
 
-.expense-split-tabs-wrapper {
+.expense-split-tabs-container {
     position: relative;
-    overflow: hidden;
+}
+
+.expense-split-tabs-wrapper {
+    overflow-y: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+}
+
+.expense-split-tabs-wrapper::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Webkit browsers */
 }
 
 .expense-split-tabs-scroll-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
     height: 30px;
     width: 30px;
+    font-size: 0.8em;
     border-radius: 50%;
+    pointer-events: auto;
+}
+
+.expense-split-tabs-left-btn, .expense-split-tabs-right-btn {
+    position: absolute;
+    top: 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 60px;
+    pointer-events: none;
 }
 
 .expense-split-tabs-left-btn {
     left: 0;
+    justify-content: flex-start;
+    background: linear-gradient(to right, var(--secondary-grey) 20%, transparent 80%);
 }
 
 .expense-split-tabs-right-btn {
     right: 0;
+    justify-content: flex-end;
+    background: linear-gradient(to left, var(--secondary-grey) 20%, transparent 80%);
 }
 
 .expense-split-tabs {
     display: flex;
+    gap: 8px;
     align-items: center;
-    overflow-x: hidden;
-    white-space: nowrap;
     color: var(--text-shy);
-    border-bottom: 1px solid var(--border-grey);
 }
 
 .expense-split-tab {
     display: inline-block;
-    padding: 8px 16px;
-    transition: color 0.3s ease-in-out;
-}
-
-.expense-split-tab:hover {
+    padding: 3px 9px; /* 6px 12px previously - changed to add focus "outline" as inset border */
+    border-radius: var(--border-radius);
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border 0.2s ease-in-out;
     cursor: pointer;
+    box-sizing: border-box;
+    border: 3px solid transparent;
 }
 
 .expense-split-tab:not(.expense-split-tab-active):hover {
-    color: var(--text-primary);
+    background-color: var(--secondary-grey-hover);
+}
+
+.expense-split-tab:not(.expense-split-tab-active):not(:focus-visible):hover {
+    border: 3px solid var(--secondary-grey-hover);
 }
 
 .expense-split-tab-active {
-    color: var(--blue-hover);
-    border-bottom: 3px solid var(--blue-hover);
+    color: var(--blue-text);
+    background-color: var(--blue-background);
+    border: 3px solid var(--blue-background);
+}
+
+.expense-split-tab:focus-visible {
+    outline: none;
+    border: 3px solid var(--blue-hover);
 }
 
 
@@ -2344,7 +2366,7 @@ input[type="search"]::-webkit-search-cancel-button {
     overflow-y: auto;
 }
 
-.split-equal-item {
+.expand-dropdown-item {
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -2355,7 +2377,7 @@ input[type="search"]::-webkit-search-cancel-button {
     transition: background-color 0.1s ease, color 0.1s ease;
 }
 
-.split-equal-item:hover {
+.expand-dropdown-item:hover {
     cursor: pointer;
     background-color: var(--secondary-grey-hover);
     color: var(--text-primary-highlight);

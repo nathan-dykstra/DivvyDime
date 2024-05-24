@@ -15,6 +15,7 @@ use App\Models\NotificationType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -111,6 +112,7 @@ class ExpensesController extends Controller
             'default_expense_type' => $default_expense_type,
             'expense_type_names' => $expense_type_names,
             'expense_type_ids' => $expense_type_ids,
+            'current_user' => $request->user(),
             'group' => $group,
             'friend' => $friend,
         ]);
@@ -308,7 +310,7 @@ class ExpensesController extends Controller
     /**
      * Displays the update expense form.
      */
-    public function edit(Expense $expense)
+    public function edit(Request $request, Expense $expense)
     {
         // Handle user trying to edit a payment as an expense
         if ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) {
@@ -363,6 +365,7 @@ class ExpensesController extends Controller
             'default_expense_type' => $default_expense_type,
             'expense_type_names' => $expense_type_names,
             'expense_type_ids' => $expense_type_ids,
+            'current_user' => $request->user(),
         ]);
     }
 
@@ -581,6 +584,10 @@ class ExpensesController extends Controller
             ", [auth()->user()->id])
             ->get();
 
+        foreach ($users as $user) {
+            $user->profile_image_url = $user->getProfileImageUrlAttribute();
+        }
+
         return response()->json($users);
     }
 
@@ -618,6 +625,23 @@ class ExpensesController extends Controller
         $expenses = $this->augmentExpenses($expenses);
 
         return view('expenses.partials.expenses', ['expenses' => $expenses]);
+    }
+    
+    /**
+     * Returns the members and "is default" status of the selected group.
+     */
+    public function getExpenseGroupDetails(Request $request): JsonResponse
+    {
+        $group_id = (int)$request->input('group_id');
+
+        $group_members = Group::find($group_id)->members()->pluck('users.id')->toArray();
+        $group_is_default = $group_id === Group::DEFAULT_GROUP;
+
+        return response()->json([
+            'group_members' => $group_members,
+            'group_is_default' => $group_is_default,
+            'current_user_id' => $request->user()->id,
+        ]);
     }
 
     /**

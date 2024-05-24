@@ -8,43 +8,48 @@
         </div>
     </div>
 
-    <div class="paid-dropdown-empty-warning hidden">
+    <div class="expense-dropdown-empty-warning hidden">
         {{ __('You must add users to the expense before you can divvy it up.') }}
     </div>
 
     <ul class="split-equal-list" id="split-equal-list">
-        <!-- TODO: Show user profile photo in this list -->
         @if ($expense === null) <!-- Creating a new Expense -->
             @if ($group) <!-- Expense was added from a Group, so show the Group members by default -->
                 @foreach ($group->group_members as $member)
                     <li>
-                        <label class="split-equal-item" for="split-equal-item-{{ $member->id }}" onclick="splitEqualUpdateSelectAll()">
+                        <label class="expand-dropdown-item" for="split-equal-item-{{ $member->id }}" data-user-id="{{ $member->id }}" onclick="splitEqualUpdateSelectAll()">
                             <input type="checkbox" id="split-equal-item-{{ $member->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $member->id }}" checked />
-                            <div class="user-photo-name">
-                                <div class="profile-circle-sm-placeholder"></div>
-                                <div class="split-equal-item-name">{{ $member->username }}</div>
+                            <div class="dropdown-user-item-img-name">
+                                <div class="profile-img-sm-container">
+                                    <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                </div>
+                                <div class="dropdown-user-item-name">{{ $member->username }}</div>
                             </div>
                         </label>
                     </li>
                 @endforeach
             @else <!-- Expense was not added from a Group (or it was added from "Individual Expenses") -->
                 <li>
-                    <label class="split-equal-item" for="split-equal-item-{{ auth()->user()->id }}" onclick="splitEqualUpdateSelectAll()">
-                        <input type="checkbox" id="split-equal-item-{{ auth()->user()->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ auth()->user()->id }}" checked />
-                        <div class="user-photo-name">
-                            <div class="profile-circle-sm-placeholder"></div>
-                            <div class="split-equal-item-name">{{ auth()->user()->username }}</div>
+                    <label class="expand-dropdown-item" for="split-equal-item-{{ $current_user->id }}" data-user-id="{{ $current_user->id }}" onclick="splitEqualUpdateSelectAll()">
+                        <input type="checkbox" id="split-equal-item-{{ $current_user->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $current_user->id }}" checked />
+                        <div class="dropdown-user-item-img-name">
+                            <div class="profile-img-sm-container">
+                                <img src="{{ $current_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                            </div>
+                            <div class="dropdown-user-item-name">{{ $current_user->username }}</div>
                         </div>
                     </label>
                 </li>
 
                 @if ($friend) <!-- Expense was added from a Friend -->
                     <li>
-                        <label class="split-equal-item" for="split-equal-item-{{ $friend->id }}" onclick="splitEqualUpdateSelectAll()">
+                        <label class="expand-dropdown-item" for="split-equal-item-{{ $friend->id }}" data-user-id="{{ $friend->id }}" onclick="splitEqualUpdateSelectAll()">
                             <input type="checkbox" id="split-equal-item-{{ $friend->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $friend->id }}" checked />
-                            <div class="user-photo-name">
-                                <div class="profile-circle-sm-placeholder"></div>
-                                <div class="split-equal-item-name">{{ $friend->username }}</div>
+                            <div class="dropdown-user-item-img-name">
+                                <div class="profile-img-sm-container">
+                                    <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                </div>
+                                <div class="dropdown-user-item-name">{{ $friend->username }}</div>
                             </div>
                         </label>
                     </li>
@@ -53,11 +58,13 @@
         @else <!-- Updating an existing Expense -->
             @foreach ($expense->involvedUsers() as $involved_user)
                 <li>
-                    <label class="split-equal-item" for="split-equal-item-{{ $involved_user->id }}" onclick="splitEqualUpdateSelectAll()">
+                    <label class="expand-dropdown-item" for="split-equal-item-{{ $involved_user->id }}" data-user-id="{{ $involved_user->id }}" onclick="splitEqualUpdateSelectAll()">
                         <input type="checkbox" id="split-equal-item-{{ $involved_user->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $involved_user->id }}" {{ $expense->participants->contains('id', $involved_user->id) ? 'checked' : '' }}/>
-                        <div class="user-photo-name">
-                            <div class="profile-circle-sm-placeholder"></div>
-                            <div class="split-equal-item-name">{{ $involved_user->username }}</div>
+                        <div class="dropdown-user-item-img-name">
+                            <div class="profile-img-sm-container">
+                                <img src="{{ $involved_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                            </div>
+                            <div class="dropdown-user-item-name">{{ $involved_user->username }}</div>
                         </div>
                     </label>
                 </li>
@@ -68,35 +75,14 @@
 
 <template id="split-equal-dropdown-item-template">
     <li>
-        <label class="split-equal-item" for="" onclick="splitEqualUpdateSelectAll()">
+        <label class="expand-dropdown-item" for="" data-user-id="" onclick="splitEqualUpdateSelectAll()">
             <input type="checkbox" id="" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="" checked/>
-            <div class="user-photo-name">
-                <div class="profile-circle-sm-placeholder"></div>
-                <div class="split-equal-item-name"></div>
+            <div class="dropdown-user-item-img-name">
+                <div class="profile-img-sm-container">
+                    <img src="" alt="User profile image" class="profile-img-sm">
+                </div>
+                <div class="dropdown-user-item-name"></div>
             </div>
         </label>
     </li>
 </template>
-
-<script>
-    function splitEqualSelectAll(box) {
-        $('.split-equal-item-checkbox').prop('checked', box.checked);
-
-        splitEqualUpdatePriceBreakdown();
-    }
-
-    function splitEqualUpdateSelectAll() {
-        $('#split-equal-select-all').prop('checked', $('.split-equal-item-checkbox:checked').length === $('.split-equal-item-checkbox').length);
-
-        splitEqualUpdatePriceBreakdown();
-    }
-
-    function splitEqualUpdatePriceBreakdown() {
-        const currentParticipantCount = parseInt($('.split-equal-item-checkbox:checked').length);
-        const amountPerParticipant = currentParticipantCount === 0 || currentAmountInput.value === '' ? 0 : parseFloat(currentAmountInput.value) / currentParticipantCount;
-
-        $('.split-equal-price-breakdown').text(amountPerParticipant.toFixed(2));
-        $('#split-equal-participant-count').text(currentParticipantCount);
-        $('#split-equal-participant-count-label').text(currentParticipantCount === 1 ? "{{ __(' person') }}" : "{{ __(' people') }}");
-    }
-</script>
