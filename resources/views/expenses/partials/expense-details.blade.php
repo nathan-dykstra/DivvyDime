@@ -1,6 +1,14 @@
 <div class="container margin-bottom-lg">
+    <x-validation-warning id="expense-name-warning">{{ __('You must give the expense a name') }}</x-validation-warning>
+    <x-validation-warning id="expense-amount-warning">{{ __('The expense amount must be a positive number') }}</x-validation-warning>
+    <x-validation-warning id="expense-group-changed-warning">{{ __('A user was removed from the expense when you changed the group') }}</x-validation-warning>
+    <x-validation-warning id="expense-payer-warning">{{ __('You must select a payer') }}</x-validation-warning>
+    <x-validation-warning id="expense-participant-warning">{{ __('The expense must involve at least two users (including the payer)') }}</x-validation-warning>
+    <x-validation-warning id="expense-current-user-warning">{{ __('The current user must be involved when adding an expense in ') }}<span class="bold-username">{{ $default_group->name }}</span></x-validation-warning>
+    <x-validation-warning id="expense-split-amount-sum-warning">{{ __('The amounts must sum to the expense total when splitting by "Amount"') }}</x-validation-warning>
+
     <div class="restrict-max-width">
-        <form method="post" action="{{ $expense ? route('expenses.update', $expense) : route('expenses.store') }}" class="space-bottom-lg">
+        <form method="post" id="expense-form" action="{{ $expense ? route('expenses.update', $expense) : route('expenses.store') }}" class="space-bottom-lg">
             @csrf
             @if ($expense)
                 @method('patch')
@@ -66,11 +74,11 @@
             </div>
 
             <div class="expense-name-amount-category-container">
-                <x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Choose a category')">
+                <!--<x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Choose a category')">
                     <div class="expense-category">
-                        <!-- TODO: Expense Category selector -->
+                        TODO: category selector
                     </div>
-                </x-tooltip>
+                </x-tooltip>-->
                 <div class="expense-name-amount-container">
                     <div class="expense-input-container">
                         <input id="expense-name" class="expense-form-name" name="expense-name" type="text" placeholder="{{ __('Describe the expense') }}" value="{{ old('expense-name', $expense ? $expense->name : '') }}" autocomplete="off" maxlength="255" required />
@@ -250,7 +258,6 @@
                         <h4 class="margin-bottom-sm">{{ __('Choose a group') }}</h4>
 
                         <ul class="expense-paid-dropdown-list" id="expense-group-dropdown-list">
-                            <!-- TODO: add group images to this list -->
                             @foreach ($groups as $dropdown_group)
                                 <li>
                                     <label class="expand-dropdown-item" for="group-dropdown-item-{{ $dropdown_group->id }}" data-group-id="{{ $dropdown_group->id }}" data-group-name="{{ $dropdown_group->name }}" onclick="setExpenseGroup(this)">
@@ -272,7 +279,12 @@
                                                 @endif
                                             @endif
                                         />
-                                        <div class="dropdown-user-item-name">{{ $dropdown_group->name }}</div>
+                                        <div class="dropdown-user-item-img-name">
+                                            <div class="group-img-sm-container">
+                                                <img src="{{ $dropdown_group->getGroupImageUrlAttribute() }}" alt="Group image" class="group-img-sm">
+                                            </div>
+                                            <div class="dropdown-user-item-name">{{ $dropdown_group->name }}</div>
+                                        </div>
                                     </label>
                                 </li>
                             @endforeach
@@ -294,7 +306,7 @@
 
                         <div class="expense-datepicker-container">
                             <!-- Flowbite Tailwind CSS Datepicker -->
-                            <div id="flowbite-datepicker" inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $expense ? $expense->date : $today }}"></div>
+                            <div id="flowbite-datepicker" inline-datepicker datepicker-format="yyyy-mm-dd" data-date="{{ $expense ? $expense->date : $today }}"></div>
                         </div>
                     </div>
 
@@ -321,7 +333,7 @@
             </div>
 
             <div class="btn-container-start">
-                <x-primary-button type="submit">{{ __('Save') }}</x-primary-button>
+                <x-primary-button onclick="validateExpenseForm()">{{ __('Save') }}</x-primary-button>
             </div>
         </form>
     </div>
@@ -425,6 +437,7 @@
     const splitAmountList = document.getElementById('split-amount-list');
     const splitReimbursementList = document.getElementById('split-reimbursement-list');
 
+    const currentNameInput = document.getElementById('expense-name');
     const currentAmountInput = document.getElementById('expense-amount');
     const currentPayerInput = document.querySelector('input[name="expense-paid"]:checked');
     const currentSplitInput = document.getElementById('expense-split');
@@ -437,6 +450,14 @@
     const groupBtn = document.getElementById('expense-group-btn');
     const dateBtn = document.getElementById('expense-date-btn');
     const mediaBtn = document.getElementById('expense-media-btn');
+
+    const expenseNameValidationWarning = document.getElementById('expense-name-warning');
+    const expenseAmountValidationWarning = document.getElementById('expense-amount-warning');
+    const groupChangeValidationWarning = document.getElementById('expense-group-changed-warning');
+    const payerValidationWarning = document.getElementById('expense-payer-warning');
+    const participantValidationWarning = document.getElementById('expense-participant-warning');
+    const currentUserValidationWarning = document.getElementById('expense-current-user-warning');
+    const splitAmountSumValidationWarning = document.getElementById('expense-split-amount-sum-warning');
 
     let selectedDropdownItemIndex = 0;
 
@@ -656,6 +677,7 @@
         mediaDropdown.classList.remove('expand-dropdown-open');
         dateDropdown.classList.remove('expand-dropdown-open');
 
+        splitTabsScrollToCurrentTab();
         splitDropdown.classList.toggle('expand-dropdown-open');
     }
 
@@ -952,6 +974,7 @@
         newPayer = parseInt(payer.dataset.userId);
         currentPayerInput.value = newPayer;
         paidBtn.querySelector('.expense-round-btn-text').textContent = payer.dataset.username;
+        hideValidationWarning(payerValidationWarning);
     }
 
     function setExpenseSplit(tab) {
@@ -1013,6 +1036,7 @@
                         const userId = parseInt(chip.dataset.userId);
                         if (!groupMembers.includes(userId)) {
                             chip.querySelector('button').click();
+                            showValidationWarning(groupChangeValidationWarning);
                         }
                     });
                 }
@@ -1132,4 +1156,113 @@
         // Update the "Split" dropdown list "Select All" checkboxes with the initial selection state
         updateSplitDropdownSelectAll();
     })
+
+    // Must match constant in Group model
+    const defaultGroupId = 1;
+
+    // Must match constants in ExpenseType model
+    const splitEqual = 1;
+    const splitAmount = 2;
+    const splitPercentage = 3;
+    const splitShare = 4;
+    const splitAdjustment = 5;
+    const splitReimbursement = 6;
+    const splitItemized = 7;
+
+    function validateExpenseForm() {
+        const expenseForm = document.getElementById('expense-form');
+        const currentUserId = parseInt({{ $current_user->id }});
+
+        // Validate expense name
+        if (currentNameInput.value.trim() === '') {
+            currentNameInput.focus();
+            showValidationWarning(expenseNameValidationWarning);
+            return;
+        }
+
+        // Validate expense amount
+        const expenseAmount = parseFloat(currentAmountInput.value);
+        if (isNaN(expenseAmount) || expenseAmount <= 0) {
+            currentAmountInput.focus();
+            showValidationWarning(expenseAmountValidationWarning);
+            return;
+        }
+
+        // Validate expense payer
+        if (currentPayerInput === null || paidDropdownList.children.length === 0) {
+            showValidationWarning(payerValidationWarning);
+            return;
+        }
+
+        // Ensure current user is involved in the expense if it is in the default group
+        let currentUserInvolved = false;
+        if (currentGroupInput.value == defaultGroupId && currentPayerInput.value == currentUserId) {
+            currentUserInvolved = true;
+        }
+
+        // Validate the expense split details
+        if (document.querySelector('.expense-split-tab-active').dataset.expenseTypeId == splitEqual) {
+            const splitEqualParticipants = splitEqualList.querySelectorAll('.split-equal-item-checkbox:checked');
+            if (splitEqualParticipants.length === 0) {
+                showValidationWarning(participantValidationWarning);
+                return;
+            } else if (splitEqualParticipants.length === 1) {
+                if (splitEqualList.querySelector('.split-equal-item-checkbox:checked').closest('.expand-dropdown-item').dataset.userId == currentPayerInput.value) {
+                    showValidationWarning(participantValidationWarning);
+                    return;
+                }
+            }
+
+            if (currentGroupInput.value == defaultGroupId) {
+                Array.from(splitEqualParticipants).forEach(participant => {
+                    if (parseInt(participant.value) == currentUserId) {
+                        currentUserInvolved = true;
+                    }
+                });
+            }
+        } else if (document.querySelector('.expense-split-tab-active').dataset.expenseTypeId == splitAmount) {
+            let userAmountsSum = 0;
+
+            Array.from(splitAmountList.children).forEach(child => {
+                if (child.querySelector('.split-amount-item').dataset.userId == currentUserId && child.querySelector('input').value !== '') {
+                    currentUserInvolved = true;
+                }
+
+                if (child.querySelector('input').value !== '') {
+                    userAmountsSum += parseFloat(child.querySelector('input').value);
+                }
+            });
+
+            if (userAmountsSum !== parseFloat(currentAmountInput.value)) {
+                showValidationWarning(splitAmountSumValidationWarning);
+                return;
+            }
+        } else if (document.querySelector('.expense-split-tab-active').dataset.expenseTypeId == splitReimbursement) {
+            const splitReimbursementParticipants = splitReimbursementList.querySelectorAll('.split-reimbursement-item-checkbox:checked');
+            if (splitReimbursementParticipants.length === 0) {
+                showValidationWarning(participantValidationWarning);
+                return;
+            } else if (splitReimbursementParticipants.length === 1) {
+                if (splitReimbursementList.querySelector('.split-reimbursement-item-checkbox:checked').closest('.expand-dropdown-item').dataset.userId == currentPayerInput.value) {
+                    showValidationWarning(participantValidationWarning);
+                    return;
+                }
+            }
+
+            if (currentGroupInput.value == defaultGroupId) {
+                Array.from(splitReimbursementParticipants).forEach(participant => {
+                    if (parseInt(participant.value) == currentUserId) {
+                        currentUserInvolved = true;
+                    }
+                });
+            }
+        }
+
+        if (currentGroupInput.value == defaultGroupId && !currentUserInvolved) {
+            showValidationWarning(currentUserValidationWarning);
+            return;
+        }
+
+        expenseForm.submit();
+    }
 </script>
