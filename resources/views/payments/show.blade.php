@@ -114,7 +114,7 @@
     <div class="margin-top-lg space-top-sm">
         <div class="text-primary payment-info-user-amounts">
             <div class="profile-img-sm-container">
-                <img class="profile-img-sm" src="{{ $payment->payer_user->profile_image_url }}" alt="{{ __('Profile image for ') . $payment->payer_user->username }}"/>
+                <img class="profile-img" src="{{ $payment->payer_user->profile_image_url }}" alt="{{ __('Profile image for ') . $payment->payer_user->username }}"/>
             </div>
             <div class="expense-info-breakdown-payer-container">
                 <div class="expense-info-breakdown-payer">
@@ -131,7 +131,7 @@
     
         <div class="text-primary payment-info-user-amounts">
             <div class="profile-img-sm-container">
-                <img class="profile-img-sm" src="{{ $payment->payee->profile_image_url }}" alt="{{ __('Profile image for ') . $payment->payee->username }}"/>
+                <img class="profile-img" src="{{ $payment->payee->profile_image_url }}" alt="{{ __('Profile image for ') . $payment->payee->username }}"/>
             </div>
             <div class="expense-info-breakdown-payer-container">
                 <div class="expense-info-breakdown-payer">

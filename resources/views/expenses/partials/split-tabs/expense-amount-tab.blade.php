@@ -21,7 +21,7 @@
                         <label class="split-amount-item" for="split-amount-item-{{ $member->id }}" data-user-id="{{ $member->id }}">
                             <div class="dropdown-user-item-img-name">
                                 <div class="profile-img-sm-container">
-                                    <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                    <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                                 </div>
                                 <div class="dropdown-user-item-name">{{ $member->username }}</div>
                             </div>
@@ -45,7 +45,7 @@
                     <label class="split-amount-item" for="split-amount-item-{{ $current_user->id }}" data-user-id="{{ $current_user->id }}">
                         <div class="dropdown-user-item-img-name">
                             <div class="profile-img-sm-container">
-                                <img src="{{ $current_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                <img src="{{ $current_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                             </div>
                             <div class="dropdown-user-item-name">{{ $current_user->username }}</div>
                         </div>
@@ -69,7 +69,7 @@
                         <label class="split-amount-item" for="split-amount-item-{{ $friend->id }}" data-user-id="{{ $friend->id }}">
                             <div class="dropdown-user-item-img-name">
                                 <div class="profile-img-sm-container">
-                                    <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                    <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                                 </div>
                                 <div class="dropdown-user-item-name">{{ $friend->username }}</div>
                             </div>
@@ -95,7 +95,7 @@
                     <label class="split-amount-item" for="split-amount-item-{{ $involved_user->id }}" data-user-id="{{ $involved_user->id }}">
                         <div class="dropdown-user-item-img-name">
                             <div class="profile-img-sm-container">
-                                <img src="{{ $involved_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                <img src="{{ $involved_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                             </div>
                             <div class="dropdown-user-item-name">{{ $involved_user->username }}</div>
                         </div>
@@ -124,7 +124,7 @@
         <label class="split-amount-item" for="" data-user-id="">
             <div class="dropdown-user-item-img-name">
                 <div class="profile-img-sm-container">
-                    <img src="" alt="User profile image" class="profile-img-sm">
+                    <img src="" alt="User profile image" class="profile-img">
                 </div>
                 <div class="dropdown-user-item-name"></div>
             </div>

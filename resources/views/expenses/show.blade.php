@@ -52,7 +52,7 @@
             <div class="expense-info-breakdown">
                 <div class="expense-info-breakdown-left">
                     <div class="profile-img-sm-container">
-                        <img class="profile-img-sm" src="{{ $expense->payer_user->profile_image_url }}" alt="{{ __('Profile image for ') . $expense->payer_user->username }}"/>
+                        <img class="profile-img" src="{{ $expense->payer_user->profile_image_url }}" alt="{{ __('Profile image for ') . $expense->payer_user->username }}"/>
                     </div>
                     <div class="expense-info-breakdown-line-container">
                         <div class="expense-info-breakdown-line"></div>

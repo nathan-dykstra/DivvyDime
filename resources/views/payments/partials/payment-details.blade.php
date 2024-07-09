@@ -29,7 +29,9 @@
                                 <div class="item-list-selector-radio">
                                     <input type="radio" id="choose-user-item-{{ $user->id }}" class="radio" name="payment-payee" value="{{ $user->id }}" {{ $payment?->recipient_user->id === $user->id || $friend?->id == $user->id ? 'checked' : '' }}/>
                                     <div class="dropdown-user-item-img-name">
-                                        <div class="profile-circle-sm-placeholder"></div>
+                                        <div class="profile-img-sm-container">
+                                            <img src="{{ $user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
+                                        </div>
                                         <div class="dropdown-user-item-name">{{ $user->username }}</div>
                                     </div>
                                 </div>
@@ -76,17 +78,17 @@
             <div class="payment-form {{ $payment || ($group && $friend) ? '' : 'hidden' }} space-top-lg" id="payment-form">
                 <div>
                     <div class="payment-user-photos-container">
-                        <div class="payment-user"> <!-- TODO: show payer and payee user's profile photos -->
-                            <div class="profile-circle-lg-placeholder"></div>
+                        <div class="profile-img-md-container">
+                            <img src="{{ $payment?->payer_user->getProfileImageUrlAttribute() ?? auth()->user()->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                         </div>
-    
+
                         <i class="payment-arrow fa-solid fa-right-long fa-2xl"></i>
-    
-                        <div class="payment-user">
-                            <div class="profile-circle-lg-placeholder"></div>
+
+                        <div class="profile-img-md-container"> <!-- TODO: default user image before selection -->
+                            <img src="{{ $payment?->recipient_user->getProfileImageUrlAttribute() ?? '' }}" alt="User profile image" class="profile-img" id="payment-recipient-img">
                         </div>
                     </div>
-    
+
                     <div class="expense-paid-split">
                         <div>
                             @if ($payment)
@@ -154,7 +156,7 @@
 
                             <div class="expense-datepicker-container">
                                 <!-- Flowbite Tailwind CSS Datepicker -->
-                                <div id="flowbite-datepicker" inline-datepicker datepicker-buttons datepicker-format="yyyy-mm-dd" data-date="{{ $payment ? $payment->date : $today }}"></div>
+                                <div id="flowbite-datepicker" inline-datepicker datepicker-format="yyyy-mm-dd" data-date="{{ $payment ? $payment->date : $today }}"></div>
                             </div>
                         </div>
 
@@ -291,16 +293,15 @@
                 'friend_user_id': payeeUserId,
             },
             success: function(html) {
-                balances = $('#payment-balances-list');
-                balances.replaceWith(html);
+                document.getElementById('payment-balances-list').outerHTML = html;
             },
             error: function(error) {
                 console.log(error);
             }
         });
 
-        // TODO: Update payee profile photo
         userBtn.querySelector('.expense-round-btn-text').textContent = payeeUsername;
+        document.getElementById('payment-recipient-img').src = userItem.querySelector('.profile-img').src;
 
         // Ensure amount input is active and not still a fixed value
         currentAmountInput.classList.remove('hidden');

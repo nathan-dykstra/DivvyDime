@@ -5,7 +5,7 @@
                 <div class="expense-info-breakdown">
                     <div class="expense-info-breakdown-left">
                         <div class="profile-img-sm-container">
-                            <img class="profile-img-sm" src="{{ $friend->profile_image_url }}" alt="{{ __('Profile image for ') . $friend->username }}">
+                            <img class="profile-img" src="{{ $friend->profile_image_url }}" alt="{{ __('Profile image for ') . $friend->username }}">
                         </div>
 
                         <div class="expense-info-breakdown-line-container">
@@ -34,7 +34,7 @@
             @else
                 <div class="friend-name-container">
                     <div class="profile-img-sm-container">
-                        <img class="profile-img-sm" src="{{ $friend->profile_image_url }}" alt="{{ __('Profile image for ') . $friend->username }}">
+                        <img class="profile-img" src="{{ $friend->profile_image_url }}" alt="{{ __('Profile image for ') . $friend->username }}">
                     </div>
                     @include('friends.partials.friend-name')
                 </div>

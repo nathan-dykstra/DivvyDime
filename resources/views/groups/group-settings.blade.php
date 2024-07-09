@@ -43,7 +43,7 @@
                     <div class="group-settings-member">
                         <div class="dropdown-user-item-img-name">
                             <div class="profile-img-sm-container">
-                                <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                             </div>
                             <div>
                                 <div class="text-primary">{{ $member->username }}</div>

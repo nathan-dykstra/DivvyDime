@@ -124,7 +124,7 @@
                                                 <input type="radio" id="paid-dropdown-item-{{ $member->id }}" class="radio" name="expense-paid" value="{{ $member->id }}" {{ $member->id === $current_user->id ? 'checked' : '' }} />
                                                 <div class="dropdown-user-item-img-name">
                                                     <div class="profile-img-sm-container">
-                                                        <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                                        <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                                                     </div>
                                                     <div class="dropdown-user-item-name">{{ $member->username }}</div>
                                                 </div>
@@ -137,7 +137,7 @@
                                             <input type="radio" id="paid-dropdown-item-{{ $current_user->id }}" class="radio" name="expense-paid" value="{{ $current_user->id }}" checked/>
                                             <div class="dropdown-user-item-img-name">
                                                 <div class="profile-img-sm-container">
-                                                    <img src="{{ $current_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                                    <img src="{{ $current_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                                                 </div>
                                                 <div class="dropdown-user-item-name">{{ $current_user->username }}</div>
                                             </div>
@@ -150,7 +150,7 @@
                                                 <input type="radio" id="paid-dropdown-item-{{ $friend->id }}" class="radio" name="expense-paid" value="{{ $friend->id }}" />
                                                 <div class="dropdown-user-item-img-name">
                                                     <div class="profile-img-sm-container">
-                                                        <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                                        <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                                                     </div>
                                                     <div class="dropdown-user-item-name">{{ $friend->username }}</div>
                                                 </div>
@@ -165,7 +165,7 @@
                                             <input type="radio" id="paid-dropdown-item-{{ $involved_user->id }}" class="radio" name="expense-paid" value="{{ $involved_user->id }}" {{ $expense?->payer === $involved_user->id ? 'checked' : '' }}/>
                                             <div class="dropdown-user-item-img-name">
                                                 <div class="profile-img-sm-container">
-                                                    <img src="{{ $involved_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                                    <img src="{{ $involved_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                                                 </div>
                                                 <div class="dropdown-user-item-name">{{ $involved_user->username }}</div>
                                             </div>
@@ -374,7 +374,7 @@
         <div class="involved-dropdown-item" onmouseover="highlightDropdownItem(this)">
             <div class="dropdown-user-item-img-name">
                 <div class="profile-img-sm-container">
-                    <img src="" alt="User profile image" class="profile-img-sm">
+                    <img src="" alt="User profile image" class="profile-img">
                 </div>
                 <div>
                     <div class="involved-dropdown-user-name"></div>
@@ -389,7 +389,7 @@
         <div class="involved-dropdown-item" onmouseover="highlightDropdownItem(this)">
             <div class="dropdown-user-item-img-name">
                 <div class="profile-img-sm-container">
-                    <img src="" alt="User profile image" class="profile-img-sm">
+                    <img src="" alt="User profile image" class="profile-img">
                 </div>
                 <div>
                     <div class="involved-dropdown-user-name"></div>
@@ -406,7 +406,7 @@
                 <input type="radio" id="" class="radio" name="expense-paid" value="" />
                 <div class="dropdown-user-item-img-name">
                     <div class="profile-img-sm-container">
-                        <img src="" alt="User profile image" class="profile-img-sm">
+                        <img src="" alt="User profile image" class="profile-img">
                     </div>
                     <div class="dropdown-user-item-name"></div>
                 </div>

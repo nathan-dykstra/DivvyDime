@@ -1367,11 +1367,13 @@ input[type="search"]::-webkit-search-cancel-button {
     overflow: hidden;
 }
 
-.profile-img-lg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.profile-img-md-container {
+    max-width: 65px;
+    max-height: 65px;
+    min-width: 65px;
+    min-height: 65px;
     border-radius: 50%;
+    overflow: hidden;
 }
 
 .profile-img-sm-container {
@@ -1383,7 +1385,7 @@ input[type="search"]::-webkit-search-cancel-button {
     overflow: hidden;
 }
 
-.profile-img-sm {
+.profile-img {
     height: 100%;
     width: 100%;
     object-fit: cover;

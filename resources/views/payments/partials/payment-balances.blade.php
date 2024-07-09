@@ -5,7 +5,9 @@
                 <div class="item-list-selector-radio">
                     <input type="radio" id="choose-balance-item-all" class="radio" name="payment-balance" value="-1" {{ $payment?->is_settle_all_balances ? 'checked' : '' }}/>
                     <div class="dropdown-user-item-img-name">
-                        <div class="profile-circle-sm-placeholder"></div>
+                        <div class="group-img-sm-container">
+                            <img src="{{ "" }}" alt="Settle all balances" class="group-img-sm"> <!-- TODO: show image for "settle all balances" option -->
+                        </div>
                         <div class="dropdown-user-item-name">{{ __('Settle All Balances') }}</div>
                     </div>
                 </div>
@@ -23,7 +25,9 @@
                 <div class="item-list-selector-radio">
                     <input type="radio" id="choose-balance-item-{{ $balance->id }}" class="radio" name="payment-balance" value="{{ $balance->id }}" {{ (!$payment?->is_settle_all_balances && $payment?->groups->first()->id === $balance->group_id) || $group?->id === $balance->group_id ? 'checked' : '' }}/>
                     <div class="dropdown-user-item-img-name">
-                        <div class="profile-circle-sm-placeholder"></div>
+                        <div class="group-img-sm-container">
+                            <img src="{{ $balance->group_img }}" alt="Group image for {{ $balance->group_name }}" class="group-img-sm">
+                        </div>
                         <div class="dropdown-user-item-name">{{ $balance->group_name }}</div>
                     </div>
                 </div>

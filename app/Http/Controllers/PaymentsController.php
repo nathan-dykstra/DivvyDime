@@ -534,6 +534,8 @@ class PaymentsController extends Controller
                 $balance->display_balance = $balance->balance;
             }
 
+            $balance->group_img = Group::find($balance->group_id)->getGroupImageUrlAttribute();
+
             return $balance;
         });
 
