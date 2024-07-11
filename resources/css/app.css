@@ -1447,7 +1447,6 @@ input[type="search"]::-webkit-search-cancel-button {
     min-height: 75px;
     border-radius: var(--border-radius);
     position: relative;
-    overflow: hidden;
 }
 
 .expense-img-preview {

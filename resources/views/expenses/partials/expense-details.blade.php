@@ -514,7 +514,7 @@
                     let dropdownItemTemplate = document.getElementById('dropdown-item-already-involved-template');
                     dropdownItem = dropdownItemTemplate.content.cloneNode(true);
 
-                    dropdownItem.querySelector('.profile-img-sm').src = user.profile_image_url;
+                    dropdownItem.querySelector('.profile-img').src = user.profile_image_url;
                     dropdownItem.querySelector('.involved-dropdown-user-name').textContent = user.username;
 
                     dropdownItem.querySelector('.involved-dropdown-item').addEventListener('click', () => {
@@ -526,7 +526,7 @@
                     let dropdownItemTemplate = document.getElementById('dropdown-item-not-involved-template');
                     dropdownItem = dropdownItemTemplate.content.cloneNode(true);
 
-                    dropdownItem.querySelector('.profile-img-sm').src = user.profile_image_url;
+                    dropdownItem.querySelector('.profile-img').src = user.profile_image_url;
                     dropdownItem.querySelector('.involved-dropdown-user-name').textContent = user.username;
                     dropdownItem.querySelector('.involved-dropdown-user-email').textContent = user.email;
 
@@ -743,7 +743,7 @@
         paidDropdownItemInput.value = user.id;
 
         paidDropdownItem.querySelector('.dropdown-user-item-name').textContent = user.username;
-        paidDropdownItem.querySelector('.profile-img-sm').src = user.profile_image_url;
+        paidDropdownItem.querySelector('.profile-img').src = user.profile_image_url;
 
         if (insertIndex === paidDropdownList.children.length) {
             paidDropdownList.appendChild(paidDropdownItem);
@@ -766,7 +766,7 @@
         splitEqualDropdownItem.querySelector('.split-equal-item-checkbox').setAttribute('id', 'split-equal-item-' + user.id);
         splitEqualDropdownItem.querySelector('.split-equal-item-checkbox').setAttribute('value', user.id);
         splitEqualDropdownItem.querySelector('.dropdown-user-item-name').textContent = user.username;
-        splitEqualDropdownItem.querySelector('.profile-img-sm').src = user.profile_image_url;
+        splitEqualDropdownItem.querySelector('.profile-img').src = user.profile_image_url;
 
         if (insertIndex === splitEqualList.children.length) {
             splitEqualList.appendChild(splitEqualDropdownItem);
@@ -784,7 +784,7 @@
         splitAmountDropdownItem.querySelector('.text-input-prepend').setAttribute('id', 'split-amount-item-' + user.id);
         splitAmountDropdownItem.querySelector('.text-input-prepend').setAttribute('name', 'split-amount-item-' + user.id);
         splitAmountDropdownItem.querySelector('.dropdown-user-item-name').textContent = user.username;
-        splitAmountDropdownItem.querySelector('.profile-img-sm').src = user.profile_image_url;
+        splitAmountDropdownItem.querySelector('.profile-img').src = user.profile_image_url;
 
         if (insertIndex === splitAmountList.children.length) {
             splitAmountList.appendChild(splitAmountDropdownItem);
@@ -802,7 +802,7 @@
         splitReimbursementDropdownItem.querySelector('.split-reimbursement-item-checkbox').setAttribute('id', 'split-reimbursement-item-' + user.id);
         splitReimbursementDropdownItem.querySelector('.split-reimbursement-item-checkbox').setAttribute('value', user.id);
         splitReimbursementDropdownItem.querySelector('.dropdown-user-item-name').textContent = user.username;
-        splitReimbursementDropdownItem.querySelector('.profile-img-sm').src = user.profile_image_url;
+        splitReimbursementDropdownItem.querySelector('.profile-img').src = user.profile_image_url;
 
         if (insertIndex === splitReimbursementList.children.length) {
             splitReimbursementList.appendChild(splitReimbursementDropdownItem);

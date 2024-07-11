@@ -257,7 +257,7 @@ class Expense extends Model
      */
     public function sendExpenseNotifications()
     {
-        if ($this->group_id === Group::DEFAULT_GROUP || $this->expense_type_id === ExpenseType::PAYMENT || $this->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) {
+        if ($this->expense_type_id === ExpenseType::PAYMENT || $this->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES || $this->groups->first()->id === Group::DEFAULT_GROUP) {
             // Only send the notification to involved Users
 
             foreach ($this->involvedUsers() as $involved_user) {

@@ -5,6 +5,7 @@
 
             <div class="btn-container-end">
                 <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('expenses.edit', $expense)">{{ __('Edit') }}</x-primary-button>
+                <x-primary-button icon="fa-solid fa-receipt icon" :href="route('expenses.create')">{{ __('New Expense') }}</x-primary-button>
 
                 <x-dropdown>
                     <x-slot name="trigger">
