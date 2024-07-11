@@ -4,7 +4,7 @@
             <h2>{{ __('Record payment') }}</h2>
 
             <div class="btn-container-end">
-                <x-primary-button :href="route('expenses')">{{ __('Cancel') }}</x-primary-button>
+                <x-primary-button onclick="window.history.back()">{{ __('Cancel') }}</x-primary-button>
             </div>
         </div>
     </x-slot>

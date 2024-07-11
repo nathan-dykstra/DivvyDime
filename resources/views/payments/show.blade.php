@@ -6,6 +6,7 @@
             <div class="btn-container-end">
                 @if (auth()->user()->id === $payment->payer)
                     <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('payments.edit', $payment)">{{ __('Edit') }}</x-primary-button>
+                    <x-primary-button icon="fa-solid fa-receipt icon" :href="route('payments.create')">{{ __('New Payment') }}</x-primary-button>
 
                     <x-dropdown>
                         <x-slot name="trigger">
@@ -13,14 +14,14 @@
                         </x-slot>
 
                         <x-slot name="content">
-                            <a class="dropdown-item">
-                                <i class="fa-solid fa-camera"></i>
-                                <div>{{ __('Add Image') }}</div>
-                            </a>
-                            <a class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
+                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'upload-payment-images')">
+                                <i class="fa-solid fa-images"></i>
+                                <div>{{ __('Add Images') }}</div>
+                            </div>
+                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
                                 <i class="fa-solid fa-trash-can"></i>
                                 <div>{{ __('Delete') }}</div>
-                            </a>
+                            </div>
                         </x-slot>
                     </x-dropdown>
                 @endif
@@ -114,7 +115,7 @@
     <div class="margin-top-lg space-top-sm">
         <div class="text-primary payment-info-user-amounts">
             <div class="profile-img-sm-container">
-                <img class="profile-img-sm" src="{{ $payment->payer_user->profile_image_url }}" alt="{{ __('Profile image for ') . $payment->payer_user->username }}"/>
+                <img class="profile-img" src="{{ $payment->payer_user->profile_image_url }}" alt="{{ __('Profile image for ') . $payment->payer_user->username }}"/>
             </div>
             <div class="expense-info-breakdown-payer-container">
                 <div class="expense-info-breakdown-payer">
@@ -131,7 +132,7 @@
     
         <div class="text-primary payment-info-user-amounts">
             <div class="profile-img-sm-container">
-                <img class="profile-img-sm" src="{{ $payment->payee->profile_image_url }}" alt="{{ __('Profile image for ') . $payment->payee->username }}"/>
+                <img class="profile-img" src="{{ $payment->payee->profile_image_url }}" alt="{{ __('Profile image for ') . $payment->payee->username }}"/>
             </div>
             <div class="expense-info-breakdown-payer-container">
                 <div class="expense-info-breakdown-payer">

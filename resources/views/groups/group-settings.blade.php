@@ -41,10 +41,16 @@
     
                 @foreach ($group_members as $member)
                     <div class="group-settings-member">
-                        <div>
-                            <div class="text-primary">{{ $member->username }}</div>
-                            <div class="text-shy">{{ $member->email }}</div>
+                        <div class="dropdown-user-item-img-name">
+                            <div class="profile-img-sm-container">
+                                <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
+                            </div>
+                            <div>
+                                <div class="text-primary">{{ $member->username }}</div>
+                                <div class="text-shy">{{ $member->email }}</div>
+                            </div>
                         </div>
+                        
                         @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
                             <div class="vertical-center">
                                 <div class="tooltip tooltip-left">

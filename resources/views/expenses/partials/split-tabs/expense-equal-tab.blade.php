@@ -21,7 +21,7 @@
                             <input type="checkbox" id="split-equal-item-{{ $member->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $member->id }}" checked />
                             <div class="dropdown-user-item-img-name">
                                 <div class="profile-img-sm-container">
-                                    <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                    <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                                 </div>
                                 <div class="dropdown-user-item-name">{{ $member->username }}</div>
                             </div>
@@ -34,7 +34,7 @@
                         <input type="checkbox" id="split-equal-item-{{ $current_user->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $current_user->id }}" checked />
                         <div class="dropdown-user-item-img-name">
                             <div class="profile-img-sm-container">
-                                <img src="{{ $current_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                <img src="{{ $current_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                             </div>
                             <div class="dropdown-user-item-name">{{ $current_user->username }}</div>
                         </div>
@@ -47,7 +47,7 @@
                             <input type="checkbox" id="split-equal-item-{{ $friend->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $friend->id }}" checked />
                             <div class="dropdown-user-item-img-name">
                                 <div class="profile-img-sm-container">
-                                    <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                    <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                                 </div>
                                 <div class="dropdown-user-item-name">{{ $friend->username }}</div>
                             </div>
@@ -62,7 +62,7 @@
                         <input type="checkbox" id="split-equal-item-{{ $involved_user->id }}" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="{{ $involved_user->id }}" {{ $expense->participants->contains('id', $involved_user->id) ? 'checked' : '' }}/>
                         <div class="dropdown-user-item-img-name">
                             <div class="profile-img-sm-container">
-                                <img src="{{ $involved_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img-sm">
+                                <img src="{{ $involved_user->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
                             </div>
                             <div class="dropdown-user-item-name">{{ $involved_user->username }}</div>
                         </div>
@@ -79,7 +79,7 @@
             <input type="checkbox" id="" class="checkbox split-equal-item-checkbox" name="split-equal-user[]" value="" checked/>
             <div class="dropdown-user-item-img-name">
                 <div class="profile-img-sm-container">
-                    <img src="" alt="User profile image" class="profile-img-sm">
+                    <img src="" alt="User profile image" class="profile-img">
                 </div>
                 <div class="dropdown-user-item-name"></div>
             </div>
