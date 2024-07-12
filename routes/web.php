@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,9 +19,18 @@ Route::get('/welcome', function () {
 })->name('welcome');
 
 Route::get('/', [DashboardController::class, 'show'])->middleware(['auth', 'verified'])->name('dashboard');
+
+/**
+ * Redirect from old home route '/dashboard' to new home route '/'
+ */
+Route::get('/dashboard', function () {
+    return Redirect(route('dashboard'));
+});
+
 /*
 Route::get('/', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 */
+
 require __DIR__.'/auth.php';
