@@ -85,23 +85,26 @@
 
 <script>
     friendsSearchbar = document.getElementById("search-friends");
-    friendsSearchbar.addEventListener('input', function(event) {
-        var searchString = event.target.value;
 
-        $.ajax({
-            url: "{{ route('friends.search') }}",
-            method: 'POST',
-            data: {
-                '_token': '{{ csrf_token() }}',
-                'search_string': searchString,
-            },
-            success: function(html) {
-                friends = $('.friends');
-                friends.replaceWith(html);
-            },
-            error: function(error) {
-                console.log(error);
-            }
+    if (friendsSearchbar) {
+        friendsSearchbar.addEventListener('input', function(event) {
+            var searchString = event.target.value;
+
+            $.ajax({
+                url: "{{ route('friends.search') }}",
+                method: 'POST',
+                data: {
+                    '_token': '{{ csrf_token() }}',
+                    'search_string': searchString,
+                },
+                success: function(html) {
+                    friends = $('.friends');
+                    friends.replaceWith(html);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
         });
-    });
+    }
 </script>

@@ -55,23 +55,26 @@
 
 <script>
     expensesSearchbar = document.getElementById("search-expenses");
-    expensesSearchbar.addEventListener('input', function(event) {
-        var searchString = event.target.value;
 
-        $.ajax({
-            url: "{{ route('expenses.search') }}",
-            method: 'POST',
-            data: {
-                '_token': '{{ csrf_token() }}',
-                'search_string': searchString,
-            },
-            success: function(html) {
-                expenses = $('.expenses');
-                expenses.replaceWith(html);
-            },
-            error: function(error) {
-                console.log(error);
-            }
+    if (expensesSearchbar) {
+        expensesSearchbar.addEventListener('input', function(event) {
+            var searchString = event.target.value;
+
+            $.ajax({
+                url: "{{ route('expenses.search') }}",
+                method: 'POST',
+                data: {
+                    '_token': '{{ csrf_token() }}',
+                    'search_string': searchString,
+                },
+                success: function(html) {
+                    expenses = $('.expenses');
+                    expenses.replaceWith(html);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
         });
-    });
+    }
 </script>

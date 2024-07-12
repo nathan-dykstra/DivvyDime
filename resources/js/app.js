@@ -15,9 +15,9 @@ select2();
 
 
 // Constants
-const sidebarWidth = "250px";
-const autoCloseSidebarWidth = 1330;
-const mobileWidth = 768;
+const sidebarWidth = "250px";        //
+const autoCloseSidebarWidth = 900;   // These constants must match sidebar script in app.blade.php
+const mobileWidth = 768;             //
 
 // Document elements
 const body = document.body;

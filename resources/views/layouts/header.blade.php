@@ -100,17 +100,17 @@
         height: var(--navbar-height);
     }
 
-    @media screen and (min-width: 768px) and (max-width: 1180px) {
+    @media screen and (min-width: 768px) and (max-width: 1312px) {
         .header-content {
-            margin-left: 40px;
-            margin-right: 40px;
+            margin-left: var(--container-padding);
+            margin-right: var(--container-padding);
         }
     }
 
     @media screen and (max-width: 768px) {
         .header-content {
-            margin-left: 16px;
-            margin-right: 16px;
+            margin-left: var(--container-small-padding);
+            margin-right: var(--container-small-padding);
         }
     }
 

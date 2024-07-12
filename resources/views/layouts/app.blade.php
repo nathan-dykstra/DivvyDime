@@ -46,10 +46,9 @@
                 <!-- Set sidebar state before content loads -->
                 <script>
                     const isCollapsed = localStorage.getItem('sidebarCollapsed');
-                    const sidebarWidth = "250px";
-                    const autoCloseSidebarWidth = 1330;
-                    const mobileWidth = 768;
-                    const body = document.body;
+                    const sidebarWidth = "250px";        //
+                    const autoCloseSidebarWidth = 900;   // These constants must match app.js
+                    const mobileWidth = 768;             //
                     const mainContentWrapper = document.getElementById("main-content-wrapper");
                     const headerWrapper = document.getElementById("header-wrapper");
                     const sidebar = document.getElementById("sidebar");
