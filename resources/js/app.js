@@ -794,6 +794,10 @@ window.logOut = function() {
     document.getElementById('header-log-out-form').submit();
 }
 
+window.handleBackBtnClick = function() {
+    return window.history.back();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const header = document.getElementById('page-header');
     const headerContent = document.getElementById('header-content');
