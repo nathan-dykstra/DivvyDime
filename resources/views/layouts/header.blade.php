@@ -3,7 +3,7 @@
         <div class="header-content" id="header-content">
             <div class="header-left">
                 @if (isset($back_btn))
-                    <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-arrow-left" onclick="window.history.back()" />
+                    <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-arrow-left" onclick="handleBackBtnClick()" />
                 @endif
 
                 @if (isset($header_image))

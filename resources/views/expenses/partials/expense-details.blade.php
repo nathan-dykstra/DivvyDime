@@ -400,6 +400,23 @@
         </div>
     </template>
 
+    <template id="dropdown-item-group-template">
+        <div class="involved-dropdown-item" onmouseover="highlightDropdownItem(this)">
+            <div class="dropdown-user-item-img-name">
+                <div class="group-img-sm-container">
+                    <img src="" alt="Group image" class="group-img-sm">
+                </div>
+                <div>
+                    <div class="involved-dropdown-user-name"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="dropdown-divider-template">
+        <div class="involved-dropdown-divider"></div>
+    </template>
+
     <template id="paid-dropdown-item-template">
         <li>
             <label class="expand-dropdown-item" for="" data-user-id="" data-username="" onclick="setExpensePayer(this)">
@@ -478,11 +495,11 @@
                 'search_string': searchString,
                 'group_id': currentGroupInput.value,
             },
-            success: function(users) {
+            success: function(response) {
                 if (searchString === '') {
                     involvedDropdown.classList.add('hidden');
                 } else {
-                    displaySearchResults(users);
+                    displaySearchResults(response);
                 }
             },
             error: function(error) {
@@ -499,18 +516,42 @@
         }
     });
 
-    function displaySearchResults(results) {
+    function displaySearchResults(response) {
         // Clear the dropdown from any previous results
         involvedDropdown.innerHTML = '';
 
-        if (results.length) {
-            // Get an array of user_ids that are already involved
-            const usersAlreadyInvolved = Array.from(involvedChipsContainer.children).map(child => parseInt(child.dataset.userId));
-
-            results.forEach(user => {
+        if (response.groups.length || response.users.length) {
+            response.groups.forEach(group => {
                 let dropdownItem;
 
-                if (usersAlreadyInvolved.includes(parseInt(user['id']))) { // This user has already been added
+                let dropdownItemTemplate = document.getElementById('dropdown-item-group-template');
+                dropdownItem = dropdownItemTemplate.content.cloneNode(true);
+
+                dropdownItem.querySelector('.group-img-sm').src = group.group_image_url;
+                dropdownItem.querySelector('.involved-dropdown-user-name').textContent = group.name;
+
+                dropdownItem.querySelector('.involved-dropdown-item').addEventListener('click', () => {
+                    addGroupChips(group);
+                });
+
+                // Add the item to the involved users search results dropdown
+                involvedDropdown.appendChild(dropdownItem);
+            });
+
+            if (response.groups.length && response.users.length) {
+                let dropdownDividerTemplate = document.getElementById('dropdown-divider-template');
+                dropdownDivider = dropdownDividerTemplate.content.cloneNode(true);
+
+                involvedDropdown.appendChild(dropdownDivider);
+            }
+
+            // Get an array of user IDs that are already involved
+            const usersAlreadyInvolved = Array.from(involvedChipsContainer.children).map(child => parseInt(child.dataset.userId));
+
+            response.users.forEach(user => {
+                let dropdownItem;
+
+                if (usersAlreadyInvolved.includes(parseInt(user.id))) { // This user has already been added
                     let dropdownItemTemplate = document.getElementById('dropdown-item-already-involved-template');
                     dropdownItem = dropdownItemTemplate.content.cloneNode(true);
 
@@ -563,14 +604,54 @@
         const involvedSearchInput = involvedChipsContainer.querySelector('.expense-involved');
         involvedSearchInput.parentNode.insertBefore(userChip, involvedSearchInput);
 
+        // Update the expense dropdowns with the new user
+        addExpenseUser(user);
+
         // Clear and hide search dropdown results
         involvedDropdown.classList.add('hidden');
         involvedFriendsInput.value = '';
         involvedFriendsInput.focus();
 
-        // Update the expense dropdowns with the new user
-        addExpenseUser(user);
-        hideEmptyDropdownWarnings()
+        hideEmptyDropdownWarnings();
+    }
+
+    function addGroupChips(group) {
+        // Get an array of user IDs that are already involved
+        const usersAlreadyInvolved = Array.from(involvedChipsContainer.children).map(child => parseInt(child.dataset.userId));
+
+        group.group_members.forEach(member => {
+            if (usersAlreadyInvolved.includes(parseInt(member.id))) {
+                return; // User is already involved in the expense
+            }
+
+            let userChipTemplate = document.getElementById('involved-chip-template');
+            let userChip = userChipTemplate.content.cloneNode(true);
+
+            // Configure the chip content
+            userChip.querySelector('.involved-chip-text').textContent = member.username;
+            userChip.querySelector('.involved-chip').dataset.userId = member.id;
+            userChip.querySelector('.involved-chip').dataset.username = member.username;
+            userChip.querySelector('.involved-chip').dataset.userImg = member.profile_image_url;
+
+            // Add the chip
+            const involvedSearchInput = involvedChipsContainer.querySelector('.expense-involved');
+            involvedSearchInput.parentNode.insertBefore(userChip, involvedSearchInput);
+
+            // Update the expense dropdowns with the new user
+            addExpenseUser(member);
+        })
+
+        const groupElement = groupDropdownList.querySelector(`[data-group-id="${group.id}"]`);
+        if (groupElement) {
+            groupElement.click(); // Click the corresponding group to set the expense group
+        }
+
+        // Clear and hide search dropdown results
+        involvedDropdown.classList.add('hidden');
+        involvedFriendsInput.value = '';
+        involvedFriendsInput.focus();
+
+        hideEmptyDropdownWarnings();
     }
 
     involvedChipsContainer.addEventListener('click', function() {
@@ -606,13 +687,13 @@
             involvedDropdown.querySelector('.involved-dropdown-item-selected').classList.remove('involved-dropdown-item-selected');
             item.classList.add('involved-dropdown-item-selected');
 
-            const itemIndex = Array.from(involvedDropdown.children).indexOf(item);
+            const itemIndex = Array.from(involvedDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')).indexOf(item);
             selectedDropdownItemIndex = itemIndex;
         }
     }
 
     involvedFriendsInput.addEventListener('keydown', function(event) {
-        const dropdownItemsCount = involvedDropdown.children.length;
+        const dropdownItemsCount = involvedDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)').length;
 
         if ((event.key === 'Backspace' || event.keyCode === 8) && event.target.value === '' && involvedChipsContainer.children.length >= 2) { // Backspace
             // Highlight/delete the last User chip
@@ -636,24 +717,24 @@
             event.preventDefault();
 
             // Update highlighted dropdown item
-            involvedDropdown.children[selectedDropdownItemIndex].classList.remove('involved-dropdown-item-selected');
+            involvedDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')[selectedDropdownItemIndex].classList.remove('involved-dropdown-item-selected');
             if (selectedDropdownItemIndex === 0) {
                 selectedDropdownItemIndex = dropdownItemsCount - 1;
             } else {
                 selectedDropdownItemIndex--;
             }
-            involvedDropdown.children[selectedDropdownItemIndex].classList.add('involved-dropdown-item-selected');
+            involvedDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')[selectedDropdownItemIndex].classList.add('involved-dropdown-item-selected');
         } else if (event.key === 'ArrowDown' || event.keyCode === 40) { // Arrow Down
             event.preventDefault();
 
             // Update highlighted dropdown item
-            involvedDropdown.children[selectedDropdownItemIndex].classList.remove('involved-dropdown-item-selected');
+            involvedDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')[selectedDropdownItemIndex].classList.remove('involved-dropdown-item-selected');
             if (selectedDropdownItemIndex === dropdownItemsCount - 1) {
                 selectedDropdownItemIndex = 0;
             } else {
                 selectedDropdownItemIndex++;
             }
-            involvedDropdown.children[selectedDropdownItemIndex].classList.add('involved-dropdown-item-selected');
+            involvedDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')[selectedDropdownItemIndex].classList.add('involved-dropdown-item-selected');
         } else if (event.key === 'Escape' || event.keyCode === 27) { // Escape
             // Hide the dropdown
             involvedDropdown.classList.add('hidden');

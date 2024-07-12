@@ -581,14 +581,43 @@ class ExpensesController extends Controller
                     WHEN users.id = ? THEN 0
                     ELSE 1
                 END, users.username ASC
-            ", [auth()->user()->id])
+            ", [$current_user->id])
             ->get();
 
         foreach ($users as $user) {
             $user->profile_image_url = $user->getProfileImageUrlAttribute();
         }
 
-        return response()->json($users);
+        $groups = Group::whereHas('members', function ($query) use ($current_user) {
+                $query->where('users.id', $current_user->id);
+            })
+            ->whereNot('id', Group::DEFAULT_GROUP)
+            ->whereRaw('name LIKE ?', ["%$search_string%"])
+            ->orderBy('name', 'ASC')
+            ->get();
+
+        foreach ($groups as $group) {
+            $group->group_image_url = $group->getGroupImageUrlAttribute();
+            $group->group_members = $group->members()
+                ->orderByRaw("
+                    CASE
+                        WHEN users.id = ? THEN 0
+                        ELSE 1
+                    END, users.username ASC
+                ", [$current_user->id])
+                ->get();
+
+            foreach ($group->group_members as $member) {
+                $member->profile_image_url = $member->getProfileImageUrlAttribute();
+            }
+        }
+
+        $response = [
+            'groups' => $groups,
+            'users' => $users,
+        ];
+
+        return response()->json($response);
     }
 
     /**

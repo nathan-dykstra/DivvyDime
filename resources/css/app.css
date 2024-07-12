@@ -1258,6 +1258,10 @@ input[type="search"]::-webkit-search-cancel-button {
         min-height: 30px;
         max-height: 30px;
     }
+
+    .header-title-shift {
+        transform: translateX(-65px); /* 55px image width + 10px gap */
+    }
 }
 
 .desktop-header-buttons {
@@ -2191,9 +2195,8 @@ input[type="search"]::-webkit-search-cancel-button {
     right: 0;
     left: 0;
     z-index: 50;
-
     background-color: var(--secondary-grey);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-lg);
     box-shadow: var(--box-shadow);
     padding: 8px;
     margin-top: 0.5rem;
@@ -2209,7 +2212,6 @@ input[type="search"]::-webkit-search-cancel-button {
     border: 1px solid var(--border-grey);
     background-color: var(--primary-grey);
     transition: border 0.3s, background-color 0.3s ease-in-out;
-
     color: var(--text-primary);
     height: 2em;
     border-radius: 1em;
@@ -2235,7 +2237,7 @@ input[type="search"]::-webkit-search-cancel-button {
     color: var(--text-primary);
     border-radius: 0.3rem;
     padding: 8px 16px;
-    border-radius: 0.3rem;
+    border-radius: var(--border-radius);
     transition: background-color 0.1s ease, color 0.1s ease;
 }
 
@@ -2243,6 +2245,11 @@ input[type="search"]::-webkit-search-cancel-button {
     cursor: pointer;
     background-color: var(--secondary-grey-hover);
     color: var(--text-primary-highlight);
+}
+
+.involved-dropdown-divider {
+    border-top: 1px solid var(--border-grey);
+    margin: 8px;
 }
 
 .expense-name-amount-category-container {
