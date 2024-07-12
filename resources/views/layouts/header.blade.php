@@ -36,7 +36,7 @@
 
                         <x-slot name="content">
                             @if (isset($mobile_overflow_options))
-                                <div class="desktop-hidden">
+                                <div class="mobile-overflow-options">
                                     {{ $mobile_overflow_options }}
                                     <div class="dropdown-divider"></div>
                                 </div>
@@ -122,7 +122,7 @@
 
     @media screen and (max-width: 768px) {
         .header-left {
-            max-width: 70%;
+            max-width: 75%;
         }
     }
 
@@ -177,16 +177,31 @@
         .mobile-search-btn {
             display: block;
         }
+
+        .mobile-header-btn {
+            min-width: 30px;
+            max-width: 30px;
+            min-height: 30px;
+            max-height: 30px;
+        }
     }
 
     .desktop-header-buttons {
         display: flex;
         gap: 10px;
     }
+    
+    .mobile-overflow-options {
+        display: none;
+    }
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 1100px) {
         .desktop-header-buttons {
             display: none;
+        }
+
+        .mobile-overflow-options {
+            display: block;
         }
     }
 </style>
