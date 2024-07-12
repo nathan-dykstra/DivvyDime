@@ -1,11 +1,11 @@
 <x-guest-layout>
     <div class="container">
         <div class="guest-app-logo animate-drop">
-            <h1>DivvyDime</h1>
+            <h1>{{ config('app.name') }}</h1>
         </div>
     
         <div class="guest-app-slogan margin-bottom-lg animate-fade-in">
-            <h3>Divvy up and start saving, one dime at a time!</h3>
+            <h3>{{ _('Divvy up and start saving, one dime at a time!') }}</h3>
         </div>
     
         <div class="btn-container-end">

@@ -5,9 +5,7 @@
         {{ $group->name }}
     </x-slot>
 
-    <x-slot name="back_link">
-        {{ route('groups') }}
-    </x-slot>
+    <x-slot name="back_btn"></x-slot>
 
     <x-slot name="header_image">
         <div class="group-img-header-container">

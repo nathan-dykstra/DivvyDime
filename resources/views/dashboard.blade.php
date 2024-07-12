@@ -1,8 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2>Dashboard</h2>
-    </x-slot>
-
     <!-- Title & Header -->
 
     <x-slot name="header_title">

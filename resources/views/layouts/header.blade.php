@@ -2,10 +2,8 @@
     <div class="header-wrapper" id="header-wrapper">
         <div class="header-content" id="header-content">
             <div class="header-left">
-                @if (isset($back_link))
-                    <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-arrow-left" :href="$back_link" />
-                @elseif (isset($back_btn))
-                    {{ $back_btn }}
+                @if (isset($back_btn))
+                    <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-arrow-left" onclick="window.history.back()" />
                 @endif
 
                 @if (isset($header_image))

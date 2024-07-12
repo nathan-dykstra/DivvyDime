@@ -5,9 +5,7 @@
         {{ $group->name . __(' Settings') }}
     </x-slot>
 
-    <x-slot name="back_link">
-        {{ route('groups.show', $group->id) }}
-    </x-slot>
+    <x-slot name="back_btn"></x-slot>
 
     <x-slot name="header_title">
         {{ __('Group settings') }}

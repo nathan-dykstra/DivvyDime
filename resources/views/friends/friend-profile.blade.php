@@ -5,9 +5,7 @@
         {{ $friend->username }}
     </x-slot>
 
-    <x-slot name="back_link">
-        {{ route('friends') }}
-    </x-slot>
+    <x-slot name="back_btn"></x-slot>
 
     <x-slot name="header_image">
         <div class="profile-img-md-container">

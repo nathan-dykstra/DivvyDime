@@ -4,7 +4,7 @@
     <div class="container">
         <div class="guest-app-logo margin-bottom-lg">
             <a href="{{ route('dashboard') }}">
-                <h1>DivvyDime</h1>
+                <h1>{{ config('app.name') }}</h1>
             </a>
         </div>
 
