@@ -1,12 +1,17 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ __('Add expense') }}</h2>
-            <div class="btn-container-end">
-                <x-primary-button onclick="window.history.back()">{{ __('Cancel') }}</x-primary-button>
-            </div>
-        </div>
+    <!-- Title & Header -->
+
+    <x-slot name="title">
+        {{ __('New Expense') }}
     </x-slot>
+
+    <x-slot name="back_btn"></x-slot>
+
+    <x-slot name="header_title">
+        {{ __('Add expense') }}
+    </x-slot>
+
+    <!-- Content -->
 
     @include('expenses.partials.expense-details')
 </x-app-layout>

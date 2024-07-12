@@ -5,7 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name') }}</title>
+        @if (isset($title))
+            <title>{{ $title . ' | ' . config('app.name') }}</title>
+        @else
+            <title>{{ config('app.name') }}</title>
+        @endif
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -32,31 +36,20 @@
                 }
             </script>
 
+            @include('layouts.search')
+
             @include('layouts.sidebar')
 
-            @include('layouts.navbar')
-
-            <!-- Page Heading -->
-            @if (isset($header))
-                <header class="page-header" id="page-header">
-                    <div class="header-wrapper" id="header-wrapper">
-                        <div class="header-content">
-                            {{ $header }}
-                        </div>
-                    </div>
-                </header>
-            @endif
+            @include('layouts.header')
 
             <div class="main-content-wrapper" id="main-content-wrapper">
                 <!-- Set sidebar state before content loads -->
                 <script>
                     const isCollapsed = localStorage.getItem('sidebarCollapsed');
-                    const sidebarWidth = "250px";
-                    const autoCloseSidebarWidth = 1330;
-                    const mobileWidth = 768;
-                    const body = document.body;
+                    const sidebarWidth = "250px";        //
+                    const autoCloseSidebarWidth = 900;   // These constants must match app.js
+                    const mobileWidth = 768;             //
                     const mainContentWrapper = document.getElementById("main-content-wrapper");
-                    const navbar = document.getElementById("navbar-content");
                     const headerWrapper = document.getElementById("header-wrapper");
                     const sidebar = document.getElementById("sidebar");
                     const sidebarButton = document.getElementById("show-sidebar-btn");
@@ -67,21 +60,18 @@
                         // No need to adjust sidebar when it's hidden for mobile
                     } else if (window.innerWidth < autoCloseSidebarWidth) {
                         sidebar.classList.remove("sidebar-expanded");
-                        navbar.style.marginLeft = "0";
                         if (headerWrapper) headerWrapper.style.marginLeft = "0";
                         mainContentWrapper.style.marginLeft = "0";
                         sidebarButton.classList.remove("hidden");
                         pinSidebarBtn.classList.add("hidden");
                     } else if (isCollapsed === 'true' || isCollapsed === true) {
                         sidebar.classList.remove("sidebar-expanded");
-                        navbar.style.marginLeft = "0";
                         if (headerWrapper) headerWrapper.style.marginLeft = "0";
                         mainContentWrapper.style.marginLeft = "0";
                         sidebarButton.classList.remove("hidden");
                         pinSidebarTooltip.innerHTML = "Pin Sidebar";
                     } else {
                         sidebar.classList.add("sidebar-expanded");
-                        navbar.style.marginLeft = sidebarWidth;
                         if (headerWrapper) headerWrapper.style.marginLeft = sidebarWidth;
                         mainContentWrapper.style.marginLeft = sidebarWidth;
                         sidebarButton.classList.add("hidden");

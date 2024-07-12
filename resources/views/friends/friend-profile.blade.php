@@ -1,13 +1,39 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ $friend->username }}</h2>
-            <div class="btn-container-end">
-                <x-primary-button icon="fa-solid fa-receipt icon" :href="route('expenses.create', ['friend' => $friend->id])">{{ __('Add Expense') }}</x-primary-button>
-                <x-primary-button icon="fa-solid fa-scale-balanced icon" :href="route('payments.create', ['friend' => $friend->id])">{{ __('Settle Up') }}</x-primary-button>
-            </div>
+    <!-- Title & Header -->
+
+    <x-slot name="title">
+        {{ $friend->username }}
+    </x-slot>
+
+    <x-slot name="back_btn"></x-slot>
+
+    <x-slot name="header_image">
+        <div class="profile-img-md-container">
+            <img src="{{ $friend->getProfileImageUrlAttribute() }}" alt="Profile image" class="profile-img">
         </div>
     </x-slot>
+
+    <x-slot name="header_title">
+        {{ $friend->username }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-primary-button icon="fa-solid fa-receipt icon" :href="route('expenses.create', ['friend' => $friend->id])">{{ __('Add Expense') }}</x-primary-button>
+        <x-primary-button icon="fa-solid fa-scale-balanced icon" :href="route('payments.create', ['friend' => $friend->id])">{{ __('Settle Up') }}</x-primary-button>
+    </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <a class="dropdown-item" href="{{ route('expenses.create', ['friend' => $friend->id]) }}">
+            <i class="fa-solid fa-receipt"></i>
+            <div>{{ __('Add Expense') }}</div>
+        </a>
+        <a class="dropdown-item" href="{{ route('payments.create', ['friend' => $friend->id]) }}">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <div>{{ __('Settle Up') }}</div>
+        </a>
+    </x-slot>
+
+    <!-- Content -->
 
     <div class="metrics-container margin-bottom-lg">
         @if ($overall_balance > 0)

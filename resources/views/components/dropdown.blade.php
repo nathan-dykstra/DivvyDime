@@ -67,17 +67,10 @@
         display: grid;
         gap: 8px;
         grid-template-columns: 20px auto;
-
         padding: 8px 16px;
         border-radius: var(--border-radius);
         transition: background-color 0.1s ease, color 0.1s ease;
-
-        font-size: 0.8em;
-        font-weight: 700;
         color: var(--text-heading);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-
         max-width: 250px;
         text-wrap: nowrap;
         overflow: hidden;
@@ -97,5 +90,10 @@
         background-color: var(--secondary-grey-hover);
         cursor: pointer;
         color: var(--text-primary-highlight);
+    }
+
+    .dropdown-divider {
+        border-top: 1px solid var(--border-grey);
+        margin: 8px;
     }
 </style>

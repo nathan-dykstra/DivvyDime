@@ -1,3 +1,5 @@
+<!-- TODO: delete this file after search has been implemented -->
+
 <div class="show-sidebar-btn" id="show-sidebar-btn">
     <i class="fa-solid fa-angle-right"></i>
 </div>

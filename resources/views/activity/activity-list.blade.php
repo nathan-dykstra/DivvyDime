@@ -1,13 +1,26 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ __('Activity') }}</h2>
+    <!-- Title & Header -->
 
-            <div class="btn-container-end">
-                <x-primary-button onclick="clearAllNotifications()">{{ __('Clear All') }}</x-primary-button>
-            </div>
+    <x-slot name="title">
+        {{ __('Activity') }}
+    </x-slot>
+
+    <x-slot name="header_title">
+        {{ __('Activity') }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-primary-button onclick="clearAllNotifications()">{{ __('Clear All') }}</x-primary-button>
+    </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <div class="dropdown-item" onclick="clearAllNotifications()">
+            <i class="fa-solid fa-broom"></i>
+            <div>{{ __('Clear All') }}</div>
         </div>
     </x-slot>
+
+    <!-- Content -->
 
     <div class="activity-list-container">
         @include('activity.partials.notifications')

@@ -1,12 +1,26 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ __('Friends') }}</h2>
-            <div class="btn-container-end">
-                <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'send-friend-invite')" icon="fa-solid fa-user-plus icon">{{ __('Add Friend') }}</x-primary-button>
-            </div>
+    <!-- Title & Header -->
+
+    <x-slot name="title">
+        {{ __('Friends') }}
+    </x-slot>
+
+    <x-slot name="header_title">
+        {{ __('Friends') }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'send-friend-invite')" icon="fa-solid fa-user-plus icon">{{ __('Add Friend') }}</x-primary-button>
+    </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'send-friend-invite')">
+            <i class="fa-solid fa-user-plus"></i>
+            <div>{{ __('Add Friend') }}</div>
         </div>
     </x-slot>
+
+    <!-- Session Status Messages -->
 
     @if (session('status') === 'invite-sent')
         <x-session-status>{{ __('Friend request sent.') }}</x-session-status>
@@ -20,15 +34,26 @@
         <x-session-status innerClass="text-warning">{{ __('You have a pending friend request from that user!') }}</x-session-status>
     @endif
 
-    <div class="section-search">
-        <div class="restrict-max-width">
-            <x-searchbar-secondary placeholder="Search Friends" id="search-friends"/>
-        </div>
-    </div>
+    <!-- Content -->
 
-    <div class="friends-list-container">
-        @include('friends.partials.friends')
-    </div>
+    @if (count($friends) === 0)
+        <div class="notifications-empty-container">
+            <div class="notifications-empty-icon"><i class="fa-solid fa-user-slash"></i></div>
+            <div class="notifications-empty-text">{{ __('No friends!') }}</div>
+        </div>
+    @else
+        <div class="section-search">
+            <div class="restrict-max-width">
+                <x-searchbar-secondary placeholder="Search Friends" id="search-friends"/>
+            </div>
+        </div>
+
+        <div class="friends-list-container">
+            @include('friends.partials.friends')
+        </div>
+    @endif
+
+    <!-- Modals -->
 
     <x-modal name="send-friend-invite" :show="$errors->friendInvite->isNotEmpty()" focusable>
         <form method="post" action="{{ route('friends.invite') }}" class="space-bottom-sm">
@@ -60,23 +85,26 @@
 
 <script>
     friendsSearchbar = document.getElementById("search-friends");
-    friendsSearchbar.addEventListener('input', function(event) {
-        var searchString = event.target.value;
 
-        $.ajax({
-            url: "{{ route('friends.search') }}",
-            method: 'POST',
-            data: {
-                '_token': '{{ csrf_token() }}',
-                'search_string': searchString,
-            },
-            success: function(html) {
-                friends = $('.friends');
-                friends.replaceWith(html);
-            },
-            error: function(error) {
-                console.log(error);
-            }
+    if (friendsSearchbar) {
+        friendsSearchbar.addEventListener('input', function(event) {
+            var searchString = event.target.value;
+
+            $.ajax({
+                url: "{{ route('friends.search') }}",
+                method: 'POST',
+                data: {
+                    '_token': '{{ csrf_token() }}',
+                    'search_string': searchString,
+                },
+                success: function(html) {
+                    friends = $('.friends');
+                    friends.replaceWith(html);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
         });
-    });
+    }
 </script>

@@ -1,18 +1,34 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ __('Groups') }}</h2>
-            <div class="btn-container-end">
-                <x-primary-button icon="fa-solid fa-plus icon" :href="route('groups.create')">{{ __('New Group') }}</x-primary-button>
-            </div>
-        </div>
+    <!-- Title & Header -->
+
+    <x-slot name="title">
+        {{ __('Groups') }}
     </x-slot>
+
+    <x-slot name="header_title">
+        {{ __('Groups') }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-primary-button icon="fa-solid fa-plus icon" :href="route('groups.create')">{{ __('New Group') }}</x-primary-button>
+    </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <a class="dropdown-item" href="{{ route('groups.create') }}">
+            <i class="fa-solid fa-plus"></i>
+            <div>{{ __('New Group') }}</div>
+        </a>
+    </x-slot>
+
+    <!-- Session Status Messages -->
 
     @if (session('status') === 'left-group')
         <x-session-status>{{ __('Left group.') }}</x-session-status>
     @elseif (session('status') === 'group-deleted')
         <x-session-status>{{ __('Group deleted.') }}</x-session-status>
     @endif
+
+    <!-- Content -->
 
     <div class="section-search">
         <div class="restrict-max-width">
@@ -23,6 +39,8 @@
     <div class="groups-list-container">
         @include('groups.partials.groups')
     </div>
+
+    <!-- Modals -->
 
     <x-modal name="default-group-info" :show="false">
         <div>

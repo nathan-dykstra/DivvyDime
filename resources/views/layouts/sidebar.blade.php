@@ -3,6 +3,10 @@
     $mobile_nav = config('mobilenav');
 @endphp
 
+<div class="show-sidebar-btn" id="show-sidebar-btn">
+    <i class="fa-solid fa-angle-right"></i>
+</div>
+
 <nav>
     <!-- Sidebar Navigation Menu -->
 
@@ -15,7 +19,7 @@
         </div>
 
         <a href="{{ route('dashboard') }}">
-            <h1 class="logo-container">DivvyDime</h1>
+            <h1 class="logo-container">{{ config('app.name') }}</h1>
         </a>
 
         <ul class="sidebar-items">
@@ -36,15 +40,17 @@
 
     <!-- Mobile Navigation Menu -->
 
-    <div class="mobile-navigation-wrapper">
-        <ul class="mobile-navigation">
+    <div class="mobile-nav-wrapper">
+        <ul class="mobile-nav">
             @foreach($mobile_nav as $item)
                 <li>
-                    <a href="{{ route($item['route']) }}" class="mobile-navigation-item" onclick="mobileHighlightNavSelection()">
-                        <div>
+                    <a href="{{ route($item['route']) }}" class="mobile-nav-item" onclick="mobileHighlightNavSelection()">
+                        <div class="mobile-nav-item-icon">
                             <i class="{{ $item['icon'] }}"></i>
                         </div>
-                        <div>{{ $item['text'] }}</div>
+                        <div class="mobile-nav-item-text">
+                            {{ $item['text'] }}
+                        </div>
                     </a>
                 </li>
             @endforeach
@@ -54,36 +60,39 @@
 
 <script>
     function highlightSidebarItem() {
-        let tempCurrentRoute = window.location.href;
-        const currentRoute = tempCurrentRoute.replace(/\/payments/g, "/expenses"); // "Expenses" sidebar item should be highlighted for payments pages
+        const tempCurrentRoute = window.location.href;
+        const currentRoute = tempCurrentRoute.replace(/\/payments/g, "/expenses").replace(/\/+$/, ''); // "Expenses" sidebar item should be highlighted for payments pages
 
         const sidebarItems = document.querySelectorAll(".sidebar-items li");
 
         // Loop through sidebar items to find a match with the current route
-        sidebarItems.forEach((item, index) => {
+        sidebarItems.forEach(item => {
             const anchor = item.querySelector('a');
             const href = anchor.getAttribute('href');
-            const hrefPattern = new RegExp('^' + href + '\/.*');
+            const hrefWithoutScheme = href.replace(/^https?:\/\//, '');
+            const hrefPattern = new RegExp('^' + href + '\/.+');
 
-            if (href === currentRoute || hrefPattern.test(currentRoute)) {
+            if (href === currentRoute || (hrefPattern.test(currentRoute) && hrefWithoutScheme.includes('/'))) {
                 item.querySelector('.sidebar-item').classList.add('sidebar-item-active');
             }
         });
     }
 
     function mobileHighlightNavSelection() {
-        const currentRoute = window.location.href;
+        const tempCurrentRoute = window.location.href;
+        const currentRoute = tempCurrentRoute.replace(/\/payments/g, "/expenses").replace(/\/+$/, ''); // "Expenses" sidebar item should be highlighted for payments pages
 
-        const sidebarItems = document.querySelectorAll(".mobile-navigation li");
+        const sidebarItems = document.querySelectorAll(".mobile-nav li");
 
         // Loop through sidebar items to find a match with the current route
-        sidebarItems.forEach((item, index) => {
+        sidebarItems.forEach(item => {
             const anchor = item.querySelector('a');
             const href = anchor.getAttribute('href');
-            const hrefPattern = new RegExp('^' + href + '\/.*');
+            const hrefWithoutScheme = href.replace(/^https?:\/\//, '');
+            const hrefPattern = new RegExp('^' + href + '\/.+');
 
-            if (href === currentRoute || hrefPattern.test(currentRoute)) {
-                item.querySelector('.mobile-navigation-item').classList.add('mobile-nav-item-active');
+            if (href === currentRoute || (hrefPattern.test(currentRoute) && hrefWithoutScheme.includes('/'))) {
+                item.querySelector('.mobile-nav-item').classList.add('mobile-nav-item-active');
             }
         });
     }

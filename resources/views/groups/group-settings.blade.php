@@ -1,15 +1,35 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ __('Group settings') }}</h2>
-            <div class="btn-container-end">
-                <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')" icon="fa-solid fa-right-from-bracket icon">{{ __('Leave') }}</x-primary-button>
-                @if (auth()->user()->id === $group->owner)
-                    <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-group')" icon="fa-solid fa-trash-can icon">{{ __('Delete') }}</x-primary-button>
-                @endif
-            </div>
+    <!-- Title & Header -->
+
+    <x-slot name="title">
+        {{ $group->name . __(' Settings') }}
+    </x-slot>
+
+    <x-slot name="back_btn"></x-slot>
+
+    <x-slot name="header_title">
+        {{ __('Group settings') }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')" icon="fa-solid fa-right-from-bracket icon">{{ __('Leave') }}</x-primary-button>
+        @if (auth()->user()->id === $group->owner)
+            <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-group')" icon="fa-solid fa-trash-can icon">{{ __('Delete') }}</x-primary-button>
+        @endif
+    </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <div>{{ __('Leave') }}</div>
+        </div>
+        <div class="dropdown-item warning-hover" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-group')">
+            <i class="fa-solid fa-trash-can"></i>
+            <div>{{ __('Delete') }}</div>
         </div>
     </x-slot>
+
+    <!-- Session Status Messages -->
 
     @if (session('status') === 'invite-sent')
         <x-session-status>{{ __('Invite sent.') }}</x-session-status>
@@ -25,8 +45,10 @@
         <x-session-status>{{ __('Group image deleted.') }}</x-session-status>
     @endif
 
+    <!-- Content -->
+
     @include('groups.partials.group-details')
-    
+
     <div class="container">
         <div class="restrict-max-width">
             <section class="space-top-sm">
@@ -38,7 +60,7 @@
                         <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'send-group-invite')" icon="fa-solid fa-user-plus icon">{{ __('Invite') }}</x-icon-button>
                     </div>
                 </header>
-    
+
                 @foreach ($group_members as $member)
                     <div class="group-settings-member">
                         <div class="dropdown-user-item-img-name">
@@ -50,48 +72,49 @@
                                 <div class="text-shy">{{ $member->email }}</div>
                             </div>
                         </div>
-                        
+
                         @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
                             <div class="vertical-center">
                                 <div class="tooltip tooltip-left">
-                                    <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', '{{ 'remove-member-' . $member->id }}')" icon="fa-solid fa-user-minus icon" /> <!-- TODO: Add modal parameter to accept php variables as array to be used in the modal -->
+                                    <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'remove-member')" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="configureRemoveMemberModal(this)" icon="fa-solid fa-user-minus icon" />
                                     <span class="tooltip-text" id="pin-sidebar-tooltip">{{ __('Remove ') . $member->username }}</span>
                                 </div>
                             </div>
                         @endif
                         @if ($member->id === $group->owner)
-                            <div class="info-chip info-chip-blue">{{ __('Group Admin') }}</div>
+                            <div class="vertical-center">
+                                <div class="info-chip info-chip-blue">{{ __('Admin') }}</div>
+                            </div>
                         @endif
                     </div>
-    
-                    <!-- Remove member modal -->
-                    <x-modal :name="'remove-member-' . $member->id" focusable>
-                        <div class="space-bottom-sm">
-                            <div>
-                                <h3>{{ __('Remove ') . $member->username }}</h3>
-                                <p class="text-shy">
-                                    @if (true) <!-- TODO: handle logic for preventing removing user with outstanding balances -->
-                                        {{ __('Are you sure you want to remove this member from the group? Any group expenses that they are involved in will be updated to show a "DivvyDime User". This action cannot be undone.') }}
-                                    @else
-                                        {{ __('This user must settle all their balances in this group before they can be removed.') }}
-                                    @endif
-                                </p>
-                            </div>
-                
-                            <div class="btn-container-end">
-                                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
-                                @if  (true) <!-- TODO: hide button if user's group balances not settled -->
-                                    <x-danger-button onclick="removeMember({{ $member->id }})">{{ __('Remove') }}</x-danger-button>
-                                @endif
-                            </div>
-                        </div>
-                    </x-modal>
                 @endforeach
             </section>
         </div>
     </div>
 
-    <!-- Group Settings Modals -->
+    <!-- Modals -->
+
+    <x-modal name="remove-member" id="remove-member-modal" focusable>
+        <div class="space-bottom-sm">
+            <div>
+                <h3></h3>
+                <p class="text-shy">
+                    @if (true) <!-- TODO: handle logic for preventing removing user with outstanding balances -->
+                        {{ __('Are you sure you want to remove this member from the group? Any group expenses they are involved in will be updated to show a "DivvyDime User". This action cannot be undone.') }}
+                    @else
+                        {{ __('This user must settle all their balances in this group before they can be removed.') }}
+                    @endif
+                </p>
+            </div>
+
+            <div class="btn-container-end">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                @if  (true) <!-- TODO: hide button if user's group balances not settled -->
+                    <x-danger-button id="remove-member-btn" onclick="">{{ __('Remove') }}</x-danger-button>
+                @endif
+            </div>
+        </div>
+    </x-modal>
 
     <x-modal name="leave-group" focusable>
         <div class="space-bottom-sm">
@@ -99,9 +122,9 @@
                 <h3>{{ __('Leave group') }}</h3>
                 <p class="text-shy">
                     @if (auth()->user()->id === $group->owner && count($group->members()->get()) > 1)
-                        {{ __('Are you sure you want to leave this group? You are currently the group owner. If you leave, ownership will be transferred to another member. This action cannot be undone.') }}
+                        {{ __('Are you sure you want to leave this group? You are currently the group admin. If you leave, administrative privileges will be transferred to another member. This action cannot be undone.') }}
                     @elseif (auth()->user()->id === $group->owner)
-                        {{ __('Are you sure you want to leave this group? You are the only member. If you leave, the group (along with any group expenses) will be deleted. This action cannot be undone.') }}
+                        {{ __('Are you sure you want to leave this group? You are the only member. If you leave, the group will be deleted, along with all group expenses. This action cannot be undone.') }}
                     @else
                         {{ __('Are you sure you want to leave this group?') }}
                     @endif
@@ -321,6 +344,16 @@
         });
 
         emailInput.dispatchEvent(inputEvent);
+    }
+
+    function configureRemoveMemberModal(removeMemberBtn) {
+        const userId = removeMemberBtn.dataset.userId;
+        const username = removeMemberBtn.dataset.username;
+
+        const modal = document.getElementById('remove-member-modal');
+
+        modal.querySelector('h3').textContent = '{{ __('Remove ') }}' + username;
+        document.getElementById('remove-member-btn').setAttribute('onclick', 'removeMember(' + userId + ')');
     }
 
     function sendInvite() {
