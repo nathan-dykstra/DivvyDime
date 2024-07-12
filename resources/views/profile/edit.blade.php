@@ -5,6 +5,8 @@
         {{ __('Settings') }}
     </x-slot>
 
+    <x-slot name="back_btn"></x-slot>
+
     <x-slot name="header_title">
         {{ __('Settings') }}
     </x-slot>

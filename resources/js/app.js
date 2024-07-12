@@ -488,7 +488,7 @@ window.dropzoneAddPreviewElement = function(file) {
 }
 
 
-// Reusable
+// Misc
 
 
 /**
@@ -790,15 +790,40 @@ searchInput.addEventListener("input", function(event) {
 // Page Header
 
 
+window.logOut = function() {
+    document.getElementById('header-log-out-form').submit();
+}
 
+document.addEventListener('DOMContentLoaded', function() {
+    const header = document.getElementById('page-header');
+    const headerContent = document.getElementById('header-content');
+    const headerImage = document.getElementById('header-image');
+    const headerTitle = document.getElementById('header-title');
 
+    window.addEventListener('scroll', function(e) {
+        const scrollTop = window.scrollY;
 
+        if (scrollTop > 0) {
+            header.classList.add('header-scrolling');
+            headerContent.classList.add('header-content-scrolling');
 
-// Views
+            if (headerImage) {
+                headerImage.classList.add('header-image-hidden');
+                if (headerTitle) {
+                    headerTitle.classList.add('header-title-shift');
+                }
+            }
+        } else {
+            header.classList.remove('header-scrolling');
+            headerContent.classList.remove('header-content-scrolling');
 
-
-
-
-
-// Expenses
+            if (headerImage) {
+                headerImage.classList.remove('header-image-hidden');
+                if (headerTitle) {
+                    headerTitle.classList.remove('header-title-shift');
+                }
+            }
+        }
+    });
+});
 
