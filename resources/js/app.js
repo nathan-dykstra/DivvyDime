@@ -21,7 +21,6 @@ const mobileWidth = 768;
 
 // Document elements
 const body = document.body;
-const navbar = document.getElementById("navbar-content");
 const headerWrapper = document.getElementById("header-wrapper");
 const mainContentWrapper = document.getElementById("main-content-wrapper");
 const sidebar = document.getElementById("sidebar");
@@ -29,17 +28,16 @@ const sidebarButton = document.getElementById("show-sidebar-btn");
 const pinSidebarTooltip = document.getElementById("pin-sidebar-tooltip");
 const pinSidebarBtn = document.getElementById("pin-sidebar-icon");
 const header = document.getElementById("page-header");
-const searchIcon = document.getElementById("search-icon");
-const searchClose = document.getElementById("search-close");
-const searchIconBtn = document.getElementById("search-icon-btn");
-const searchInputContainer = document.getElementById("search-input-container");
-const searchInput = document.getElementById("search-input");
-const searchResults = document.getElementById("search-results");
-const searchResultsList = document.getElementById("search-results-list");
-const searchRecentExpenses = document.getElementById("search-recent-expenses");
+//const searchIcon = document.getElementById("search-icon");
+//const searchClose = document.getElementById("search-close");
+//const searchIconBtn = document.getElementById("search-icon-btn");
+//const searchInputContainer = document.getElementById("search-input-container");
+//const searchInput = document.getElementById("search-input");
+//const searchResults = document.getElementById("search-results");
+//const searchResultsList = document.getElementById("search-results-list");
+//const searchRecentExpenses = document.getElementById("search-recent-expenses");
 
 // Mobile document element
-const mobileNavbar = document.getElementById("mobile-navbar-content");
 const mobileSearchWrapper = document.getElementById("mobile-search-wrapper");
 const mobileSearchInput = document.getElementById("mobile-search-input");
 const mobileSearchResultsList = document.getElementById("mobile-search-results-list");
@@ -559,18 +557,18 @@ window.checkIfMobile = function() {
         return false;
     }
 }
-
+/*
 window.adjustSearchResultsHeight = function() {
     if (searchResults.classList.contains("search-results-active")) {
         const windowHeight = window.innerHeight;
         searchResults.style.maxHeight = `calc(${windowHeight}px - 100px)`
     }
 }
-
+*/
 window.addEventListener("resize", function() {
-    if (!checkIfMobile()) {
+    /*if (!checkIfMobile()) {
         adjustSearchResultsHeight();
-    }
+    }*/
 
     if (window.innerWidth < autoCloseSidebarWidth) {
         autoCloseSidebar();
@@ -596,7 +594,7 @@ var sidebarCollapsed = loadSidebarState();
 
 window.autoCloseSidebar = function() {
     sidebar.classList.remove("sidebar-expanded");
-    navbar.style.marginLeft = "0";
+    //navbar.style.marginLeft = "0";
     if (headerWrapper) headerWrapper.style.marginLeft = "0";
     mainContentWrapper.style.marginLeft = "0";
     sidebarButton.classList.remove("hidden");
@@ -606,7 +604,7 @@ window.autoCloseSidebar = function() {
 window.autoOpenSidebar = function() {
     if (!sidebarCollapsed) {
         sidebar.classList.add("sidebar-expanded");
-        navbar.style.marginLeft = sidebarWidth;
+        //navbar.style.marginLeft = sidebarWidth;
         if (headerWrapper) headerWrapper.style.marginLeft = sidebarWidth;
         mainContentWrapper.style.marginLeft = sidebarWidth;
         sidebarButton.classList.add("hidden");
@@ -637,13 +635,13 @@ sidebar.addEventListener("mouseleave", function(event) {
 window.toggleSidebar = function() {
     if (sidebarCollapsed) {
         sidebar.classList.add("sidebar-expanded");
-        navbar.style.marginLeft = sidebarWidth;
+        //navbar.style.marginLeft = sidebarWidth;
         if (headerWrapper) headerWrapper.style.marginLeft = sidebarWidth;
         mainContentWrapper.style.marginLeft = sidebarWidth;
         pinSidebarTooltip.innerHTML = "Unpin Sidebar";
         sidebarButton.classList.add("hidden");
     } else {
-        navbar.style.marginLeft = "0";
+        //navbar.style.marginLeft = "0";
         if (headerWrapper) headerWrapper.style.marginLeft = "0";
         mainContentWrapper.style.marginLeft = "0";
         pinSidebarTooltip.innerHTML = "Pin Sidebar";
@@ -680,6 +678,7 @@ window.closeMobileSearch = function() {
     mobileSearchInput.blur();
 }
 
+
 mobileSearchInput.addEventListener("input", function(event) {
     let value = event.target.value;
 
@@ -700,13 +699,14 @@ mobileSearchWrapper.addEventListener("scroll", function() {
     }
 });
 
+/*
 window.expandSearchbar = function() {
     adjustSearchResultsHeight();
     searchInput.value = "";
     body.classList.add("prevent-scroll");
     searchResultsList.classList.remove("search-results-list-active")
     searchRecentExpenses.classList.remove("search-recent-expenses-inactive");
-    navbar.classList.add("navbar-content-solid");
+    //navbar.classList.add("navbar-content-solid");
     header.classList.remove("header-content-scrolling");
     searchInputContainer.classList.add("search-input-active");
     searchIconBtn.classList.add("search-icon-active");
@@ -720,7 +720,7 @@ window.expandSearchbar = function() {
 window.closeSearchbar = function() {
     body.classList.remove("prevent-scroll");
     if (window.scrollY > 0) {
-        navbar.classList.remove("navbar-content-solid");
+        //navbar.classList.remove("navbar-content-solid");
         header.classList.add("header-content-scrolling");
     }
     searchInputContainer.classList.remove("search-input-active");
@@ -784,56 +784,11 @@ searchInput.addEventListener("input", function(event) {
         }
     }
 })
-
-
-// Navbar
-
-
-window.addEventListener("scroll", function() {
-    if (checkIfMobile()) {
-        if (window.scrollY > 0) {
-            mobileNavbar.classList.remove("navbar-content-solid");
-        } else {
-            mobileNavbar.classList.add("navbar-content-solid");
-            header.classList.remove("header-content-scrolling");
-        }
-    } else {
-        if (window.scrollY > 0) {
-            navbar.classList.remove("navbar-content-solid");
-    
-            // Mobile
-            mobileNavbar.classList.remove("navbar-content-solid");
-        } else {
-            navbar.classList.add("navbar-content-solid");
-            header.classList.remove("header-content-scrolling");
-        }
-    }
-    
-});
+*/
 
 
 // Page Header
 
-
-let lastScrollTop = 0;
-
-window.addEventListener("scroll", function() {
-    const currentScroll = window.scrollY;
-
-    if (currentScroll > lastScrollTop) {
-        // Scrolling down
-        header.classList.add("header-content-hidden");
-        header.classList.remove("header-content-scrolling");
-    } else {
-        // Scrolling up
-        header.classList.remove("header-content-hidden");
-        if (currentScroll !== 0) {
-            header.classList.add("header-content-scrolling");
-        }
-    }
-
-    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // For Mobile or negative scrolling
-});
 
 
 

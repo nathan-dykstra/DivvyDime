@@ -1,8 +1,16 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2>{{ __('Settings') }}</h2>
+    <!-- Title & Header -->
+
+    <x-slot name="title">
+        {{ __('Settings') }}
     </x-slot>
 
+    <x-slot name="header_title">
+        {{ __('Settings') }}
+    </x-slot>
+
+    <!-- Session Status Messages -->
+    
     @if (session('status') === 'profile-updated')
         <x-session-status>{{ __('Profile updated.') }}</x-session-status>
     @elseif (session('status') === 'preferences-updated')
@@ -14,6 +22,8 @@
     @elseif (session('status') === 'profile-image-deleted')
         <x-session-status>{{ __('Profile image deleted.') }}</x-session-status>
     @endif
+
+    <!-- Content -->
 
     <div class="space-bottom-lg">
         <div class="container">

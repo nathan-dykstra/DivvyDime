@@ -17,7 +17,17 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/dashboard';
+    public const HOME = '/';
+    
+
+    /**
+     * The path to your application's "unauthenticated" route.
+     *
+     * Typically, users are redirected here when they are not authenticated.
+     *
+     * @var string
+     */
+    public const UNAUTHENTICATED = 'welcome';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.

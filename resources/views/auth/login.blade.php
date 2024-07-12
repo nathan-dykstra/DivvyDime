@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="container">
         <div class="guest-app-logo margin-bottom-lg">
-            <a href="/">
+            <a href="{{ route('welcome') }}">
                 <h1>DivvyDime</h1>
             </a>
         </div>

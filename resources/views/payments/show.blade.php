@@ -1,33 +1,46 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ __('Payment') }}</h2>
+    <!-- Title & Header -->
 
-            <div class="btn-container-end">
-                @if (auth()->user()->id === $payment->payer)
-                    <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('payments.edit', $payment)">{{ __('Edit') }}</x-primary-button>
-                    <x-primary-button icon="fa-solid fa-receipt icon" :href="route('payments.create')">{{ __('New Payment') }}</x-primary-button>
+    <x-slot name="title">
+        {{ __('Payment') }}
+    </x-slot>
 
-                    <x-dropdown>
-                        <x-slot name="trigger">
-                            <x-primary-button icon="fa-solid fa-ellipsis-vertical" />
-                        </x-slot>
+    <x-slot name="back_btn">
+        <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-arrow-left" onclick="window.history.back()" />
+    </x-slot>
 
-                        <x-slot name="content">
-                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'upload-payment-images')">
-                                <i class="fa-solid fa-images"></i>
-                                <div>{{ __('Add Images') }}</div>
-                            </div>
-                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
-                                <i class="fa-solid fa-trash-can"></i>
-                                <div>{{ __('Delete') }}</div>
-                            </div>
-                        </x-slot>
-                    </x-dropdown>
-                @endif
-            </div>
+    <x-slot name="header_title">
+        {{ __('Payment') }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('payments.edit', $payment)">{{ __('Edit') }}</x-primary-button>
+        <x-primary-button icon="fa-solid fa-scale-balanced icon" :href="route('payments.create')">{{ __('New Payment') }}</x-primary-button>
+    </x-slot>
+
+    <x-slot name="overflow_options">
+        <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'upload-payment-images')">
+            <i class="fa-solid fa-images"></i>
+            <div>{{ __('Add Images') }}</div>
+        </div>
+        <div class="dropdown-item warning-hover" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
+            <i class="fa-solid fa-trash-can"></i>
+            <div>{{ __('Delete') }}</div>
         </div>
     </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <a class="dropdown-item" href="{{ route('payments.edit', $payment) }}">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <div>{{ __('Edit') }}</div>
+        </a>
+        <a class="dropdown-item" href="{{ route('payments.create') }}">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <div>{{ __('New Payment') }}</div>
+        </a>
+    </x-slot>
+
+    <!-- Session Status Messages -->
 
     @if (session('status') === 'payment-created')
         <x-session-status>{{ __('Payment created.') }}</x-session-status>
@@ -46,6 +59,8 @@
     @elseif (session('status') === 'payment-note-updated')
         <x-session-status>{{ __('Note updated.') }}</x-session-status>
     @endif
+
+    <!-- Content -->
 
     <div>
         <h1>{{ __('$') . $payment->amount }}</h1>

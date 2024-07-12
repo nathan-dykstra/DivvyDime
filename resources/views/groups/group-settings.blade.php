@@ -1,15 +1,37 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ __('Group settings') }}</h2>
-            <div class="btn-container-end">
-                <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')" icon="fa-solid fa-right-from-bracket icon">{{ __('Leave') }}</x-primary-button>
-                @if (auth()->user()->id === $group->owner)
-                    <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-group')" icon="fa-solid fa-trash-can icon">{{ __('Delete') }}</x-primary-button>
-                @endif
-            </div>
+    <!-- Title & Header -->
+
+    <x-slot name="title">
+        {{ $group->name . __(' Settings') }}
+    </x-slot>
+
+    <x-slot name="back_link">
+        {{ route('groups.show', $group->id) }}
+    </x-slot>
+
+    <x-slot name="header_title">
+        {{ __('Group settings') }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')" icon="fa-solid fa-right-from-bracket icon">{{ __('Leave') }}</x-primary-button>
+        @if (auth()->user()->id === $group->owner)
+            <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-group')" icon="fa-solid fa-trash-can icon">{{ __('Delete') }}</x-primary-button>
+        @endif
+    </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <div>{{ __('Leave') }}</div>
+        </div>
+        <div class="dropdown-item warning-hover" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-group')">
+            <i class="fa-solid fa-trash-can"></i>
+            <div>{{ __('Delete') }}</div>
         </div>
     </x-slot>
+
+    <!-- Session Status Messages -->
 
     @if (session('status') === 'invite-sent')
         <x-session-status>{{ __('Invite sent.') }}</x-session-status>
@@ -24,6 +46,8 @@
     @elseif (session('status') === 'group-image-deleted')
         <x-session-status>{{ __('Group image deleted.') }}</x-session-status>
     @endif
+
+    <!-- Content -->
 
     @include('groups.partials.group-details')
     
@@ -60,7 +84,9 @@
                             </div>
                         @endif
                         @if ($member->id === $group->owner)
-                            <div class="info-chip info-chip-blue">{{ __('Group Admin') }}</div>
+                            <div class="vertical-center">
+                                <div class="info-chip info-chip-blue">{{ __('Admin') }}</div>
+                            </div>
                         @endif
                     </div>
     
@@ -99,9 +125,9 @@
                 <h3>{{ __('Leave group') }}</h3>
                 <p class="text-shy">
                     @if (auth()->user()->id === $group->owner && count($group->members()->get()) > 1)
-                        {{ __('Are you sure you want to leave this group? You are currently the group owner. If you leave, ownership will be transferred to another member. This action cannot be undone.') }}
+                        {{ __('Are you sure you want to leave this group? You are currently the group admin. If you leave, administrative privileges will be transferred to another member. This action cannot be undone.') }}
                     @elseif (auth()->user()->id === $group->owner)
-                        {{ __('Are you sure you want to leave this group? You are the only member. If you leave, the group (along with any group expenses) will be deleted. This action cannot be undone.') }}
+                        {{ __('Are you sure you want to leave this group? You are the only member. If you leave, the group will be deleted, along with all group expenses. This action cannot be undone.') }}
                     @else
                         {{ __('Are you sure you want to leave this group?') }}
                     @endif

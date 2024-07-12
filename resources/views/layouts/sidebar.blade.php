@@ -3,6 +3,10 @@
     $mobile_nav = config('mobilenav');
 @endphp
 
+<div class="show-sidebar-btn" id="show-sidebar-btn">
+    <i class="fa-solid fa-angle-right"></i>
+</div>
+
 <nav>
     <!-- Sidebar Navigation Menu -->
 
@@ -36,15 +40,17 @@
 
     <!-- Mobile Navigation Menu -->
 
-    <div class="mobile-navigation-wrapper">
-        <ul class="mobile-navigation">
+    <div class="mobile-nav-wrapper">
+        <ul class="mobile-nav">
             @foreach($mobile_nav as $item)
                 <li>
-                    <a href="{{ route($item['route']) }}" class="mobile-navigation-item" onclick="mobileHighlightNavSelection()">
-                        <div>
+                    <a href="{{ route($item['route']) }}" class="mobile-nav-item" onclick="mobileHighlightNavSelection()">
+                        <div class="mobile-nav-item-icon">
                             <i class="{{ $item['icon'] }}"></i>
                         </div>
-                        <div>{{ $item['text'] }}</div>
+                        <div class="mobile-nav-item-text">
+                            {{ $item['text'] }}
+                        </div>
                     </a>
                 </li>
             @endforeach
@@ -74,7 +80,7 @@
     function mobileHighlightNavSelection() {
         const currentRoute = window.location.href;
 
-        const sidebarItems = document.querySelectorAll(".mobile-navigation li");
+        const sidebarItems = document.querySelectorAll(".mobile-nav li");
 
         // Loop through sidebar items to find a match with the current route
         sidebarItems.forEach((item, index) => {
@@ -83,7 +89,7 @@
             const hrefPattern = new RegExp('^' + href + '\/.*');
 
             if (href === currentRoute || hrefPattern.test(currentRoute)) {
-                item.querySelector('.mobile-navigation-item').classList.add('mobile-nav-item-active');
+                item.querySelector('.mobile-nav-item').classList.add('mobile-nav-item-active');
             }
         });
     }

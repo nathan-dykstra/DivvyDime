@@ -1,40 +1,64 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ $group->name }}</h2>
-            <div class="btn-container-end">
-                <x-primary-button icon="fa-solid fa-receipt icon" :href="route('expenses.create', $group->is_default ? '' : ['group' => $group->id])">{{ __('Add Expense') }}</x-primary-button>
-                <x-primary-button icon="fa-solid fa-scale-balanced icon" :href="route('payments.create', $group->is_default ? '' : ['group' => $group->id])">{{ __('Settle Up') }}</x-primary-button>
+    <!-- Title & Header -->
 
-                <x-dropdown>
-                    <x-slot name="trigger">
-                        <x-primary-button icon="fa-solid fa-ellipsis-vertical" />
-                    </x-slot>
+    <x-slot name="title">
+        {{ $group->name }}
+    </x-slot>
 
-                    <x-slot name="content">
-                        <a class="dropdown-item">
-                            <i class="fa-solid fa-scale-unbalanced"></i>
-                            <div>{{ __('Balances') }}</div>
-                        </a>
-                        <a class="dropdown-item">
-                            <i class="fa-solid fa-calculator"></i>
-                            <div>{{ __('Totals') }}</div>
-                        </a>
-                        @if (!$group->is_default)
-                            <a class="dropdown-item" href="{{ route('groups.settings', $group) }}">
-                                <i class="fa-solid fa-gear"></i>
-                                <div>{{ __('Settings') }}</div>
-                            </a>
-                        @endif
-                    </x-slot>
-                </x-dropdown>
-            </div>
+    <x-slot name="back_link">
+        {{ route('groups') }}
+    </x-slot>
+
+    <x-slot name="header_image">
+        <div class="group-img-header-container">
+            <img src="{{ $group->getGroupImageUrlAttribute() }}" alt="Group image" class="group-img-md">
         </div>
     </x-slot>
+
+    <x-slot name="header_title">
+        {{ $group->name }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-primary-button icon="fa-solid fa-receipt icon" :href="route('expenses.create', $group->is_default ? '' : ['group' => $group->id])">{{ __('Add Expense') }}</x-primary-button>
+        <x-primary-button icon="fa-solid fa-scale-balanced icon" :href="route('payments.create', $group->is_default ? '' : ['group' => $group->id])">{{ __('Settle Up') }}</x-primary-button>
+    </x-slot>
+
+    <x-slot name="overflow_options">
+        <a class="dropdown-item" href=""> <!-- TODO: group balances page -->
+            <i class="fa-solid fa-scale-unbalanced"></i>
+            <div>{{ __('Balances') }}</div>
+        </a>
+        <a class="dropdown-item" href=""> <!-- TODO: group totals page -->
+            <i class="fa-solid fa-calculator"></i>
+            <div>{{ __('Totals') }}</div>
+        </a>
+        @if (!$group->is_default)
+            <a class="dropdown-item" href="{{ route('groups.settings', $group) }}">
+                <i class="fa-solid fa-gear"></i>
+                <div>{{ __('Group Settings') }}</div>
+            </a>
+        @endif
+    </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <a class="dropdown-item" href="{{ route('expenses.create', $group->is_default ? '' : ['group' => $group->id]) }}">
+            <i class="fa-solid fa-receipt"></i>
+            <div>{{ __('Add Expense') }}</div>
+        </a>
+        <a class="dropdown-item" href="{{ route('payments.create', $group->is_default ? '' : ['group' => $group->id]) }}">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <div>{{ __('Settle Up') }}</div>
+        </a>
+    </x-slot>
+
+    <!-- Session Status Messages -->
 
     @if (session('status') === 'group-created')
         <x-session-status>{{ __('Group created.') }}</x-session-status>
     @endif
+
+    <!-- Content -->
 
     <div class="metrics-container margin-bottom-lg">
         @if ($overall_balance > 0)

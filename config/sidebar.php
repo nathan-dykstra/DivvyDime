@@ -2,9 +2,14 @@
 
 return [
     [
-        'text' => 'Dashboard',
+        'text' => 'Home',
         'icon' => 'fa-solid fa-house fa-sm',
-        'route' => 'dashboard',
+        'route' => 'dashboard', // TODO: fix route (this should just be divvydime.ca/)
+    ],
+    [
+        'text' => 'Search',
+        'icon' => 'fa-solid fa-magnifying-glass fa-sm',
+        'route' => 'dashboard' // TODO: implement desktop search (modal)
     ],
     [
         'text' => 'Activity',

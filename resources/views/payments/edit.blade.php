@@ -1,13 +1,30 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="btn-container-apart">
-            <h2>{{ __('Edit payment') }}</h2>
-            <div class="btn-container-end">
-                <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')" icon="fa-solid fa-trash-can icon">{{ __('Delete') }}</x-primary-button>
-                <x-primary-button onclick="window.history.back()">{{ __('Cancel') }}</x-primary-button>
-            </div>
+    <!-- Title & Header -->
+
+    <x-slot name="title">
+        {{ __('Edit Payment') }}
+    </x-slot>
+
+    <x-slot name="back_btn">
+        <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-arrow-left" onclick="window.history.back()" />
+    </x-slot>
+
+    <x-slot name="header_title">
+        {{ __('Edit payment') }}
+    </x-slot>
+
+    <x-slot name="header_buttons">
+        <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')" icon="fa-solid fa-trash-can icon">{{ __('Delete') }}</x-primary-button>
+    </x-slot>
+
+    <x-slot name="mobile_overflow_options">
+        <div class="dropdown-item warning-hover" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
+            <i class="fa-solid fa-trash-can"></i>
+            <div>{{ __('Delete') }}</div>
         </div>
     </x-slot>
+
+    <!-- Content -->
 
     @include('payments.partials.payment-details')
 
