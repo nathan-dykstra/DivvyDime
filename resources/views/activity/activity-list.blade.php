@@ -203,15 +203,7 @@
                 removeNotificationElement(notificationElement);
 
                 setTimeout(() => {
-                    notificationElement.remove();
-
-                    // Translate notifications below the deleted notification up
-                    for (let i = indexToDelete + 1; i < notifications.length; i++) {
-                        notifications[i].style.transform = 'translateY(-' + notificationElement.offsetHeight + 'px)';
-                        notifications[i].style.transform = '';
-                    }
-
-                    //fetchNotifications(true); TODO
+                    fetchNotifications(filter, true);
                 }, 400);
             },
             error: function(error) {
@@ -235,7 +227,6 @@
                 if (response.deletedNotificationIds.length == 0) return;
 
                 // Clear each notification with cascading effect
-
                 notifications.forEach(notification => {
                     if (response.deletedNotificationIds.includes(parseInt(notification.dataset.notificationId))) {
                         setTimeout(() => {

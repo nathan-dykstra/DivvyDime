@@ -22,6 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -40,21 +41,51 @@ class GroupsController extends Controller
      */
     public function index(): View
     {
+        return view('groups.groups-list');
+    }
+
+    /**
+     * Paginates the user's groups, with an optional search query to filter.
+     */
+    public function getGroups(Request $request): JsonResponse
+    {
         $current_user = auth()->user();
 
-        $groups = $current_user->groups()
+        $search_query = $request->input('query');
+
+        $groups = $current_user->groups();
+
+        if ($search_query) {
+            $groups = $groups->join('group_members AS gm', 'groups.id', 'gm.group_id')
+                ->join('users', 'gm.user_id', 'users.id')
+                ->where(function ($query) use ($search_query) {
+                    $query->whereRaw('users.username LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('groups.name LIKE ?', ["%$search_query%"]);
+                });
+        }
+
+        $groups = $groups->distinct()
             ->orderByRaw("
                 CASE
                     WHEN groups.id = ? THEN 0
                     ELSE 1
                 END, groups.name ASC
             ", [Group::DEFAULT_GROUP])
-            ->get();
+            ->paginate(20);
+
+        $is_last_page = !$groups->hasMorePages();
+        $current_page = $groups->currentPage();
 
         $groups = $this->augmentGroups($groups);
 
-        return view('groups.groups-list', [
+        $html = view('groups.partials.groups', [
             'groups' => $groups,
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+            'is_last_page' => $is_last_page,
+            'current_page' => $current_page,
         ]);
     }
 
@@ -98,23 +129,6 @@ class GroupsController extends Controller
         $group = Group::where('id', $group_id)->first();
         $group->is_default = $group->id === Group::DEFAULT_GROUP;
 
-        $expenses = $group->expenses();
-
-        if ($group->id === Group::DEFAULT_GROUP) {
-            $expenses = $expenses->where(function ($query) use ($current_user) {
-                    $query->where('expenses.payer', $current_user->id)
-                        ->orWhereHas('participants', function ($query) use ($current_user) {
-                            $query->where('users.id', $current_user->id);
-                        });
-                });
-        }
-
-        $expenses = $expenses->orderBy('date', 'DESC')
-            ->orderBy('created_at', 'DESC')
-            ->get();
-
-        $expenses = $this->augmentExpenses($expenses);
-
         $overall_balance = Balance::where('group_id', $group->id)
             ->where('user_id', $current_user->id)
             ->sum('balance');
@@ -157,10 +171,64 @@ class GroupsController extends Controller
 
         return view('groups.show', [
             'group' => $group,
-            'expenses' => $expenses,
             'overall_balance' => $overall_balance,
             'individual_balances' => $individual_balances,
             'hidden_balances_count' => $hidden_balances_count,
+        ]);
+    }
+
+    /**
+     * Paginates the group's expenses, with an optional search query to filter.
+     */
+    public function getGroupExpenses(Request $request, $group_id): JsonResponse
+    {
+        $current_user = $request->user();
+        $group = Group::find($group_id);
+
+        $search_query = $request->input('query');
+
+        $expenses = $group->expenses();
+
+        if ($group->id === Group::DEFAULT_GROUP) {
+            $expenses = $expenses->where(function ($query) use ($current_user) {
+                    $query->where('expenses.payer', $current_user->id)
+                        ->orWhereHas('participants', function ($query) use ($current_user) {
+                            $query->where('users.id', $current_user->id);
+                        });
+                });
+        }
+
+        if ($search_query) {
+            $expenses = $expenses->join('expense_participants AS ep', 'expenses.id', 'ep.expense_id')
+                ->join('users AS participant_users', 'ep.user_id', 'participant_users.id')
+                ->join('users AS payer_users', 'expenses.payer', 'payer_users.id')
+                ->where(function ($query) use ($search_query) {
+                    $query->whereRaw('participant_users.username LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('payer_users.username LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('expenses.name LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('expenses.amount LIKE ?', ["$search_query%"])
+                        ->orWhere('expenses.amount', $search_query);
+                });
+        }
+
+        $expenses = $expenses->distinct() // Distinct is required because multiple joins are used to search expense participants
+            ->orderBy('date', 'DESC')
+            ->orderBy('created_at', 'DESC')
+            ->paginate(20);
+
+        $is_last_page = !$expenses->hasMorePages();
+        $current_page = $expenses->currentPage();
+
+        $expenses = $this->augmentExpenses($expenses);
+
+        $html = view('groups.partials.expenses', [
+            'expenses' => $expenses,
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+            'is_last_page' => $is_last_page,
+            'current_page' => $current_page,
         ]);
     }
 
@@ -501,41 +569,6 @@ class GroupsController extends Controller
             'message' => 'Group deleted successfully!',
             'redirect' => route('groups'),
         ]);
-    }
-
-    /**
-     * Filters the groups list.
-     */
-    public function search(Request $request): View
-    {
-        $current_user = auth()->user();
-
-        $search_string = $request->input('search_string');
-
-        $groups_query = $current_user->groups();
-
-        if ($search_string) {
-            $groups_query = $groups_query->select('groups.*')
-                ->join('group_members AS gm', 'groups.id', 'gm.group_id')
-                ->join('users', 'gm.user_id', 'users.id')
-                ->where(function ($query) use ($search_string) {
-                    $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('groups.name LIKE ?', ["%$search_string%"]);
-                })
-                ->distinct();
-        }
-
-        $groups = $groups_query->orderByRaw("
-            CASE
-                WHEN groups.id = ? THEN 0
-                ELSE 1
-            END, groups.name ASC
-        ", [Group::DEFAULT_GROUP])
-        ->get();
-
-        $groups = $this->augmentGroups($groups);
-
-        return view('groups.partials.groups', ['groups' => $groups]);
     }
 
     /**

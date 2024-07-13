@@ -101,6 +101,7 @@
 
                     if (replace) { // Replace the content on search or page load
                         if (html.trim().length == 0) {
+                            expensesList.innerHTML = '';
                             noExpensesMessage.classList.remove('hidden');
                         } else {
                             noExpensesMessage.classList.add('hidden');

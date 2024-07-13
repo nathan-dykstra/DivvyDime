@@ -103,93 +103,114 @@
         @if ($hidden_balances_count > 0)
             <div class="metric-container">
                 <span class="text-primary text-small">{{ __('Plus ') . $hidden_balances_count . __(' other ') }} {{ $hidden_balances_count > 1 ? __('balances') : __('balance') }}</span>
-                <x-link-button class="width-content" :href="route('groups.show', $group)">{{ __('View all') }}</x-link-button> <!-- TODO: Change this to link to the Group Balances page -->
+                <x-no-background-button class="width-content" :href="route('groups.show', $group)">{{ __('View All') }}</x-no-background-button> <!-- TODO: Change this to link to the Group Balances page -->
             </div>
         @endif
     </div>
 
-    <div class="inline-expenses-list">
-        @foreach ($expenses as $expense)
-            @if ($expense->payer === auth()->user()->id) <!-- Current User paid for the expense -->
-                <div class="expense" onclick="openLink('{{ $expense->is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id) }}')">
-                    <div>
-                        @if ($expense->is_payment)
-                            <div class="expense-amount text-small">{{ __('You paid ') }}<span class="bold-username">{{ $expense->payee->username }}</span>{{ __(' $') . $expense->amount }}</div>
-                        @else
-                            <h4>{{ $expense->name }}</h4>
-                        @endif
+    <div class="section-search">
+        <div class="restrict-max-width">
+            <x-searchbar-secondary placeholder="{{ __('Search Group Expenses') }}" id="search-group-expenses"></x-searchbar-secondary>
+        </div>
+    </div>
 
-                        @if (!$expense->is_payment)
-                            <div class="expense-amount text-small">{{ ($expense->is_reimbursement ? __('You received $') : __('You paid $')) . $expense->amount }}</div>
-                        @endif
+    <div class="expenses-list-container">
+        <!-- No expenses message -->
+        <div class="notifications-empty-container hidden" id="no-group-expenses">
+            <div class="notifications-empty-icon"><i class="fa-solid fa-receipt"></i></div>
+            <div class="notifications-empty-text">{{ __('No expenses!') }}</div>
+        </div>
 
-                        <div class="text-shy text-thin-caps">{{ $expense->formatted_date }}</div>
-                    </div>
+        <div class="expenses" id="group-expenses-list"></div>
 
-                    @if ($expense->is_reimbursement)
-                        <div class="user-amount text-warning">
-                            <div class="text-small">{{ __('You owe') }}</div>
-                            <div class="user-amount-value">{{ __('$') . $expense->lent }}</div>
-                        </div>
-                    @elseif ($expense->is_payment)
-                        <div class="user-amount text-success">
-                            <div class="text-small">{{ __('You paid') }}</div>
-                            <div class="user-amount-value">{{ __('$') . $expense->lent }}</div>
-                        </div>
-                    @else
-                        <div class="user-amount text-success">
-                            <div class="text-small">{{ __('You lent') }}</div>
-                            <div class="user-amount-value">{{ __('$') . $expense->lent }}</div>
-                        </div>
-                    @endif
-                </div>
-            @else <!-- Friend paid for the expense -->
-                <div class="expense" onclick="openLink('{{ $expense->is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id) }}')">
-                    <div>
-                        @if ($expense->is_payment)
-                            <div class="expense-amount text-small">
-                                <span class="bold-username">{{ $expense->payer_user->username }}</span>
-                                {{ __(' paid ') }}
-                                @if ($expense->payee->id === auth()->user()->id)
-                                    {{ __('you') }}
-                                @else
-                                    <span class="bold-username">{{ $expense->payee->username }}</span>
-                                @endif
-                                {{ __(' $') . $expense->amount }}
-                            </div>
-                        @else
-                            <h4>{{ $expense->name }}</h4>
-                        @endif
-
-                        @if (!$expense->is_payment)
-                            <div class="expense-amount text-small"><span class="bold-username">{{ $expense->payer_user->username }}</span>{{ ($expense->is_reimbursement ? __(' received $') : __(' paid $')) . $expense->amount }}</div> 
-                        @endif
-
-                        <div class="text-shy text-thin-caps">{{ $expense->formatted_date }}</div>
-                    </div>
-
-                    @if ($expense->borrowed == 0)
-                        <div class="user-amount text-shy text-small">{{ __('Not involved') }}</div>
-                    @else
-                        @if ($expense->is_reimbursement)
-                            <div class="user-amount text-success">
-                                <div class="text-small">{{ __('You receive') }}</div>
-                                <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
-                            </div>
-                        @elseif ($expense->is_payment)
-                            <div class="user-amount text-warning">
-                                <div class="text-small">{{ __('You receieved') }}</div>
-                                <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
-                            </div>
-                        @else
-                            <div class="user-amount text-warning">
-                                <div class="text-small">{{ __('You borrowed') }}</div>
-                                <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
-                            </div>
-                        @endif
-                    @endif
-                </div>
-            @endif
-        @endforeach
+        <!-- Loading animation -->
+        <div id="group-expenses-loading">
+            <x-list-loading></x-list-loading>
+        </div>
     </div>
 </x-app-layout>
+
+<script>
+    let page = 1;
+    let loading = false;
+    let lastPage = false;
+    let query = '';
+
+    function fetchExpenses(query, replace = false) {
+        const loadingPlaceholder = document.getElementById('group-expenses-loading');
+        const expensesList = document.getElementById('group-expenses-list');
+        const noExpensesMessage = document.getElementById('no-group-expenses');
+
+        loading = true;
+
+        if (replace) {
+            expensesList.innerHTML = '';
+            lastPage = false;
+            page = 1;
+        }
+
+        if (lastPage) {
+            loading = false;
+            return;
+        }
+
+        noExpensesMessage.classList.add('hidden');
+        loadingPlaceholder.classList.remove('hidden');
+
+        $.ajax({
+            url: '{{ route('groups.get-group-expenses', $group->id) }}' + '?page=' + page,
+            method: 'GET',
+            data: {
+                'query': query
+            },
+            success: function(response) {
+                if (response.is_last_page) lastPage = true;
+                page = parseInt(response.current_page) + 1;
+
+                const html = response.html;
+
+                setTimeout(() => {
+                    loadingPlaceholder.classList.add('hidden');
+
+                    if (replace) { // Replace the content on search or page load
+                        if (html.trim().length == 0) {
+                            expensesList.innerHTML = '';
+                            noExpensesMessage.classList.remove('hidden');
+                        } else {
+                            noExpensesMessage.classList.add('hidden');
+                            expensesList.innerHTML = html;
+                        }
+                    } else { // Append to the content on scroll
+                        expensesList.insertAdjacentHTML('beforeend', html); 
+                    }
+                }, replace ? 300 : 600);
+
+                loading = false;
+            },
+            error: function(error) {
+                loadingPlaceholder.classList.add('hidden');
+                loading = false;
+                console.error(error);
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchExpenses(query, true);
+
+        const searchInput = document.getElementById("search-group-expenses");
+        searchInput.addEventListener('input', function() {
+            query = searchInput.value.trim();
+            fetchExpenses(query, true);
+        });
+
+        function handleScroll() {
+            if (loading) return;
+
+            if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {
+                fetchExpenses(query);
+            }
+        }
+        document.addEventListener('scroll', handleScroll);
+    });
+</script>

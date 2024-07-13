@@ -34,14 +34,44 @@ class FriendsController extends Controller
      */
     public function index(): View
     {
+        return view('friends.friends-list');
+    }
+
+    /**
+     * Paginates the user's friends, with an optional search query to filter.
+     */
+    public function getFriends(Request $request): JsonResponse
+    {
         $current_user = auth()->user();
 
-        $friends = $current_user->friends()->orderBy('username', 'asc')->get();
+        $search_query = $request->input('query');
+
+        $friends = $current_user->friends();
+
+        if ($search_query) {
+            $friends = $friends->where(function ($query) use ($search_query) {
+                $query->whereRaw('username LIKE ?', ["%$search_query%"])
+                    ->orWhereRaw('email LIKE ?', ["%$search_query%"]);
+                });
+        }
+
+        $friends = $friends->distinct()
+            ->orderBy('username', 'ASC')
+            ->paginate(20);
+
+        $is_last_page = !$friends->hasMorePages();
+        $current_page = $friends->currentPage();
 
         $friends = $this->augmentFriends($friends);
 
-        return view('friends.friends-list', [
+        $html = view('friends.partials.friends', [
             'friends' => $friends,
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+            'is_last_page' => $is_last_page,
+            'current_page' => $current_page,
         ]);
     }
 
@@ -80,6 +110,23 @@ class FriendsController extends Controller
             ")
             ->get();
 
+        return view('friends.friend-profile', [
+            'friend' => $friend,
+            'overall_balance' => $overall_balance,
+            'group_balances' => $group_balances,
+        ]); 
+    }
+
+    /**
+     * Paginates the friend's expenses, with an optional search query to filter.
+     */
+    public function getFriendExpenses(Request $request, $friend_id): JsonResponse
+    {
+        $current_user = $request->user();
+        $friend = User::find($friend_id);
+
+        $search_query = $request->input('query');
+
         $expenses = $friend->expenses()
             ->where(function ($query) use ($current_user, $friend) {
                 $query->where(function ($query) use ($current_user, $friend) { // Expenses where current User paid and friend was a participant
@@ -94,48 +141,39 @@ class FriendsController extends Controller
                                 $query->where('users.id', $current_user->id);
                             });
                     });
-            })
-            ->orderBy('date', 'DESC')
+            });
+
+        if ($search_query) {
+            $expenses = $expenses->join('expense_participants AS ep', 'expenses.id', 'ep.expense_id')
+                ->join('users AS participant_users', 'ep.user_id', 'participant_users.id')
+                ->join('users AS payer_users', 'expenses.payer', 'payer_users.id')
+                ->where(function ($query) use ($search_query) {
+                    $query->whereRaw('participant_users.username LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('payer_users.username LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('expenses.name LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('expenses.amount LIKE ?', ["$search_query%"])
+                        ->orWhere('expenses.amount', $search_query);
+                });
+        }
+
+        $expenses = $expenses->orderBy('date', 'DESC')
             ->orderBy('created_at', 'DESC')
-            ->get();
+            ->paginate(20);
 
-        $expenses = $expenses->map(function ($expense) use ($current_user, $friend_id) {
-            $expense->payer_user = User::where('id', $expense->payer)->first();
+        $is_last_page = !$expenses->hasMorePages();
+        $current_page = $expenses->currentPage();
 
-            $expense->formatted_date = Carbon::parse($expense->date)->isoFormat('MMM DD, YYYY');
+        $expenses = $this->augmentExpenses($expenses, $friend->id);
 
-            $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
-                ->where('user_id', $current_user->id)
-                ->value('share');
-
-            $friend_share = ExpenseParticipant::where('expense_id', $expense->id)
-                ->where('user_id', $friend_id)
-                ->value('share');
-
-            if ($expense->payer === $current_user->id) {
-                $expense->lent = number_format($friend_share, 2);
-            }
-            if ($current_user_share) {
-                $expense->borrowed = number_format($current_user_share, 2);
-            }
-            $expense->amount = number_format($expense->amount, 2);
-
-            $expense->group = $expense->groups->first();
-            
-            $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
-            $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
-            $expense->is_payment = ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES);
-            $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
-
-            return $expense;
-        });
-
-        return view('friends.friend-profile', [
-            'friend' => $friend,
+        $html = view('friends.partials.expenses', [
             'expenses' => $expenses,
-            'overall_balance' => $overall_balance,
-            'group_balances' => $group_balances,
-        ]); 
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+            'is_last_page' => $is_last_page,
+            'current_page' => $current_page,
+        ]);
     }
 
     /**
@@ -301,38 +339,6 @@ class FriendsController extends Controller
     }
 
     /**
-     * Filters the friends list in the Friends section.
-     */
-    public function search(Request $request): View
-    {
-        $current_user = auth()->user();
-        $search_string = $request->input('search_string');
-
-        $friend_ids = Friend::select('user2_id AS friend_id')
-            ->where('user1_id', $current_user->id)
-            ->union(
-                Friend::select('user1_id AS friend_id')
-                    ->where('user2_id', $current_user->id)
-            )
-            ->get()->toArray();
-
-        $friends_query = User::whereIn('id', $friend_ids);
-
-        if ($search_string) {
-            $friends_query = $friends_query->where(function ($query) use ($search_string) {
-                $query->whereRaw('username LIKE ?', ["%$search_string%"])
-                    ->orWhereRaw('email LIKE ?', ["%$search_string%"]);
-                });
-        }
-
-        $friends = $friends_query->orderBy('username', 'asc')->get();
-
-        $friends = $this->augmentFriends($friends);
-
-        return view('friends.partials.friends', ['friends' => $friends]);
-    }
-
-    /**
      * Add balances information to the Friends.
      */
     protected function augmentFriends($friends)
@@ -368,5 +374,43 @@ class FriendsController extends Controller
         });
 
         return $friends;
+    }
+
+    protected function augmentExpenses($expenses, $friend_id)
+    {
+        $current_user = auth()->user();
+
+        $expenses = $expenses->map(function ($expense) use ($current_user, $friend_id) {
+            $expense->payer_user = User::where('id', $expense->payer)->first();
+
+            $expense->formatted_date = Carbon::parse($expense->date)->isoFormat('MMM DD, YYYY');
+
+            $current_user_share = ExpenseParticipant::where('expense_id', $expense->id)
+                ->where('user_id', $current_user->id)
+                ->value('share');
+
+            $friend_share = ExpenseParticipant::where('expense_id', $expense->id)
+                ->where('user_id', $friend_id)
+                ->value('share');
+
+            if ($expense->payer === $current_user->id) {
+                $expense->lent = number_format($friend_share, 2);
+            }
+            if ($current_user_share) {
+                $expense->borrowed = number_format($current_user_share, 2);
+            }
+            $expense->amount = number_format($expense->amount, 2);
+
+            $expense->group = $expense->groups->first();
+            
+            $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
+            $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+            $expense->is_payment = ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES);
+            $expense->payee = $expense->is_payment ? $expense->participants()->first() : null;
+
+            return $expense;
+        });
+
+        return $expenses;
     }
 }
