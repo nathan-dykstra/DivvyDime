@@ -112,7 +112,8 @@
     }
 
     .select2-container--default .select2-results__option--selected {
-        background-color: var(--accent-color);
+        color: var(--blue-text);
+        background-color: var(--blue-background);
     }
 
     .select2-results__option {

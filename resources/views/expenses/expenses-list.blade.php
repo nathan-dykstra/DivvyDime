@@ -37,7 +37,7 @@
 
     <div class="section-search">
         <div class="restrict-max-width">
-            <x-searchbar-secondary placeholder="Search Expenses" id="search-expenses"></x-searchbar-secondary>
+            <x-searchbar-secondary placeholder="{{ __('Search Expenses') }}" id="search-expenses"></x-searchbar-secondary>
         </div>
     </div>
 

@@ -34,7 +34,7 @@
     }
 
     .no-background-btn:focus-visible {
-        outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color */
+        outline: 3px solid var(--blue-text);
         outline-offset: 1px;
         border-radius: var(--border-radius);
     }

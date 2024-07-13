@@ -29,7 +29,7 @@
     }
 
     .icon-btn:focus-visible {
-        outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color */
+        outline: 3px solid var(--blue-text);
         outline-offset: 4px;
     }
 </style>

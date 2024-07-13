@@ -23,7 +23,7 @@
     }
 
     .text-area:focus {
-        outline: 2px solid var(--blue-text); /* TODO: Change this to --primary-color */
+        outline: 2px solid var(--blue-text);
         outline-offset: 0px;
         border: 1px solid var(--background);
     }

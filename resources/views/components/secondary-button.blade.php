@@ -28,19 +28,16 @@
         display: inline-flex;
         justify-content: center;
         align-items: center;
-        
         height: 36px;
         border: 1px solid var(--icon-grey);
         border-radius: var(--border-radius);
         padding: 8px 16px;
         transition: border 0.3s, background-color 0.3s ease-in-out, outline 0.1s ease-in-out, outline-offset 0.1s;
-
         font-size: 0.8em;
         font-weight: 700;
         color: var(--text-heading);
         text-transform: uppercase;
         letter-spacing: 1px;
-
         outline: none;
     }
 
@@ -50,7 +47,7 @@
     }
 
     .secondary-btn:focus-visible {
-        outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color */
+        outline: 3px solid var(--blue-text);
         outline-offset: 1px;
         border-radius: var(--border-radius);
     }

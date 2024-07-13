@@ -18,19 +18,19 @@
             @endif
         </div>
 
-        <div class="btn-container-apart">
+        <div class="btn-container-end">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                
+                <x-no-background-button type="submit">{{ __('Log Out') }}</x-no-background-button>
+            </form>
+
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
     
                 <div>
                     <x-primary-button type="submit">{{ __('Resend Verification Email') }}</x-primary-button>
                 </div>
-            </form>
-    
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                
-                <x-link-button type="submit">{{ __('Log Out') }}</x-link-button>
             </form>
         </div>
     </div>
