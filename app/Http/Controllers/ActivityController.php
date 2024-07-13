@@ -11,6 +11,7 @@ use App\Models\NotificationType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ActivityController extends Controller
@@ -18,30 +19,70 @@ class ActivityController extends Controller
     const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
 
     /**
-     * Display the user's notifications.
+     * Display the user's notifications list.
      */
     public function index(): View
     {
+        return view('activity.activity-list');
+    }
+
+     /**
+     * Paginates the user's notifications.
+     */
+    public function getActivity(Request $request): JsonResponse
+    {
         $current_user = auth()->user();
+
+        $filter = $request->input('filter');
 
         $notifications = Notification::select('notifications.*', 'users1.username AS sender_username', 'users2.username AS recipient_username')
             ->join('users AS users1', 'notifications.sender', 'users1.id')
             ->join('users AS users2', 'notifications.recipient', 'users2.id')
-            ->where('notifications.recipient', $current_user->id)
-            ->orderBy('notifications.updated_at', 'DESC')
-            ->get();
+            ->where('notifications.recipient', $current_user->id);
+
+        if ($filter) {
+            switch ($filter) {
+                case 'requires-action':
+                    $notifications = $notifications->where('requires_action', 1);
+                    break;
+                case 'expenses':
+                    $notifications = $notifications->where(function ($query) {
+                            $query->where('notification_type_id', NotificationType::EXPENSE);
+                        });
+                    break;
+                case 'payments':
+                    $notifications = $notifications->where(function ($query) {
+                            $query->where('notification_type_id', NotificationType::PAYMENT)
+                                ->orWhere('notification_type_id', NotificationType::PAYMENT_CONFIRMED)
+                                ->orWhere('notification_type_id', NotificationType::PAYMENT_REJECTED);
+                        });
+                    break;
+            }
+        }
+
+        $notifications = $notifications->orderBy('notifications.updated_at', 'DESC')
+            ->paginate(20);
+
+        $is_last_page = !$notifications->hasMorePages();
+        $current_page = $notifications->currentPage();
 
         $notifications = $this->augmentNotifications($notifications);
 
-        return view('activity.activity-list', [
+        $html = view('activity.partials.notifications', [
             'notifications' => $notifications,
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+            'is_last_page' => $is_last_page,
+            'current_page' => $current_page,
         ]);
     }
 
     /**
      * Delete a notification.
      */
-    public function delete(Request $request, $notification_id) 
+    public function delete(Request $request, $notification_id): JsonResponse
     {
         Notification::where('id', $notification_id)->first()->delete();
 
@@ -55,12 +96,15 @@ class ActivityController extends Controller
      * Deletes all notifications except actionable notifications (friend request, group
      * invite, payment confirmation)
      */
-    public function clearAll(Request $request)
+    public function clearAll(Request $request): JsonResponse
     {
         $deleted_notification_ids = [];
 
         $notifications_to_delete = Notification::where('recipient', auth()->user()->id)
-            ->whereNot(function ($query) {
+            ->whereNot('requires_action', 1)
+            ->get();
+
+            /*->whereNot(function ($query) {
                 $query->where('notification_type_id', NotificationType::FRIEND_REQUEST)
                     ->whereColumn('recipient', '!=', 'creator');
             })
@@ -72,7 +116,7 @@ class ActivityController extends Controller
                 $query->where('notification_type_id', NotificationType::PAYMENT)
                     ->whereColumn('recipient', '!=', 'creator');
             })
-            ->get();
+            ->get();*/
 
         foreach($notifications_to_delete as $notification) {
             $deleted_notification_ids[] = $notification->id;

@@ -29,7 +29,7 @@
     }
 
     .topnav-btn:hover {
-        color: var(--blue-hover); /* TODO: change this hover colour to --primary-colour */
+        color: var(--blue-text); /* TODO: change this hover colour to --primary-colour */
         cursor: pointer;
     }
 </style>

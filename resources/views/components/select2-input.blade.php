@@ -39,7 +39,7 @@
     }
 
     .select2.select2-container .select2-selection:focus {
-        outline: 2px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
+        outline: 2px solid var(--blue-text); /* TODO: Change this to --primary-color-hover */
         outline-offset: 0px;
         border-radius: var(--border-radius);
         border: 1px solid var(--background);
@@ -93,7 +93,7 @@
     }
 
     .select2-container .select2-dropdown .select2-search .select2-search__field:focus {
-        outline: 2px solid var(--blue-hover) !important;
+        outline: 2px solid var(--blue-text) !important;
         outline-offset: 0;
         border: 1px solid var(--background) !important;
         box-shadow: none !important;

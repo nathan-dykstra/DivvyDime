@@ -70,7 +70,7 @@
     }
 
     .theme-setting-active {
-        outline: 3px solid var(--blue-hover);
+        outline: 3px solid var(--blue-text);
         border: 1px solid var(--background) !important;
     }
 
@@ -90,7 +90,7 @@
     }
 
     .theme-setting:focus-visible {
-        outline: 2px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
+        outline: 2px solid var(--blue-text); /* TODO: Change this to --primary-color-hover */
         border: 1px solid var(--background);
         border-radius: var(--border-radius);
         box-shadow: none;

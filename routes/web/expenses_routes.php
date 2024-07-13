@@ -4,6 +4,7 @@ use App\Http\Controllers\ExpensesController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/expenses', [ExpensesController::class, 'index'])->name('expenses');
+Route::get('/expenses/get-expenses', [ExpensesController::class, 'getExpenses'])->name('expenses.get-expenses');
 Route::get('/expenses/create', [ExpensesController::class, 'create'])->name('expenses.create');
 Route::post('/expenses', [ExpensesController::class, 'store'])->name('expenses.store');
 Route::get('/expenses/{expense_id}', [ExpensesController::class, 'show'])->name('expenses.show');

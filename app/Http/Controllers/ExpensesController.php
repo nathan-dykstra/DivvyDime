@@ -3,22 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateExpenseRequest;
-use App\Models\Balance;
 use App\Models\Expense;
-use App\Models\ExpenseGroup;
 use App\Models\ExpenseParticipant;
 use App\Models\ExpenseType;
 use App\Models\Group;
-use App\Models\Notification;
-use App\Models\NotificationAttribute;
-use App\Models\NotificationType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
@@ -28,21 +22,57 @@ class ExpensesController extends Controller
     const TIMEZONE = 'America/Toronto'; // TODO: make this a user setting
 
     /**
-     * Displays the User's Expenses.
+     * Displays the user's expenses list.
      */
     public function index(): View
     {
+        return view('expenses.expenses-list');
+    }
+
+    /**
+     * Paginates the user's expenses, with an optional search query to filter.
+     */
+    public function getExpenses(Request $request): JsonResponse
+    {
         $current_user = auth()->user();
 
-        $expenses = $current_user->expenses()
-            ->orderBy('date', 'DESC')
+        $search_query = $request->input('query');
+
+        $expenses = $current_user->expenses();
+
+        if ($search_query) {
+            $expenses = $expenses->join('expense_participants AS ep', 'expenses.id', 'ep.expense_id')
+                ->join('users AS participant_users', 'ep.user_id', 'participant_users.id')
+                ->join('users AS payer_users', 'expenses.payer', 'payer_users.id')
+                ->where(function ($query) use ($search_query) {
+                    $query->whereRaw('participant_users.username LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('payer_users.username LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('expenses.name LIKE ?', ["%$search_query%"])
+                        ->orWhereRaw('expenses.amount LIKE ?', ["$search_query%"])
+                        ->orWhere('expenses.amount', $search_query);
+                        /*->orWhereHas('groups', function ($query) use ($search_query) {
+                            $query->whereRaw('groups.name LIKE ?', ["%$search_query%"]);
+                        });*/
+                });
+        }
+
+        $expenses = $expenses->orderBy('date', 'DESC')
             ->orderBy('created_at', 'DESC')
-            ->get();
+            ->paginate(20);
+
+        $is_last_page = !$expenses->hasMorePages();
+        $current_page = $expenses->currentPage();
 
         $expenses = $this->augmentExpenses($expenses);
 
-        return view('expenses.expenses-list', [
+        $html = view('expenses.partials.expenses', [
             'expenses' => $expenses,
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+            'is_last_page' => $is_last_page,
+            'current_page' => $current_page,
         ]);
     }
 
@@ -618,42 +648,6 @@ class ExpensesController extends Controller
         ];
 
         return response()->json($response);
-    }
-
-    /**
-     * Filters the Expenses list.
-     */
-    public function search(Request $request): View
-    {
-        $current_user = auth()->user();
-
-        $search_string = $request->input('search_string');
-
-        $expenses = $current_user->expenses();
-
-        if ($search_string) {
-            $expenses = $expenses->join('expense_participants AS ep', 'expenses.id', 'ep.expense_id')
-                ->join('users AS participant_users', 'ep.user_id', 'participant_users.id')
-                ->join('users AS payer_users', 'expenses.payer', 'payer_users.id')
-                ->where(function ($query) use ($search_string) {
-                    $query->whereRaw('participant_users.username LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('payer_users.username LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('expenses.name LIKE ?', ["%$search_string%"])
-                        ->orWhereRaw('expenses.amount LIKE ?', ["$search_string%"])
-                        ->orWhere('expenses.amount', $search_string)
-                        ->orWhereHas('groups', function ($query) use ($search_string) {
-                            $query->whereRaw('groups.name LIKE ?', ["%$search_string%"]);
-                        });
-                });
-        }
-
-        $expenses = $expenses->orderBy('date', 'DESC')
-            ->orderBy('created_at', 'DESC')
-            ->get();
-
-        $expenses = $this->augmentExpenses($expenses);
-
-        return view('expenses.partials.expenses', ['expenses' => $expenses]);
     }
     
     /**

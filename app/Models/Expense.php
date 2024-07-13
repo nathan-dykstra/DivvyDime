@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Events\ExpenseDeleting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Expense extends Model
 {
@@ -257,15 +258,18 @@ class Expense extends Model
      */
     public function sendExpenseNotifications()
     {
-        if ($this->expense_type_id === ExpenseType::PAYMENT || $this->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES || $this->groups->first()->id === Group::DEFAULT_GROUP) {
+        $is_payment = $this->expense_type_id === ExpenseType::PAYMENT || $this->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
+    
+        if ($is_payment || $this->groups->first()->id === Group::DEFAULT_GROUP) {
             // Only send the notification to involved Users
 
             foreach ($this->involvedUsers() as $involved_user) {
                 $expense_notification = Notification::create([
-                    'notification_type_id' => ($this->expense_type_id === ExpenseType::PAYMENT || $this->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES) ? NotificationType::PAYMENT : NotificationType::EXPENSE,
+                    'notification_type_id' => $is_payment ? NotificationType::PAYMENT : NotificationType::EXPENSE,
                     'creator' => $this->creator,
                     'sender' => $this->creator,
                     'recipient' => $involved_user->id,
+                    'requires_action' => ($is_payment && ($involved_user->id !== $this->payer)) ? 1 : 0,
                 ]);
 
                 NotificationAttribute::create([

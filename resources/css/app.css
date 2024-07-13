@@ -44,9 +44,10 @@
     --yellow-text: #856404;
     --green-background: #d4edda;
     --green-text: #155724;
-    --blue-background: #cce5ff;
+    --blue-background: #bedaf8;
     --blue-text: #004085;
 
+    --blue-text-constant: #004085;
     --danger: rgba(220, 38, 38, 1);
     --danger-hover: rgba(239, 68, 68, 1);
     --bright-yellow: #ffcc4d;
@@ -522,20 +523,20 @@ p {
 }
 
 .primary-color-btn {
-    background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-color */
-    border: none !important;
-    color: var(--text-opposite) !important;
+    background-color: var(--blue-background) !important; /* TODO: Change this to --primary-color */
+    border: 1px solid var(--blue-text) !important;
+    color: var(--blue-text) !important;
     transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out !important;
 }
 
 .primary-color-btn:hover {
-    background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-color-hover */
-    border: none !important;
-    color: var(--text-opposite-highlight) !important;
+    background-color: var(--blue-background) !important; /* TODO: Change this to --primary-color-hover */
+    border: 1px solid var(--blue-text) !important;
+    /*color: var(--text-opposite-highlight) !important;*/
 }
 
 .primary-color-btn:focus-visible {
-    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline: 3px solid var(--blue-text) !important; /* TODO: Change this to --primary-color */
     outline-offset: 1px;
     border-radius: var(--border-radius);
 }
@@ -543,6 +544,59 @@ p {
 @media (min-width: 1024px) {
     .restrict-max-width {
         max-width: 36rem;
+    }
+}
+
+.loading-line-1 {
+    background-color: var(--secondary-grey-hover);
+    height: 20px;
+    width: 70%;
+    border-radius: 10px;
+    margin: 4px 0;
+    animation: shimmer 1.5s infinite;
+}
+
+.loading-line-2 {
+    background-color: var(--secondary-grey-hover);
+    height: 16px;
+    width: 40%;
+    border-radius: 8px;
+    margin: 4px 0;
+    animation: shimmer 2s infinite;
+}
+
+.loading-line-3 {
+    background-color: var(--secondary-grey);
+    height: 16px;
+    width: 30%;
+    border-radius: 8px;
+    margin: 4px 0;
+    animation: shimmer 1.5s infinite;
+}
+
+@media screen and (max-width: 768px) {
+    .loading-line-1 {
+        width: 100%;
+    }
+
+    .loading-line-2 {
+        width: 60%;
+    }
+
+    .loading-line-3 {
+        width: 50%;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
     }
 }
 
@@ -608,7 +662,7 @@ p {
 }
 
 .info-chip-link:focus-visible {
-    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
+    outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color-hover */
     outline-offset: 1px;
 }
 
@@ -1322,7 +1376,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .pin-sidebar-icon:hover {
-    color: var(--blue-hover);
+    color: var(--blue-text);
 }
 
 @keyframes scaleSidebarIcon {
@@ -1374,11 +1428,12 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .sidebar-item-active {
-    background-color: var(--accent-color);
+    color: var(--blue-text) !important;
+    background-color: var(--blue-background) !important;
 }
 
 .sidebar-item-active:hover {
-    background-color: var(--accent-color); /* TODO: add a hover color for this */
+    background-color: var(--blue-background) !important;
 }
 
 .sidebar-item-content {
@@ -1558,7 +1613,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .expense-img-preview:focus-visible {
-    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color */
     outline-offset: 1px;
     border-radius: var(--border-radius);
 }
@@ -1630,7 +1685,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .update-profile-image:focus-visible {
-    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color */
     outline-offset: 1px;
     border-radius: 50%;
 }
@@ -1742,6 +1797,11 @@ input[type="search"]::-webkit-search-cancel-button {
 
 
 
+.activity-filter-active {
+    color: var(--blue-text) !important;
+    background-color: var(--blue-background) !important;
+}
+
 .notifications-empty-container {
     display: flex;
     flex-direction: column;
@@ -1811,7 +1871,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .delete-notification-btn:hover {
-    color: var(--blue-hover);
+    color: var(--blue-text);
     cursor: pointer;
 }
 
@@ -2007,7 +2067,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .expense-empty-note:focus-visible, .expense-add-image-btn:focus-visible {
-    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
+    outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color-hover */
     outline-offset: 1px;
 }
 
@@ -2352,7 +2412,7 @@ input[type="search"]::-webkit-search-cancel-button {
     font-weight: 400 !important;
     text-transform: none !important;
     letter-spacing: 0 !important;
-    height: 2em !important;
+    height: 32px !important;
     border-radius: 1em !important;
     padding: 0 10px !important;
 }
@@ -2502,7 +2562,7 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .expense-split-tab:focus-visible {
     outline: none;
-    border: 3px solid var(--blue-hover);
+    border: 3px solid var(--blue-text);
 }
 
 
@@ -2594,8 +2654,8 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .expense-datepicker-container .datepicker-cell.selected {
-    color: var(--text-white) !important;
-    background-color: var(--blue-hover) !important; /* TODO: Change this to --primary-colour-hover */
+    color: var(--blue-text) !important;
+    background-color: var(--blue-background) !important; /* TODO: Change this to --primary-colour-hover */
 }
 
 .expense-datepicker-container .datepicker-cell.prev, .expense-datepicker-container .datepicker-cell.next {
@@ -2633,7 +2693,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .expense-datepicker-container button.bg-white:focus-visible {
-    outline: 3px solid var(--blue-hover) !important; /* TODO: Change this to --primary-color-hover */
+    outline: 3px solid var(--blue-text) !important; /* TODO: Change this to --primary-color-hover */
     outline-offset: 1px !important;
     border: 1px solid var(--icon-grey) !important;
     border-radius: var(--border-radius) !important;
@@ -2800,7 +2860,7 @@ input[type="search"]::-webkit-search-cancel-button {
 
 
 .update-group-image:focus-visible {
-    outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color */
     outline-offset: 1px;
     border-radius: var(--border-radius-lg);
 }
@@ -2840,7 +2900,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .add-friend-icon:hover {
-    color: var(--blue-hover);
+    color: var(--blue-text);
     cursor: pointer;
 }
 
@@ -2860,7 +2920,7 @@ input[type="search"]::-webkit-search-cancel-button {
 
 
 .checkbox {
-    color: var(--blue-hover); /* TODO: Change this to --primary-color */
+    color: var(--blue-text-constant);
     background-color: var(--background);
     border: 1px solid var(--border-grey);
     border-radius: 0.25rem;
@@ -2868,8 +2928,16 @@ input[type="search"]::-webkit-search-cancel-button {
     margin-right: 4px;
 }
 
+.checkbox:focus {
+    outline: none;
+    outline-offset: 0;
+    border-radius: 0.25rem;
+    border: 1px solid var(--border-grey);
+    box-shadow: none;
+}
+
 .checkbox:focus-visible {
-    outline: 2px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline: 2px solid var(--blue-text-constant) !important;
     outline-offset: 1px;
     border-radius: 0.25rem;
 }
@@ -2894,7 +2962,7 @@ input[type="search"]::-webkit-search-cancel-button {
 
 
 .radio {
-    color: var(--blue-hover); /* TODO: Change this to --primary-color */
+    color: var(--blue-text-constant);
     background-color: var(--background);
     border: 1px solid var(--border-grey);
     transition: outline 0.1s ease-in-out, outline-offset 0.1s;
@@ -2902,14 +2970,21 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .radio:focus {
-    outline: 2px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+    outline: none;
+    outline-offset: 0;
+    border: 1px solid var(--border-grey);
+    box-shadow: none;
+}
+
+.radio:focus-visible {
+    outline: 2px solid var(--blue-text-constant);
     outline-offset: 1px;
     border: 1px solid var(--background);
     box-shadow: none;
 }
 
 .radio:checked {
-    background-color: var(--blue-hover);
+    background-color: var(--blue-text-constant);
 }
 
 .radio-label {

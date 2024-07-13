@@ -25,7 +25,7 @@
 
     .search-input-secondary:focus {
         border: none !important;
-        outline: 2px solid var(--blue-hover) !important; /* TODO: change this to --primary-color-hover */
+        outline: 2px solid var(--blue-text) !important; /* TODO: change this to --primary-color-hover */
         outline-offset: 0 !important;
         box-shadow: none !important;
     }

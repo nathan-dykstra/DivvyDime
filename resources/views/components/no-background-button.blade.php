@@ -21,7 +21,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 8px 12px;
+        height: 36px;
+        padding: 8px 16px;
         color: var(--icon-grey);
         border-radius: var(--border-radius);
         transition: background-color 0.1s ease;
@@ -33,7 +34,7 @@
     }
 
     .no-background-btn:focus-visible {
-        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+        outline: 3px solid var(--blue-text); /* TODO: Change this to --primary-color */
         outline-offset: 1px;
         border-radius: var(--border-radius);
     }

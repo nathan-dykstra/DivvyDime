@@ -23,6 +23,7 @@ class Notification extends Model
         'creator', // User who triggered the notification
         'sender', // User who sent the notification
         'recipient', // User who received the notification
+        'requires_action',
     ];
 
     protected $casts = [

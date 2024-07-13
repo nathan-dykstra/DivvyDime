@@ -12,7 +12,9 @@
     </x-slot>
 
     <x-slot name="header_buttons">
-        <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('payments.edit', $payment)">{{ __('Edit') }}</x-primary-button>
+        @if (auth()->user()->id === $payment->payer)
+            <x-primary-button icon="fa-solid fa-pen-to-square icon" :href="route('payments.edit', $payment)">{{ __('Edit') }}</x-primary-button>
+        @endif
         <x-primary-button icon="fa-solid fa-scale-balanced icon" :href="route('payments.create')">{{ __('New Payment') }}</x-primary-button>
     </x-slot>
 
@@ -21,17 +23,21 @@
             <i class="fa-solid fa-images"></i>
             <div>{{ __('Add Images') }}</div>
         </div>
-        <div class="dropdown-item warning-hover" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
-            <i class="fa-solid fa-trash-can"></i>
-            <div>{{ __('Delete') }}</div>
-        </div>
+        @if (auth()->user()->id === $payment->payer)
+            <div class="dropdown-item warning-hover" x-data="" x-on:click.prevent="$dispatch('open-modal', 'delete-payment')">
+                <i class="fa-solid fa-trash-can"></i>
+                <div>{{ __('Delete') }}</div>
+            </div>
+        @endif
     </x-slot>
 
     <x-slot name="mobile_overflow_options">
-        <a class="dropdown-item" href="{{ route('payments.edit', $payment) }}">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <div>{{ __('Edit') }}</div>
-        </a>
+        @if (auth()->user()->id === $payment->payer)
+            <a class="dropdown-item" href="{{ route('payments.edit', $payment) }}">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <div>{{ __('Edit') }}</div>
+            </a>
+        @endif
         <a class="dropdown-item" href="{{ route('payments.create') }}">
             <i class="fa-solid fa-scale-balanced"></i>
             <div>{{ __('New Payment') }}</div>

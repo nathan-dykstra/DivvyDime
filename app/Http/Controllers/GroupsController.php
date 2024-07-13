@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Notifications\GroupInviteNotification;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -35,7 +36,7 @@ class GroupsController extends Controller
     const BLANACES_LIMITED = 2;
 
     /**
-     * Displays the User's Groups.
+     * Displays the user's groups list.
      */
     public function index(): View
     {
@@ -88,7 +89,7 @@ class GroupsController extends Controller
     }
 
     /**
-     * Displays the Group.
+     * Displays the group.
      */
     public function show($group_id): View
     {
@@ -222,7 +223,7 @@ class GroupsController extends Controller
     /**
      * Send an invite to a group.
      */
-    public function invite(Request $request, Group $group)
+    public function invite(Request $request, Group $group): JsonResponse
     {
         $inviter = $request->user();
 
@@ -290,6 +291,7 @@ class GroupsController extends Controller
                     'creator' => $inviter->id,
                     'sender' => $inviter->id,
                     'recipient' => $existing_user->id,
+                    'requires_action' => 1,
                 ]);
 
                 NotificationAttribute::create([
@@ -334,7 +336,7 @@ class GroupsController extends Controller
     /**
      * Accept a group invite.
      */
-    public function accept(Request $request)
+    public function accept(Request $request): JsonResponse
     {
         $invitee_notification_id = $request->input('notification_id');
         $invitee_notification = ModelsNotification::find($invitee_notification_id);
@@ -347,6 +349,7 @@ class GroupsController extends Controller
         $invitee_notification->update([
             'notification_type_id' => NotificationType::JOINED_GROUP,
             'creator' => $invitee_id,
+            'requires_action' => 0,
         ]);
 
         // Add invitee to group
@@ -356,14 +359,14 @@ class GroupsController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Friend request accepted!',
+            'message' => 'Added to group!',
         ]);
     }
 
     /**
      * Reject a group invite.
      */
-    public function reject(Request $request)
+    public function reject(Request $request): JsonResponse
     {
         // Delete inviter's and invitee's notifications
 
@@ -390,9 +393,9 @@ class GroupsController extends Controller
     }
 
     /**
-     * Remove a member from the Group.
+     * Remove a member from the group.
      */
-    public function removeMember(Request $request, Group $group)
+    public function removeMember(Request $request, Group $group):JsonResponse
     {
         $member = User::find($request->input('member_id'));
 
@@ -410,7 +413,7 @@ class GroupsController extends Controller
     }
 
     /**
-     * Removes the current user from the Group.
+     * Removes the current user from the group.
      */
     public function leaveGroup(Request $request, Group $group)
     {
@@ -454,7 +457,7 @@ class GroupsController extends Controller
                 $group->delete();
             }
         } else {
-            // Send Group members a "user left group" notification
+            // Send group members a "user left group" notification
             foreach ($group->members()->pluck('users.id')->toArray() as $member_id) {
                 $left_group_notification = ModelsNotification::create([
                     'notification_type_id' => NotificationType::LEFT_GROUP,
@@ -484,9 +487,9 @@ class GroupsController extends Controller
     }
 
     /**
-     * Deletes the Group.
+     * Deletes the group.
      */
-    public function destroy(Request $request, Group $group)
+    public function destroy(Request $request, Group $group): JsonResponse
     {
         $group->deleteGroupImage();
 
@@ -501,7 +504,7 @@ class GroupsController extends Controller
     }
 
     /**
-     * Filters the Groups list.
+     * Filters the groups list.
      */
     public function search(Request $request): View
     {

@@ -87,8 +87,8 @@
     }
 
     .dz-remove-btn {
-        height: 32px;
-        width: 32px;
+        height: 32px !important;
+        width: 32px !important;
     }
 
     @keyframes expandFadeIn {

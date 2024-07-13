@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Notifications\InviteNotification;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -195,6 +196,7 @@ class FriendsController extends Controller
                 'creator' => $inviter->id,
                 'sender' => $inviter->id,
                 'recipient' => $invitee->id,
+                'requires_action' => 1,
             ]);
         } else {
             // Send an invite to app email
@@ -222,12 +224,22 @@ class FriendsController extends Controller
     /**
      * Accept a friend request.
      */
-    public function accept(Request $request, $notification_id)
+    public function accept(Request $request, $notification_id): JsonResponse
     {
         $invitee_notification = ModelsNotification::where('id', $notification_id)->first();
 
         $inviter_id = $invitee_notification->sender;
         $invitee_id = $invitee_notification->recipient;
+
+        // TODO(temp?)
+        $inviter = User::find($inviter_id);
+        $already_friends = $inviter->friends()->where('users.id', $invitee_id)->exists();
+
+        if ($already_friends) {
+            return response()->json([
+                'message' => 'Users are already friends!',
+            ]);
+        }
 
         Friend::create([
             'user1_id' => $inviter_id,
@@ -238,7 +250,8 @@ class FriendsController extends Controller
 
         $invitee_notification->update([
             'notification_type_id' => NotificationType::FRIEND_REQUEST_ACCEPTED,
-            'creator' => $invitee_id
+            'creator' => $invitee_id,
+            'requires_action' => 0,
         ]);
 
         ModelsNotification::updateorCreate(
@@ -262,7 +275,7 @@ class FriendsController extends Controller
     /**
      * Deny a friend request.
      */
-    public function deny(Request $request, $notification_id)
+    public function deny(Request $request, $notification_id): JsonResponse
     {
         $invitee_notification = ModelsNotification::where('id', $notification_id)->first();
 
