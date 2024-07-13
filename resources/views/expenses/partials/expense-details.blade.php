@@ -611,8 +611,6 @@
         involvedDropdown.classList.add('hidden');
         involvedFriendsInput.value = '';
         involvedFriendsInput.focus();
-
-        hideEmptyDropdownWarnings();
     }
 
     function addGroupChips(group) {
@@ -650,8 +648,6 @@
         involvedDropdown.classList.add('hidden');
         involvedFriendsInput.value = '';
         involvedFriendsInput.focus();
-
-        hideEmptyDropdownWarnings();
     }
 
     involvedChipsContainer.addEventListener('click', function() {
@@ -803,7 +799,9 @@
     }
 
     function addExpenseUser(user) {
-        // Note: user has user.id, user.username, and user.profile_img_url to populate the dropdowns
+        // Note: user has user.id, user.username, and user.profile_image_url to populate the dropdowns
+
+        hideEmptyDropdownWarnings();
 
         // Find index to insert the user (maintain alphabetical ordering)
         const insertIndex = findExpenseUserInsertIndex(user.username);
@@ -831,7 +829,7 @@
         } else {
             paidDropdownList.insertBefore(paidDropdownItem, paidDropdownList.children[insertIndex]);
         }
-        
+
         // Select this new user as the payer if the list was empty
         if (paidDropdownList.children.length === 1) {
             paidDropdownList.querySelector('.expand-dropdown-item').click();
@@ -877,7 +875,7 @@
 
         let splitReimbursementDropdownItemTemplate = document.getElementById('split-reimbursement-dropdown-item-template');
         let splitReimbursementDropdownItem = splitReimbursementDropdownItemTemplate.content.cloneNode(true);
-        
+
         splitReimbursementDropdownItem.querySelector('.expand-dropdown-item').setAttribute('for', 'split-reimbursement-item-' + user.id);
         splitReimbursementDropdownItem.querySelector('.expand-dropdown-item').dataset.userId = user.id;
         splitReimbursementDropdownItem.querySelector('.split-reimbursement-item-checkbox').setAttribute('id', 'split-reimbursement-item-' + user.id);
@@ -1094,14 +1092,25 @@
                 const currentUserId = response.current_user_id;
 
                 let currentUserChip = involvedChipsContainer.querySelector('.involved-chip[data-user-id="' + currentUserId + '"]');
-                
+
                 if (groupIsDefault) {
                     // Fix the current user's chip so it can't be removed
-                    if (currentUserChip) {
-                        currentUserChip.parentNode.removeChild(currentUserChip);
-                    }
+
                     fixedCurrentUserChipTemplate = document.getElementById('involved-chip-current-user-fixed-template');
                     fixedCurrentUserChip = fixedCurrentUserChipTemplate.content.cloneNode(true);
+
+                    if (currentUserChip) {
+                        currentUserChip.parentNode.removeChild(currentUserChip);
+                    } else {
+                        // Current user must be added to the expense menus
+                        currentUser = {
+                            id: fixedCurrentUserChip.querySelector('.involved-chip-fixed').dataset.userId,
+                            username: fixedCurrentUserChip.querySelector('.involved-chip-fixed').dataset.username,
+                            profile_image_url: fixedCurrentUserChip.querySelector('.involved-chip-fixed').dataset.userImg
+                        };
+                        addExpenseUser(currentUser);
+                    }
+
                     involvedChipsContainer.insertBefore(fixedCurrentUserChip, involvedChipsContainer.firstChild);
                 } else if (currentUserChip && currentUserChip.classList.contains('involved-chip-fixed')) {
                     // Unfix the current user's chip so it can be removed

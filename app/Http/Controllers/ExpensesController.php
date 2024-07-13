@@ -81,7 +81,7 @@ class ExpensesController extends Controller
      */
     public function create(Request $request): View
     {
-        $current_user = auth()->user();
+        $current_user = $request->user();
 
         $groups = $current_user->groups()
             ->orderByRaw("
@@ -142,7 +142,7 @@ class ExpensesController extends Controller
             'default_expense_type' => $default_expense_type,
             'expense_type_names' => $expense_type_names,
             'expense_type_ids' => $expense_type_ids,
-            'current_user' => $request->user(),
+            'current_user' => $current_user,
             'group' => $group,
             'friend' => $friend,
         ]);
@@ -347,7 +347,7 @@ class ExpensesController extends Controller
             return Redirect::route('payments.edit', $expense);
         }
 
-        $current_user = auth()->user();
+        $current_user = $request->user();
 
         $groups = $current_user->groups()
             ->orderByRaw("
@@ -395,7 +395,7 @@ class ExpensesController extends Controller
             'default_expense_type' => $default_expense_type,
             'expense_type_names' => $expense_type_names,
             'expense_type_ids' => $expense_type_ids,
-            'current_user' => $request->user(),
+            'current_user' => $current_user,
         ]);
     }
 
