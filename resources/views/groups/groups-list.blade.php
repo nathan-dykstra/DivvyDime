@@ -32,12 +32,23 @@
 
     <div class="section-search">
         <div class="restrict-max-width">
-            <x-searchbar-secondary placeholder="Search Groups" id="search-groups"/>
+            <x-searchbar-secondary placeholder="{{ __('Search Groups') }}" id="search-groups"></x-searchbar-secondary>
         </div>
     </div>
 
-    <div class="groups-list-container">
-        @include('groups.partials.groups')
+    <div class="expenses-list-container">
+        <!-- No groups message -->
+        <div class="notifications-empty-container hidden" id="no-groups">
+            <div class="notifications-empty-icon"><i class="fa-solid fa-user-group"></i></div>
+            <div class="notifications-empty-text">{{ __('No groups!') }}</div>
+        </div>
+
+        <div class="expenses" id="groups-list"></div>
+
+        <!-- Loading animation -->
+        <div id="groups-loading">
+            <x-list-loading></x-list-loading>
+        </div>
     </div>
 
     <!-- Modals -->
@@ -56,24 +67,86 @@
 </x-app-layout>
 
 <script>
-    groupsSearchbar = document.getElementById("search-groups");
-    groupsSearchbar.addEventListener('input', function(event) {
-        var searchString = event.target.value;
+    let page = 1;
+    let loading = false;
+    let lastPage = false;
+    let query = '';
+
+    function fetchGroups(query, replace = false) {
+        const loadingPlaceholder = document.getElementById('groups-loading');
+        const groupsList = document.getElementById('groups-list');
+        const noGroupsMessage = document.getElementById('no-groups');
+
+        loading = true;
+
+        if (replace) {
+            groupsList.innerHTML = '';
+            lastPage = false;
+            page = 1;
+        }
+
+        if (lastPage) {
+            loading = false;
+            return;
+        }
+
+        noGroupsMessage.classList.add('hidden');
+        loadingPlaceholder.classList.remove('hidden');
 
         $.ajax({
-            url: "{{ route('groups.search') }}",
-            method: 'POST',
+            url: '{{ route('groups.get-groups') }}' + '?page=' + page,
+            method: 'GET',
             data: {
-                '_token': '{{ csrf_token() }}',
-                'search_string': searchString,
+                'query': query
             },
-            success: function(html) {
-                groups = $('.groups');
-                groups.replaceWith(html);
+            success: function(response) {
+                if (response.is_last_page) lastPage = true;
+                page = parseInt(response.current_page) + 1;
+
+                const html = response.html;
+
+                setTimeout(() => {
+                    loadingPlaceholder.classList.add('hidden');
+
+                    if (replace) { // Replace the content on search or page load
+                        if (html.trim().length == 0) {
+                            groupsList.innerHTML = '';
+                            noGroupsMessage.classList.remove('hidden');
+                        } else {
+                            noGroupsMessage.classList.add('hidden');
+                            groupsList.innerHTML = html;
+                        }
+                    } else { // Append to the content on scroll
+                        groupsList.insertAdjacentHTML('beforeend', html); 
+                    }
+                }, replace ? 300 : 600);
+
+                loading = false;
             },
             error: function(error) {
-                console.log(error);
+                loadingPlaceholder.classList.add('hidden');
+                loading = false;
+                console.error(error);
             }
         });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchGroups(query, true);
+
+        const searchInput = document.getElementById("search-groups");
+        searchInput.addEventListener('input', function() {
+            query = searchInput.value.trim();
+            fetchGroups(query, true);
+        });
+
+        function handleScroll() {
+            if (loading) return;
+
+            if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {
+                fetchGroups(query);
+            }
+        }
+        document.addEventListener('scroll', handleScroll);
     });
 </script>

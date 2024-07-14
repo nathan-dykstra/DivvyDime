@@ -47,7 +47,7 @@
                     <p class="text-warning">
                         {{ __('Your email address is unverified.') }}
 
-                        <x-link-button form="send-verification">{{ __('Click here to re-send the verification email.') }}</x-link-button>
+                        <x-primary-button form="send-verification">{{ __('Resend Verification Email') }}</x-primary-button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')

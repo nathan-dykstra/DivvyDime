@@ -16,6 +16,7 @@ use App\Models\NotificationType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -429,7 +430,7 @@ class PaymentsController extends Controller
     /**
      * Confirm that the payment was received. Update the notifications and adjust the balances.
      */
-    public function confirmPayment(Request $request)
+    public function confirmPayment(Request $request): JsonResponse|RedirectResponse
     {
         if ($request->has('notification_id')) {
             $payee_notification = Notification::find($request->input('notification_id'));
@@ -459,7 +460,7 @@ class PaymentsController extends Controller
     /**
      * The payment was rejected. Update the notifications.
      */
-    public function rejectPayment(Request $request)
+    public function rejectPayment(Request $request): JsonResponse|RedirectResponse
     {
         if ($request->has('notification_id')) {
             $payee_notification = Notification::find($request->input('notification_id'));
@@ -550,6 +551,11 @@ class PaymentsController extends Controller
     {
         // Update notifications
 
+        // TODO(temp?)
+        if ($payment->is_confirmed) {
+            return;
+        }
+
         if ($payment->is_rejected) {
             $payer_notification = Notification::updateOrCreate(
                 [
@@ -560,6 +566,7 @@ class PaymentsController extends Controller
                 ],
                 [
                     'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+                    'requires_action' => 0,
                 ],
             );
 
@@ -572,6 +579,7 @@ class PaymentsController extends Controller
                 ],
                 [
                     'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+                    'requires_action' => 0,
                 ],
             );
 
@@ -591,11 +599,13 @@ class PaymentsController extends Controller
                 ],
                 [
                     'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+                    'requires_action' => 0,
                 ],
             );
 
             $payee_notification->update([
                 'notification_type_id' => NotificationType::PAYMENT_CONFIRMED,
+                'requires_action' => 0,
             ]);
         }
 
@@ -639,6 +649,7 @@ class PaymentsController extends Controller
             ],
             [
                 'notification_type_id' => NotificationType::PAYMENT_REJECTED,
+                'requires_action' => 0,
             ],
         );
 
@@ -651,6 +662,7 @@ class PaymentsController extends Controller
 
         $payee_notification->update([
             'notification_type_id' => NotificationType::PAYMENT_REJECTED,
+            'requires_action' => 0,
         ]);
     }
 }

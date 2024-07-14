@@ -21,7 +21,7 @@
     }
 
     .select-input:focus {
-        outline: 2px solid var(--blue-hover); /* TODO: Change this to --primary-color-hover */
+        outline: 2px solid var(--blue-text);
         outline-offset: 0px;
         border-radius: var(--border-radius);
         border: 1px solid var(--background);

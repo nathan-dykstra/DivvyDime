@@ -65,31 +65,29 @@
                 </div>
 
                 @if (!$expense->is_payment)
-                    <div class="expense-amount text-small"><span class="bold-username">{{ $expense->payer_user->username }}</span>{{ ($expense->is_reimbursement ? __(' received $') : __(' paid $')) . $expense->amount }}</div> 
+                    <div class="expense-amount text-small">
+                        <span class="bold-username">{{ $expense->payer_user->username }}</span>{{ ($expense->is_reimbursement ? __(' received $') : __(' paid $')) . $expense->amount }}
+                    </div>
                 @endif
 
                 <div class="text-shy text-thin-caps">{{ $expense->formatted_date }}</div>
             </div>
 
-            @if ($expense->borrowed == 0)
-                <div class="user-amount text-shy text-small">{{ __('Not involved') }}</div>
+            @if ($expense->is_reimbursement)
+                <div class="user-amount text-success">
+                    <div class="text-small">{{ __('You receive') }}</div>
+                    <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
+                </div>
+            @elseif ($expense->is_payment)
+                <div class="user-amount text-warning">
+                    <div class="text-small">{{ __('You received') }}</div>
+                    <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
+                </div>
             @else
-                @if ($expense->is_reimbursement)
-                    <div class="user-amount text-success">
-                        <div class="text-small">{{ __('You receive') }}</div>
-                        <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
-                    </div>
-                @elseif ($expense->is_payment)
-                    <div class="user-amount text-warning">
-                        <div class="text-small">{{ __('You received') }}</div>
-                        <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
-                    </div>
-                @else
-                    <div class="user-amount text-warning">
-                        <div class="text-small">{{ __('You borrowed') }}</div>
-                        <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
-                    </div>
-                @endif
+                <div class="user-amount text-warning">
+                    <div class="text-small">{{ __('You borrowed') }}</div>
+                    <div class="user-amount-value">{{ __('$') . $expense->borrowed }}</div>
+                </div>
             @endif
         </div>
     @endif

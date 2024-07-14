@@ -24,12 +24,12 @@
     }
 
     .icon-btn:hover {
-        color: var(--blue-hover);
+        color: var(--blue-text);
         cursor: pointer;
     }
 
     .icon-btn:focus-visible {
-        outline: 3px solid var(--blue-hover); /* TODO: Change this to --primary-color */
+        outline: 3px solid var(--blue-text);
         outline-offset: 4px;
     }
 </style>

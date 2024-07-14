@@ -36,22 +36,26 @@
 
     <!-- Content -->
 
-    @if (count($friends) === 0)
-        <div class="notifications-empty-container">
+    <div class="section-search">
+        <div class="restrict-max-width">
+            <x-searchbar-secondary placeholder="{{ __('Search Friends') }}" id="search-friends"></x-searchbar-secondary>
+        </div>
+    </div>
+
+    <div class="expenses-list-container">
+        <!-- No groups message -->
+        <div class="notifications-empty-container hidden" id="no-friends">
             <div class="notifications-empty-icon"><i class="fa-solid fa-user-slash"></i></div>
             <div class="notifications-empty-text">{{ __('No friends!') }}</div>
         </div>
-    @else
-        <div class="section-search">
-            <div class="restrict-max-width">
-                <x-searchbar-secondary placeholder="Search Friends" id="search-friends"/>
-            </div>
-        </div>
 
-        <div class="friends-list-container">
-            @include('friends.partials.friends')
+        <div class="expenses" id="friends-list"></div>
+
+        <!-- Loading animation -->
+        <div id="friends-loading">
+            <x-list-loading></x-list-loading>
         </div>
-    @endif
+    </div>
 
     <!-- Modals -->
 
@@ -84,27 +88,86 @@
 </x-app-layout>
 
 <script>
-    friendsSearchbar = document.getElementById("search-friends");
+    let page = 1;
+    let loading = false;
+    let lastPage = false;
+    let query = '';
 
-    if (friendsSearchbar) {
-        friendsSearchbar.addEventListener('input', function(event) {
-            var searchString = event.target.value;
+    function fetchFriends(query, replace = false) {
+        const loadingPlaceholder = document.getElementById('friends-loading');
+        const friendsList = document.getElementById('friends-list');
+        const noFriendsMessage = document.getElementById('no-friends');
 
-            $.ajax({
-                url: "{{ route('friends.search') }}",
-                method: 'POST',
-                data: {
-                    '_token': '{{ csrf_token() }}',
-                    'search_string': searchString,
-                },
-                success: function(html) {
-                    friends = $('.friends');
-                    friends.replaceWith(html);
-                },
-                error: function(error) {
-                    console.log(error);
-                }
-            });
+        loading = true;
+
+        if (replace) {
+            friendsList.innerHTML = '';
+            lastPage = false;
+            page = 1;
+        }
+
+        if (lastPage) {
+            loading = false;
+            return;
+        }
+
+        noFriendsMessage.classList.add('hidden');
+        loadingPlaceholder.classList.remove('hidden');
+
+        $.ajax({
+            url: '{{ route('friends.get-friends') }}' + '?page=' + page,
+            method: 'GET',
+            data: {
+                'query': query
+            },
+            success: function(response) {
+                if (response.is_last_page) lastPage = true;
+                page = parseInt(response.current_page) + 1;
+
+                const html = response.html;
+
+                setTimeout(() => {
+                    loadingPlaceholder.classList.add('hidden');
+
+                    if (replace) { // Replace the content on search or page load
+                        if (html.trim().length == 0) {
+                            friendsList.innerHTML = '';
+                            noFriendsMessage.classList.remove('hidden');
+                        } else {
+                            noFriendsMessage.classList.add('hidden');
+                            friendsList.innerHTML = html;
+                        }
+                    } else { // Append to the content on scroll
+                        friendsList.insertAdjacentHTML('beforeend', html); 
+                    }
+                }, replace ? 300 : 600);
+
+                loading = false;
+            },
+            error: function(error) {
+                loadingPlaceholder.classList.add('hidden');
+                loading = false;
+                console.error(error);
+            }
         });
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchFriends(query, true);
+
+        const searchInput = document.getElementById("search-friends");
+        searchInput.addEventListener('input', function() {
+            query = searchInput.value.trim();
+            fetchFriends(query, true);
+        });
+
+        function handleScroll() {
+            if (loading) return;
+
+            if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {
+                fetchFriends(query);
+            }
+        }
+        document.addEventListener('scroll', handleScroll);
+    });
 </script>

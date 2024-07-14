@@ -31,7 +31,7 @@
 
             <div class="btn-container-end">
                 @if (Route::has('password.request'))
-                    <x-link-button :href="route('password.request')">{{ __('Forgot your password?') }}</x-link-button>
+                    <x-no-background-button :href="route('password.request')">{{ __('Forgot your password?') }}</x-no-background-button>
                 @endif
 
                 <x-primary-button type="submit">{{ __('Log in') }}</x-primary-button>
