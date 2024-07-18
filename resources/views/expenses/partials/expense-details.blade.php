@@ -74,18 +74,67 @@
             </div>
 
             <div class="expense-name-amount-category-container">
-                <!--<x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Choose a category')">
-                    <div class="expense-category">
-                        TODO: category selector
-                    </div>
-                </x-tooltip>-->
+                <x-dropdown2 align="left">
+                    <x-slot name="trigger">
+                        <button type="button" class="expense-category {{ $expense ? $expense->category['colour_class'].'-border' : 'grey-background-text-border' }}" id="expense-category-trigger">
+                            <i id="expense-category-icon" class="{{ $expense ? $expense->category['icon_class'] : 'fa-solid fa-receipt' }}"></i>
+                        </button>
+                        <input type="hidden" id="expense-category" name="expense-category" value="{{ $expense ? $expense->category_id : $default_category_id }}" />
+                    </x-slot>
+
+                    <x-slot name="content">
+                        @foreach ($category_groups['groups'] as $category_group)
+                            <div class="dropdown2-item-parent-wrapper">
+                                <div class="dropdown2-item dropdown2-item-parent">
+                                    <div>{{ $category_group->group }}</div>
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </div>
+                                @include('expenses.partials.category-submenu', ['category_group' => $category_group])
+                            </div>
+                        @endforeach
+
+                        <div class="dropdown-divider"></div>
+
+                        <div class="dropdown2-item-parent-wrapper">
+                            <div class="dropdown2-item dropdown2-item-parent">
+                                <div>{{ $category_groups['other_group']->group }}</div>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                            @include('expenses.partials.category-submenu', ['category_group' => $category_groups['other_group']])
+                        </div>
+                    </x-slot>
+                </x-dropdown2>
+
                 <div class="expense-name-amount-container">
                     <div class="expense-input-container">
-                        <input id="expense-name" class="expense-form-name" name="expense-name" type="text" placeholder="{{ __('Describe the expense') }}" value="{{ old('expense-name', $expense ? $expense->name : '') }}" autocomplete="off" maxlength="255" required />
+                        <input 
+                            id="expense-name"
+                            class="expense-form-name"
+                            name="expense-name"
+                            type="text"
+                            placeholder="{{ __('Describe the expense') }}"
+                            value="{{ old('expense-name', $expense ? $expense->name : '') }}"
+                            autocomplete="off"
+                            maxlength="255"
+                            required
+                        />
                     </div>
 
                     <div class="expense-input-container">
-                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-form-amount" name="expense-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('expense-amount', $expense ? $expense->amount : '') }}" autocomplete="off" oninput="updateSplitDropdownAmounts()" required />
+                        <span class="expense-currency">{{ __('$') }}</span>
+                        <input id="expense-amount"
+                            class="expense-form-amount"
+                            name="expense-amount"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="99999999"
+                            placeholder="{{ __('0.00') }}"
+                            value="{{ old('expense-amount', $expense ? $expense->amount : '') }}"
+                            autocomplete="off"
+                            oninput="updateSplitDropdownAmounts()"
+                            required
+                        />
                     </div>
                 </div>
             </div>
@@ -227,7 +276,7 @@
                                 <div id="expense-split-reimbursement" class="{{ $expense?->expense_type_id === $expense_type_ids['reimbursement'] ? '' : 'hidden' }}">
                                     @include('expenses.partials.split-tabs.expense-reimbursement-tab')
                                 </div>
-                                <div id="expense-split-itemized" class="{{ $expense?->expense_type_id === $expense_type_ids['itemized'] ? '' : 'hidden' }}">Coming soon</div>
+                                <!--<div id="expense-split-itemized" class="{{ $expense?->expense_type_id === $expense_type_ids['itemized'] ? '' : 'hidden' }}">Coming soon</div>-->
                             </div>
                         </div>
                     </div>
@@ -461,6 +510,7 @@
     const currentGroupInput = document.querySelector('input[name="expense-group"]:checked');
     const currentDateInput = document.getElementById('expense-date');
     const currentNoteInput = document.getElementById('expense-note');
+    const currentCategoryInput = document.getElementById('expense-category');
 
     const paidBtn = document.getElementById('expense-paid-btn');
     const splitBtn = document.getElementById('expense-split-btn');
@@ -1074,8 +1124,22 @@
         splitTabsScrollToCurrentTab();
     }
 
+    function setExpenseCategory(category) {
+        const categoryTrigger = document.getElementById('expense-category-trigger');
+
+        categoryTrigger.classList = "expense-category";
+        categoryTrigger.classList.add(category.dataset.colour);
+
+        const icon = categoryTrigger.querySelector('#expense-category-icon')
+        const iconClasses = category.dataset.icon.split(' ');
+        icon.classList = "";
+        icon.classList.add(...iconClasses);
+
+        currentCategoryInput.value = category.dataset.categoryId;
+    }
+
     function setExpenseGroup(group) {
-        newGroup = parseInt(group.dataset.groupId);
+        const newGroup = parseInt(group.dataset.groupId);
         currentGroupInput.value = newGroup;
         groupBtn.querySelector('.expense-round-btn-text').textContent = group.dataset.groupName;
 

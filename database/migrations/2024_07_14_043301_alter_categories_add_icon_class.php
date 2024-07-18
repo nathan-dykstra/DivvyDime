@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Category;
-use App\Models\CategoryGroup;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,13 +12,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cateogries', function (Blueprint $table) {
-            Category::insert([
-                [
-                    'category_group_id' => CategoryGroup::OTHER,
-                    'category' => 'Payment',
-                ],
-            ]);
+        Schema::table('categories', function (Blueprint $table) {
+            $table->string('icon_class', 255)->after('category_img_file')->nullable();
         });
     }
 
@@ -28,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cateogries', function (Blueprint $table) {
-            //
+        Schema::table('categories', function (Blueprint $table) {
+            $table->dropColumn('icon_class');
         });
     }
 };

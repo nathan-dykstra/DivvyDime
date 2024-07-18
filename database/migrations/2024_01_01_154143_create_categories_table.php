@@ -164,7 +164,7 @@ return new class extends Migration
                 'category' => 'Other',
             ],
             [
-                'category_group_id' => CategoryGroup::UNCATEGORIZED,
+                'category_group_id' => CategoryGroup::OTHER,
                 'category' => 'General',
             ],
         ]);

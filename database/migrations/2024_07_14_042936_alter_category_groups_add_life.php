@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Category;
 use App\Models\CategoryGroup;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -13,12 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cateogries', function (Blueprint $table) {
-            Category::insert([
+        Schema::table('category_groups', function (Blueprint $table) {
+            CategoryGroup::insert([
                 [
-                    'category_group_id' => CategoryGroup::OTHER,
-                    'category' => 'Payment',
+                    'group' => 'Life',
                 ],
+            ]);
+
+            CategoryGroup::where('id', CategoryGroup::OTHER)->update([
+                'group' => 'Other'
             ]);
         });
     }
@@ -28,8 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cateogries', function (Blueprint $table) {
-            //
-        });
+        //
     }
 };

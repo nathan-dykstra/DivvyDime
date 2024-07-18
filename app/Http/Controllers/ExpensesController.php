@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateExpenseRequest;
+use App\Models\Category;
+use App\Models\CategoryGroup;
 use App\Models\Expense;
 use App\Models\ExpenseParticipant;
 use App\Models\ExpenseType;
@@ -133,6 +135,27 @@ class ExpensesController extends Controller
             ->get();
         }
 
+        $category_groups = [
+            'groups' => CategoryGroup::whereNot('id', CategoryGroup::OTHER)->orderBy('group', 'ASC')->get(),
+            'other_group' => CategoryGroup::find(CategoryGroup::OTHER)
+        ];
+
+        foreach ($category_groups['groups'] as $category_group) {
+            $category_group->categories = Category::where('category_group_id', $category_group->id)
+                ->whereNotIn('id', Category::OTHER_CATEGORY_IDS)
+                ->orderBy('category', 'ASC')
+                ->get();
+
+            $category_group->other_category = Category::where('category_group_id', $category_group->id)
+                ->whereIn('id', Category::OTHER_CATEGORY_IDS)
+                ->first();
+        }
+
+        $category_groups['other_group']->categories = Category::where('category_group_id', $category_groups['other_group']->id)
+            ->whereNot('id', Category::PAYMENT_CATEGORY)
+            ->orderBy('category', 'ASC')
+            ->get();
+
         return view('expenses.create', [
             'expense' => null,
             'groups' => $groups,
@@ -145,6 +168,8 @@ class ExpensesController extends Controller
             'current_user' => $current_user,
             'group' => $group,
             'friend' => $friend,
+            'category_groups' => $category_groups,
+            'default_category_id' => Category::DEFAULT_CATEGORY
         ]);
     }
 
@@ -164,7 +189,7 @@ class ExpensesController extends Controller
             'amount' => $expense_validated['expense-amount'],
             'payer' => $expense_validated['expense-paid'],
             'expense_type_id' => $expense_validated['expense-split'],
-            /*'category_id' => $expense_validated['expense-category'],*/
+            'category_id' => $expense_validated['expense-category'],
             'note' => $expense_validated['expense-note'],
             'date' => $expense_validated['expense-date'],
             'creator' => $current_user->id,
@@ -386,6 +411,33 @@ class ExpensesController extends Controller
         $expense->formatted_date = Carbon::parse($expense->date)->isoFormat('MMMM D, YYYY');
         $expense->payer_username = User::where('id', $expense->payer)->first()->username;
 
+        $category_groups = [
+            'groups' => CategoryGroup::whereNot('id', CategoryGroup::OTHER)->orderBy('group', 'ASC')->get(),
+            'other_group' => CategoryGroup::find(CategoryGroup::OTHER)
+        ];
+
+        foreach ($category_groups['groups'] as $category_group) {
+            $category_group->categories = Category::where('category_group_id', $category_group->id)
+                ->whereNotIn('id', Category::OTHER_CATEGORY_IDS)
+                ->orderBy('category', 'ASC')
+                ->get();
+
+            $category_group->other_category = Category::where('category_group_id', $category_group->id)
+                ->whereIn('id', Category::OTHER_CATEGORY_IDS)
+                ->first();
+        }
+
+        $category_groups['other_group']->categories = Category::where('category_group_id', $category_groups['other_group']->id)
+            ->whereNot('id', Category::PAYMENT_CATEGORY)
+            ->orderBy('category', 'ASC')
+            ->get();
+
+        $category = $expense->category()->first();
+        $expense->category = [
+            'icon_class' => $category->icon_class,
+            'colour_class' => $category->categoryGroup()->first()->colour_class,
+        ];
+
         return view('expenses.edit', [
             'expense' => $expense,
             'groups' => $groups,
@@ -396,6 +448,8 @@ class ExpensesController extends Controller
             'expense_type_names' => $expense_type_names,
             'expense_type_ids' => $expense_type_ids,
             'current_user' => $current_user,
+            'category_groups' => $category_groups,
+            'default_category_id' => Category::DEFAULT_CATEGORY,
         ]);
     }
 
@@ -416,7 +470,7 @@ class ExpensesController extends Controller
             'amount' => $expense_validated['expense-amount'],
             'payer' => $expense_validated['expense-paid'],
             'expense_type_id' => $expense_validated['expense-split'],
-            /*'category_id' => $expense_validated['expense-category'],*/
+            'category_id' => $expense_validated['expense-category'],
             'note' => $expense_validated['expense-note'],
             'date' => $expense_validated['expense-date'],
             'updator' => auth()->user()->id,
