@@ -25,8 +25,8 @@
     </div>
 
     <!-- Mobile menu -->
-    <div class="modal-transparent-container hidden">
-        <div class="modal-transparent-bg"></div>
+    <div class="dropdown-transparent-container hidden">
+        <div class="dropdown-transparent-bg"></div>
     </div>
     <div class="dropdown2-mobile hidden" tabindex="0">
         <div class="dropdown-mobile-handle"></div>
@@ -127,19 +127,20 @@
     }
 
     .dropdown2-item-parent {
-        grid-template-columns: auto 10px;
+        grid-template-columns: auto 10px !important;
     }
 
     .dropdown2-item-child {
-        grid-template-columns: 20px auto;
+        grid-template-columns: 20px auto !important;
     }
 
     .dropdown2-item-child-lg {
-        grid-template-columns: 40px auto;
+        grid-template-columns: 40px auto !important;
     }
 
     .dropdown2-item {
         display: grid;
+        grid-template-columns: 20px auto;
         gap: 8px;
         padding: 8px 16px;
         border-radius: var(--border-radius);
@@ -193,7 +194,7 @@
     }
 
     .dropdown2-mobile.open {
-        height: 60%;
+        height: 45%;
     }
 
     .dropdown2-mobile.full {
@@ -231,7 +232,7 @@
             trigger.addEventListener('click', (event) => {
                 if (checkIfMobile()) {
                     const menu = trigger.parentNode.querySelector('.dropdown2-mobile');
-                    const transparentBg = trigger.parentNode.querySelector('.modal-transparent-container');
+                    const transparentBg = trigger.parentNode.querySelector('.dropdown-transparent-container');
                     if (menu.classList.contains('open')) return;
 
                     event.stopPropagation();
@@ -276,7 +277,7 @@
 
         function closeMenu(menu) {
             if (checkIfMobile()) {
-                const transparentBg = menu.parentNode.querySelector('.modal-transparent-container');
+                const transparentBg = menu.parentNode.querySelector('.dropdown-transparent-container');
 
                 const openSubmenu = menu.querySelector('.dropdown2-submenu.open');
                 if (openSubmenu) {
