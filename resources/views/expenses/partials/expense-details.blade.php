@@ -135,6 +135,11 @@
                             oninput="updateSplitDropdownAmounts()"
                             required
                         />
+                        <x-tooltip side="top" tooltip="Open Math Mode">
+                            <span class="expense-math-btn-container">
+                                <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-calculator" x-data="" x-on:click.prevent="$dispatch('open-modal', 'expense-math-mode')" />
+                            </span>
+                        </x-tooltip>
                     </div>
                 </div>
             </div>
@@ -386,6 +391,34 @@
             </div>
         </form>
     </div>
+
+    <!-- Modals -->
+
+    <x-modal name="expense-math-mode" id="expense-math-mode" :show="false" focusable>
+        <div class="space-bottom-sm">
+            <div>
+                <h3>{{ __('Enter an expression') }}</h3>
+                <p class="text-shy">
+                    {{ __('Enter a mathematical expression involving numbers (decimals are accepted), brackets, and addition, subtraction, multiplication, and division operators.') }}
+                </p>
+            </div>
+
+            <div class="horizontal-center">
+                <h1 id="expense-amount-math-display-container">{{ __('$') }}<span id="expense-amount-math-display">0.00</span></h1>
+                <h4 class="text-warning hidden" id="expense-amount-math-error"></h4>
+            </div>
+
+            <div>
+                <x-input-label for="expense-amount-math" value="{{ __('Expression') }}" class="screen-reader-only" />
+                <x-text-input id="expense-amount-math" name="expense-amount-math" placeholder="{{ __('') }}" />
+            </div>
+
+            <div class="btn-container-end">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                <x-primary-button id="expense-amount-math-done" class="primary-color-btn" x-on:click="$dispatch('close')" onclick="setExpenseAmount()" disabled>{{ __('Done') }}</x-primary-button>
+            </div>
+        </div>
+    </x-modal>
 
     <!-- HTML Templates -->
 
@@ -1298,6 +1331,77 @@
                 setExpenseSplit(tab);
             }
         });
+    });
+
+    const amountMathInput = document.getElementById('expense-amount-math');
+    const amountMathDisplayContainer = document.getElementById('expense-amount-math-display-container');
+    const amountMathDisplay = document.getElementById('expense-amount-math-display');
+    const amountMathError = document.getElementById('expense-amount-math-error');
+    const amountMathDoneBtn = document.getElementById('expense-amount-math-done');
+
+    function setExpenseAmount() {
+        const newAmount = amountMathDisplay.textContent;
+        currentAmountInput.value = newAmount;
+    }
+
+    function validateMathBrackets(expression) {
+        let balance = 0;
+        for (const char of expression) {
+            if (char === '(') balance++;
+            if (char === ')') balance--;
+            if (balance < 0) return false;
+        }
+        if (balance !== 0) return false;
+
+        return true;
+    }
+
+    amountMathInput.addEventListener('input', function() {
+        amountMathError.classList.add('hidden');
+        amountMathDisplayContainer.classList.add('hidden');
+        amountMathDoneBtn.disabled = false;
+
+        if (amountMathInput.value === '') {
+            amountMathDisplayContainer.classList.remove('hidden');
+            amountMathDisplay.textContent = '0.00';
+            amountMathDoneBtn.disabled = true;
+            return;
+        }
+
+        let expression = amountMathInput.value;
+
+        const validCharacters = /^[0-9+\-*/().\s]*$/;
+        if (!validCharacters.test(expression)) {
+            amountMathError.classList.remove('hidden');
+            amountMathError.textContent = 'Invalid input character!';
+            amountMathDoneBtn.disabled = true;
+            return;
+        }
+
+        if (!validateMathBrackets(expression)) {
+            amountMathError.classList.remove('hidden');
+            amountMathError.textContent = 'Unbalanced brackets!';
+            amountMathDoneBtn.disabled = true;
+            return;
+        }
+
+        // Remove whitespace
+        expression = expression.replace(/\s+/g, '');
+
+        // Allow multiplication using brackets without the '*' operator
+        expression = expression.replace(/(\d)(\()/g, '$1*$2');
+        expression = expression.replace(/(\))(\d)/g, '$1*$2');
+
+        try {
+            const result = eval(expression);
+            amountMathError.classList.add('hidden');
+            amountMathDisplayContainer.classList.remove('hidden');
+            amountMathDisplay.textContent = result.toFixed(2);
+        } catch (error) {
+            amountMathError.classList.remove('hidden');
+            amountMathError.textContent = 'Invalid expression!';
+            amountMathDoneBtn.disabled = true;
+        }
     });
 
     document.addEventListener('DOMContentLoaded', function() {

@@ -2613,6 +2613,14 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
     margin: 0;
 }
 
+.expense-math-btn-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 41.6px;
+    margin-right: 8px;
+}
+
 .expense-paid-split-container {
     display: flex;
     flex-direction: column;
