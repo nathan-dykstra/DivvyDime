@@ -83,7 +83,7 @@
                         @endif
                         @if ($member->id === $group->owner)
                             <div class="vertical-center">
-                                <div class="info-chip info-chip-blue">{{ __('Admin') }}</div>
+                                <div class="info-chip info-chip-truncate info-chip-blue">{{ __('Admin') }}</div>
                             </div>
                         @endif
                     </div>

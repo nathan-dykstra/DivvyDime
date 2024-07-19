@@ -76,7 +76,7 @@
             <div class="expense-name-amount-category-container">
                 <x-dropdown2 align="left">
                     <x-slot name="trigger">
-                        <button type="button" class="expense-category {{ $expense ? $expense->category['colour_class'].'-border' : 'grey-background-text-border' }}" id="expense-category-trigger">
+                        <button type="button" class="expense-category {{ $expense ? $expense->category['colour_class'] : 'grey-background-text-border' }}" id="expense-category-trigger">
                             <i id="expense-category-icon" class="{{ $expense ? $expense->category['icon_class'] : 'fa-solid fa-receipt' }}"></i>
                         </button>
                         <input type="hidden" id="expense-category" name="expense-category" value="{{ $expense ? $expense->category_id : $default_category_id }}" />

@@ -190,6 +190,9 @@ class PaymentsController extends Controller
 
         $payment->group = $payment->groups->first();
 
+        $payment->category = $payment->category()->first();
+        $payment->category->category_group = $payment->category->categoryGroup()->first();
+
         $payment_payee_id = ExpenseParticipant::where('expense_id', $payment->id)->value('user_id');
         $payment->payee = User::find($payment_payee_id);
 

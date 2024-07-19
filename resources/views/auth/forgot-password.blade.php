@@ -25,7 +25,8 @@
                 </div>
 
                 <div class="btn-container-end">
-                    <x-primary-button type="submit">{{ __('Email Password Reset Link') }}</x-primary-button>
+                    <x-primary-button class="mobile-hidden" type="submit">{{ __('Email Password Reset Link') }}</x-primary-button>
+                    <x-primary-button class="desktop-hidden" type="submit">{{ __('Email Link') }}</x-primary-button>
                 </div>
             </div>
         </form>

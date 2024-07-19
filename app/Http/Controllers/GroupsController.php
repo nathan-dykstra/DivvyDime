@@ -679,6 +679,12 @@ class GroupsController extends Controller
 
             $expense->group = $expense->groups->first();
 
+            $category = $expense->category()->first();
+            $expense->category = [
+                'icon_class' => $category->icon_class,
+                'colour_class' => $category->categoryGroup()->first()->colour_class,
+            ];
+
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
             $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;
             $expense->is_payment = ($expense->expense_type_id === ExpenseType::PAYMENT || $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES);

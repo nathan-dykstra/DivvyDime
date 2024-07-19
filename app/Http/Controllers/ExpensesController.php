@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ExpensesController extends Controller
 {
@@ -339,6 +340,9 @@ class ExpensesController extends Controller
 
         $expense->group = $expense->groups->first();
 
+        $expense->category = $expense->category()->first();
+        $expense->category->category_group = $expense->category->categoryGroup()->first();
+
         $participants = ExpenseParticipant::where('expense_id', $expense->id)
             ->join('users', 'expense_participants.user_id', 'users.id')
             ->select('users.*', 'expense_participants.share')
@@ -354,11 +358,33 @@ class ExpensesController extends Controller
             ->orderBy('created_at', 'ASC')
             ->get();
 
+        $category_groups = [
+            'groups' => CategoryGroup::whereNot('id', CategoryGroup::OTHER)->orderBy('group', 'ASC')->get(),
+            'other_group' => CategoryGroup::find(CategoryGroup::OTHER)
+        ];
+
+        foreach ($category_groups['groups'] as $category_group) {
+            $category_group->categories = Category::where('category_group_id', $category_group->id)
+                ->whereNotIn('id', Category::OTHER_CATEGORY_IDS)
+                ->orderBy('category', 'ASC')
+                ->get();
+
+            $category_group->other_category = Category::where('category_group_id', $category_group->id)
+                ->whereIn('id', Category::OTHER_CATEGORY_IDS)
+                ->first();
+        }
+
+        $category_groups['other_group']->categories = Category::where('category_group_id', $category_groups['other_group']->id)
+            ->whereNot('id', Category::PAYMENT_CATEGORY)
+            ->orderBy('category', 'ASC')
+            ->get();
+
         return view('expenses.show', [
             'expense' => $expense,
             'participants' => $participants,
             'max_images_allowed' => Expense::MAX_IMAGES_ALLOWED,
             'expense_images' => $expense_images,
+            'category_groups' => $category_groups,
         ]);
     }
 
@@ -741,6 +767,25 @@ class ExpensesController extends Controller
     }
 
     /**
+     * Updates the expenses.category_id field.
+     */
+    public function updateCategory(Request $request, Expense $expense)
+    {
+        $request->validate([
+            'expense-category' => ['required', 'int', Rule::exists('categories', 'id')],
+        ]);
+
+        $category_id = (int)$request->input('expense-category');
+
+        $expense->category_id = $category_id;
+        $expense->updator = $request->user()->id;
+        $expense->save();
+        $expense->touch(); // Make sure timestamp is updated if the updator doesn't change
+
+        return Redirect::route('expenses.show', $expense->id)->with('status', 'expense-category-updated');
+    }
+
+    /**
      * Adds formatted dates/times, current User's lent/borrowed amounts, and group information to the expenses.
      */
     protected function augmentExpenses($expenses)
@@ -761,6 +806,12 @@ class ExpensesController extends Controller
             $expense->amount = number_format($expense->amount, 2);
 
             $expense->group = $expense->groups->first();
+
+            $category = $expense->category()->first();
+            $expense->category = [
+                'icon_class' => $category->icon_class,
+                'colour_class' => $category->categoryGroup()->first()->colour_class,
+            ];
 
             $expense->is_reimbursement = $expense->expense_type_id === ExpenseType::REIMBURSEMENT;
             $expense->is_settle_all_balances = $expense->expense_type_id === ExpenseType::SETTLE_ALL_BALANCES;

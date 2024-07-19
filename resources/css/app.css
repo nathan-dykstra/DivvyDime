@@ -490,7 +490,7 @@ p {
     }
 
     .desktop-hidden {
-        display: block !important;
+        display: inherit !important;
     
     }
 }
@@ -663,7 +663,7 @@ p {
 .loading-line-1 {
     background-color: var(--secondary-grey-hover);
     height: 20px;
-    width: 70%;
+    width: 50%;
     border-radius: 10px;
     margin: 4px 0;
     animation: shimmer 1.5s infinite;
@@ -672,7 +672,7 @@ p {
 .loading-line-2 {
     background-color: var(--secondary-grey-hover);
     height: 16px;
-    width: 40%;
+    width: 30%;
     border-radius: 8px;
     margin: 4px 0;
     animation: shimmer 2s infinite;
@@ -681,7 +681,7 @@ p {
 .loading-line-3 {
     background-color: var(--secondary-grey);
     height: 16px;
-    width: 30%;
+    width: 20%;
     border-radius: 8px;
     margin: 4px 0;
     animation: shimmer 1.5s infinite;
@@ -689,15 +689,15 @@ p {
 
 @media screen and (max-width: 768px) {
     .loading-line-1 {
-        width: 100%;
+        width: 70%;
     }
 
     .loading-line-2 {
-        width: 60%;
+        width: 40%;
     }
 
     .loading-line-3 {
-        width: 50%;
+        width: 30%;
     }
 }
 
@@ -757,16 +757,19 @@ p {
     line-height: 1em;
     width: fit-content;
     height: fit-content;
-    max-width: 150px;
-    text-wrap: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     border-radius: 0.3rem;
     padding: 3px 5px;
 }
 
 .info-chip-link {
     transition: background-color 0.3s ease;
+}
+
+.info-chip-truncate {
+    max-width: 150px;
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .info-chip-link:hover {
@@ -886,6 +889,12 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
     z-index: 999;
     opacity: 0;
     transition: opacity 0.2s 0.5s;
+}
+
+@media screen and (max-width: 768px) {
+    .tooltip-text {
+        display: none;
+    }
 }
 
 .tooltip:hover .tooltip-text {
@@ -2035,14 +2044,16 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
 /* Expenses List */
 
 
-/*.inline-expenses-list {
-    border-top: 1px solid var(--border-grey);
-}*/
+.expense-loading-placeholder {
+    width: 100%;
+    padding: var(--container-small-padding) var(--container-padding);
+    border-bottom: 1px solid var(--border-grey);
+}
 
 .expense {
     display: grid;
-    grid-template-columns: auto 30%;
-    width: 100%;
+    grid-template-columns: 40px auto 30%;
+    gap: 16px;
     width: 100%;
     color: var(--text-primary);
     padding: var(--container-small-padding) var(--container-padding);
@@ -2050,9 +2061,35 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
     transition: background-color 0.1s ease-in-out;
 }
 
+.expenses-list-category-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .expense:hover {
     background-color: var(--primary-grey);
     cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+    .expense {
+        /*grid-template-columns: 40px auto;*/
+
+        /*padding: var(--container-small-padding);*/
+    }
+}
+
+.expense-list-category {
+    max-height: 40px;
+    min-height: 40px;
+    max-width: 40px;
+    min-width: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    border-radius: var(--border-radius);
 }
 
 .user-amount {
@@ -2093,6 +2130,18 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
 /* Expense Info */
 
 
+.expense-info-category-img {
+    max-width: 65px;
+    min-width: 65px;
+    max-height: 65px;
+    min-height: 65px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--border-radius);
+    font-size: 1.5em;
+}
+
 .expense-info-container {
     display: grid;
     grid-template-columns: 2fr 2fr;
@@ -2101,6 +2150,13 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
 }
 
 @media screen and (max-width: 768px) {
+    .expense-info-category-img {
+        max-width: 55px;
+        min-width: 55px;
+        max-height: 55px;
+        min-height: 55px;
+    }
+
     .expense-info-container {
         grid-template-columns: 1fr;
     }
@@ -2108,11 +2164,23 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
 
 .expense-info-date-group-category {
     display: flex;
+    flex-wrap: wrap;
     flex-direction: row;
     justify-content: baseline;
     align-items: center;
     gap: 8px;
     width: 100%;
+}
+
+.expense-info-update-category {
+    display: flex;
+    flex-direction: column;
+    /*justify-content: center;
+    align-items: center;*/
+    gap: 8px;
+    background-color: var(--secondary-grey);
+    padding: 8px;
+    border-radius: var(--border-radius);
 }
 
 .expense-info-breakdown {
@@ -3161,4 +3229,90 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
     color: var(--text-shy);
     font-size: 0.9em;
     font-weight: 500;
+}
+
+
+/* Modal */
+
+
+.modal-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow-y: auto;
+    z-index: 50;
+}
+
+.modal-transparent-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.modal-transparent-container.show {
+    opacity: 100;
+}
+
+/*@keyframes background-enter {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 100;
+    }
+}
+
+@keyframes background-leave {
+    0% {
+        opacity: 100;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.modal-transparent-container.enter {
+    animation: background-enter 200ms ease-out forwards;
+}
+
+.modal-transparent-container.leave {
+    animation: background-leave 200ms ease-in forwards;
+}*/
+
+.modal-transparent-bg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--background);
+    opacity: 0.7;
+}
+
+
+.modal {
+    margin: 75px auto;
+    max-width: 36rem;
+    width: 100%;
+    background-color: var(--secondary-grey);
+    border-radius: var(--border-radius);
+    padding: var(--container-padding);
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+    transition: all 0.3s ease-in-out;
+}
+
+@media (max-width: 640px) {
+    .modal {
+        width: calc(100% - (2 * var(--container-small-padding)));
+        margin-left: var(--container-small-padding);
+        margin-right: var(--container-small-padding);
+    }
 }

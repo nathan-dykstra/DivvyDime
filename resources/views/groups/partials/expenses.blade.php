@@ -1,6 +1,12 @@
 @foreach ($expenses as $expense)
     @if ($expense->payer === auth()->user()->id) <!-- Current User paid for the expense -->
         <div class="expense" onclick="openLink('{{ $expense->is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id) }}')">
+            <div class="expenses-list-category-container">
+                <div class="expense-list-category {{ $expense->category['colour_class'] }}">
+                    <i class="{{ $expense->category['icon_class'] }}"></i>
+                </div>
+            </div>
+
             <div>
                 @if ($expense->is_payment)
                     <div class="expense-amount text-small">{{ __('You paid ') }}<span class="bold-username">{{ $expense->payee->username }}</span>{{ __(' $') . $expense->amount }}</div>
@@ -34,6 +40,12 @@
         </div>
     @else <!-- Friend paid for the expense -->
         <div class="expense" onclick="openLink('{{ $expense->is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id) }}')">
+            <div class="expenses-list-category-container">
+                <div class="expense-list-category {{ $expense->category['colour_class'] }}">
+                    <i class="{{ $expense->category['icon_class'] }}"></i>
+                </div>
+            </div>
+
             <div>
                 @if ($expense->is_payment)
                     <div class="expense-amount text-small">

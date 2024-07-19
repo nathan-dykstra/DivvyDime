@@ -7,6 +7,12 @@
 
     <x-slot name="back_btn"></x-slot>
 
+    <x-slot name="header_image">
+        <div class="expense-info-category-img {{ $payment->category->category_group->colour_class }}">
+            <i class="{{ $payment->category->icon_class }}"></i>
+        </div>
+    </x-slot>
+
     <x-slot name="header_title">
         {{ __('Payment') }}
     </x-slot>
@@ -72,11 +78,10 @@
         <div class="expense-info-date-group-category">
             <div class="text-shy text-thin-caps payment-info-date">{{ $payment->formatted_date }}</div>
             @if ($payment->is_settle_all_balances)
-                <div class="info-chip info-chip-green">{{ __('Settle All Balances') }}</div>
+                <div class="info-chip info-chip-truncate info-chip-green">{{ __('Settle All Balances') }}</div>
             @else
-                <a class="info-chip info-chip-link info-chip-grey" href="{{ route('groups.show', $payment->group->id) }}">{{ $payment->group->name }}</a>
+                <a class="info-chip info-chip-truncate info-chip-link info-chip-grey" href="{{ route('groups.show', $payment->group->id) }}">{{ $payment->group->name }}</a>
             @endif
-            <!--<a class="">{{ __('Category') }}</a>--> <!-- TODO: display payment category -->
         </div>
 
         @if (auth()->user()->id === $payment->payer && $payment->is_rejected)

@@ -1,6 +1,12 @@
 @foreach ($expenses as $expense)
     @if ($expense->payer === auth()->user()->id) <!-- Current User paid for the expense -->
         <div class="expense" onclick="openLink('{{ $expense->is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id) }}')">
+            <div class="expenses-list-category-container">
+                <div class="expense-list-category {{ $expense->category['colour_class'] }}">
+                    <i class="{{ $expense->category['icon_class'] }}"></i>
+                </div>
+            </div>
+
             <div>
                 <div class="expense-name">
                     @if ($expense->is_payment)
@@ -9,9 +15,9 @@
                         <h4>{{ $expense->name }}</h4>
                     @endif
                     @if ($expense->is_settle_all_balances)
-                        <div class="info-chip info-chip-green">{{ __('Settle All Balances') }}</div>
+                        <div class="info-chip info-chip-truncate info-chip-green">{{ __('Settle All Balances') }}</div>
                     @else
-                        <a class="info-chip info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->groups()->first()->id) }}">{{ $expense->groups()->first()->name }}</a>
+                        <a class="info-chip info-chip-truncate info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->groups()->first()->id) }}">{{ $expense->groups()->first()->name }}</a>
                     @endif
                 </div>
 
@@ -41,6 +47,12 @@
         </div>
     @else <!-- Friend paid for the expense -->
         <div class="expense" onclick="openLink('{{ $expense->is_payment ? route('payments.show', $expense->id) : route('expenses.show', $expense->id) }}')">
+            <div class="expenses-list-category-container">
+                <div class="expense-list-category {{ $expense->category['colour_class'] }}">
+                    <i class="{{ $expense->category['icon_class'] }}"></i>
+                </div>
+            </div>
+
             <div>
                 <div class="expense-name">
                     @if ($expense->is_payment)
@@ -58,9 +70,9 @@
                         <h4>{{ $expense->name }}</h4>
                     @endif
                     @if ($expense->is_settle_all_balances)
-                        <div class="info-chip info-chip-green">{{ __('Settle All Balances') }}</div>
+                        <div class="info-chip info-chip-truncate info-chip-green">{{ __('Settle All Balances') }}</div>
                     @else
-                        <a class="info-chip info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->groups()->first()->id) }}">{{ $expense->groups()->first()->name }}</a>
+                        <a class="info-chip info-chip-truncate info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->groups()->first()->id) }}">{{ $expense->groups()->first()->name }}</a>
                     @endif
                 </div>
 

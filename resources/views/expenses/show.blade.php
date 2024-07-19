@@ -7,6 +7,12 @@
 
     <x-slot name="back_btn"></x-slot>
 
+    <x-slot name="header_image">
+        <div class="expense-info-category-img {{ $expense->category->category_group->colour_class }}">
+            <i class="{{ $expense->category->icon_class }}"></i>
+        </div>
+    </x-slot>
+
     <x-slot name="header_title">
         {{ $expense->name }}
     </x-slot>
@@ -52,6 +58,8 @@
         <x-session-status innerClass="text-warning">{{ __('Images uploaded. You can only add up to ') . $max_images_allowed . __(' images!') }}</x-session-status>
     @elseif (session('status') === 'expense-note-updated')
         <x-session-status>{{ __('Note updated.') }}</x-session-status>
+    @elseif (session('status') === 'expense-category-updated')
+        <x-session-status>{{ __('Category updated.') }}</x-session-status>
     @endif
 
     <!-- Content -->
@@ -59,8 +67,44 @@
     <h1>{{ __('$') . $expense->amount }}</h1>
     <div class="expense-info-date-group-category">
         <div class="text-shy text-thin-caps expense-info-date">{{ $expense->formatted_date }}</div>
-        <a class="info-chip info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
-        <!--<a class="">{{ __('Category') }}</a>--> <!-- TODO: display expense category -->
+        <a class="info-chip info-chip-truncate info-chip-link info-chip-grey" href="{{ route('groups.show', $expense->group->id) }}">{{ $expense->group->name }}</a>
+
+        <x-dropdown2 align="left">
+            <x-slot name="trigger">
+                <x-tooltip side="top" tooltip="Edit Category">
+                    <div class="info-chip info-chip-link info-chip-grey">{{ $expense->category->category_group->group }} :: {{ $expense->category->category }}</div>
+                </x-tooltip>
+            </x-slot>
+
+            <x-slot name="content">
+                @foreach ($category_groups['groups'] as $category_group)
+                    <div class="dropdown2-item-parent-wrapper">
+                        <div class="dropdown2-item dropdown2-item-parent">
+                            <div>{{ $category_group->group }}</div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                        @include('expenses.partials.category-submenu', ['category_group' => $category_group])
+                    </div>
+                @endforeach
+
+                <div class="dropdown-divider"></div>
+
+                <div class="dropdown2-item-parent-wrapper">
+                    <div class="dropdown2-item dropdown2-item-parent">
+                        <div>{{ $category_groups['other_group']->group }}</div>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                    @include('expenses.partials.category-submenu', ['category_group' => $category_groups['other_group']])
+                </div>
+            </x-slot>
+        </x-dropdown2>
+
+        <form id="expense-update-category-form" method="post" action="{{ route('expenses.update-category', $expense) }}" class="hidden">
+            @csrf
+            @method('patch')
+
+            <input type="hidden" id="expense-category" name="expense-category" value="" />
+        </form>
     </div>
 
     <div class="expense-info-container margin-top-lg">
@@ -263,6 +307,11 @@
 </x-app-layout>
 
 <script>
+    function setExpenseCategory(menuItem) {
+        document.getElementById('expense-category').value = menuItem.dataset.categoryId;
+        document.getElementById('expense-update-category-form').submit();
+    }
+
     function showExpenseNoteForm() {
         const addNoteBtn = document.getElementById('expense-add-note-btn')
         if (addNoteBtn) {
@@ -312,13 +361,15 @@
         removeImageForm.submit();
     }
 
-    const expenseImages = document.querySelectorAll('.expense-img-preview');
+    document.addEventListener('DOMContentLoaded', () => {
+        const expenseImages = document.querySelectorAll('.expense-img-preview');
 
-    expenseImages.forEach(image => {
-        image.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                image.click();
-            }
+        expenseImages.forEach(image => {
+            image.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    image.click();
+                }
+            });
         });
     });
 </script>
