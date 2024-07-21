@@ -53,4 +53,8 @@
         outline-offset: 1px;
         border-radius: var(--border-radius);
     }
+
+    .primary-btn:disabled {
+        cursor: not-allowed;
+    }
 </style>

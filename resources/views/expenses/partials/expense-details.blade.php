@@ -74,18 +74,72 @@
             </div>
 
             <div class="expense-name-amount-category-container">
-                <!--<x-tooltip side="bottom" icon="fa-solid fa-tag" :tooltip="__('Choose a category')">
-                    <div class="expense-category">
-                        TODO: category selector
-                    </div>
-                </x-tooltip>-->
+                <x-dropdown2 align="left">
+                    <x-slot name="trigger">
+                        <button type="button" class="expense-category {{ $expense ? $expense->category['colour_class'] : 'grey-background-text-border' }}" id="expense-category-trigger">
+                            <i id="expense-category-icon" class="{{ $expense ? $expense->category['icon_class'] : 'fa-solid fa-receipt' }}"></i>
+                        </button>
+                        <input type="hidden" id="expense-category" name="expense-category" value="{{ $expense ? $expense->category_id : $default_category_id }}" />
+                    </x-slot>
+
+                    <x-slot name="content">
+                        @foreach ($category_groups['groups'] as $category_group)
+                            <div class="dropdown2-item-parent-wrapper">
+                                <div class="dropdown2-item dropdown2-item-parent">
+                                    <div>{{ $category_group->group }}</div>
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </div>
+                                @include('expenses.partials.category-submenu', ['category_group' => $category_group])
+                            </div>
+                        @endforeach
+
+                        <div class="dropdown-divider"></div>
+
+                        <div class="dropdown2-item-parent-wrapper">
+                            <div class="dropdown2-item dropdown2-item-parent">
+                                <div>{{ $category_groups['other_group']->group }}</div>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                            @include('expenses.partials.category-submenu', ['category_group' => $category_groups['other_group']])
+                        </div>
+                    </x-slot>
+                </x-dropdown2>
+
                 <div class="expense-name-amount-container">
                     <div class="expense-input-container">
-                        <input id="expense-name" class="expense-form-name" name="expense-name" type="text" placeholder="{{ __('Describe the expense') }}" value="{{ old('expense-name', $expense ? $expense->name : '') }}" autocomplete="off" maxlength="255" required />
+                        <input 
+                            id="expense-name"
+                            class="expense-form-name"
+                            name="expense-name"
+                            type="text"
+                            placeholder="{{ __('Describe the expense') }}"
+                            value="{{ old('expense-name', $expense ? $expense->name : '') }}"
+                            autocomplete="off"
+                            maxlength="255"
+                            required
+                        />
                     </div>
 
                     <div class="expense-input-container">
-                        <span class="expense-currency">{{ __('$') }}</span><input id="expense-amount" class="expense-form-amount" name="expense-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('expense-amount', $expense ? $expense->amount : '') }}" autocomplete="off" oninput="updateSplitDropdownAmounts()" required />
+                        <span class="expense-currency">{{ __('$') }}</span>
+                        <input id="expense-amount"
+                            class="expense-form-amount"
+                            name="expense-amount"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="99999999"
+                            placeholder="{{ __('0.00') }}"
+                            value="{{ old('expense-amount', $expense ? $expense->amount : '') }}"
+                            autocomplete="off"
+                            oninput="updateSplitDropdownAmounts()"
+                            required
+                        />
+                        <x-tooltip side="top" tooltip="Open Math Mode">
+                            <span class="expense-math-btn-container">
+                                <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-calculator" x-data="" x-on:click.prevent="$dispatch('open-modal', 'expense-math-mode')" />
+                            </span>
+                        </x-tooltip>
                     </div>
                 </div>
             </div>
@@ -227,7 +281,7 @@
                                 <div id="expense-split-reimbursement" class="{{ $expense?->expense_type_id === $expense_type_ids['reimbursement'] ? '' : 'hidden' }}">
                                     @include('expenses.partials.split-tabs.expense-reimbursement-tab')
                                 </div>
-                                <div id="expense-split-itemized" class="{{ $expense?->expense_type_id === $expense_type_ids['itemized'] ? '' : 'hidden' }}">Coming soon</div>
+                                <!--<div id="expense-split-itemized" class="{{ $expense?->expense_type_id === $expense_type_ids['itemized'] ? '' : 'hidden' }}">Coming soon</div>-->
                             </div>
                         </div>
                     </div>
@@ -337,6 +391,34 @@
             </div>
         </form>
     </div>
+
+    <!-- Modals -->
+
+    <x-modal name="expense-math-mode" id="expense-math-mode" :show="false" focusable>
+        <div class="space-bottom-sm">
+            <div>
+                <h3>{{ __('Enter an expression') }}</h3>
+                <p class="text-shy">
+                    {{ __('Enter a mathematical expression involving numbers (decimals are accepted), brackets, and addition, subtraction, multiplication, and division operators.') }}
+                </p>
+            </div>
+
+            <div class="horizontal-center">
+                <h1 id="expense-amount-math-display-container">{{ __('$') }}<span id="expense-amount-math-display">0.00</span></h1>
+                <h4 class="text-warning hidden" id="expense-amount-math-error"></h4>
+            </div>
+
+            <div>
+                <x-input-label for="expense-amount-math" value="{{ __('Expression') }}" class="screen-reader-only" />
+                <x-text-input id="expense-amount-math" name="expense-amount-math" placeholder="{{ __('') }}" />
+            </div>
+
+            <div class="btn-container-end">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                <x-primary-button id="expense-amount-math-done" class="primary-color-btn" x-on:click="$dispatch('close')" onclick="setExpenseAmount()" disabled>{{ __('Done') }}</x-primary-button>
+            </div>
+        </div>
+    </x-modal>
 
     <!-- HTML Templates -->
 
@@ -461,6 +543,7 @@
     const currentGroupInput = document.querySelector('input[name="expense-group"]:checked');
     const currentDateInput = document.getElementById('expense-date');
     const currentNoteInput = document.getElementById('expense-note');
+    const currentCategoryInput = document.getElementById('expense-category');
 
     const paidBtn = document.getElementById('expense-paid-btn');
     const splitBtn = document.getElementById('expense-split-btn');
@@ -1074,8 +1157,22 @@
         splitTabsScrollToCurrentTab();
     }
 
+    function setExpenseCategory(category) {
+        const categoryTrigger = document.getElementById('expense-category-trigger');
+
+        categoryTrigger.classList = "expense-category";
+        categoryTrigger.classList.add(category.dataset.colour);
+
+        const icon = categoryTrigger.querySelector('#expense-category-icon')
+        const iconClasses = category.dataset.icon.split(' ');
+        icon.classList = "";
+        icon.classList.add(...iconClasses);
+
+        currentCategoryInput.value = category.dataset.categoryId;
+    }
+
     function setExpenseGroup(group) {
-        newGroup = parseInt(group.dataset.groupId);
+        const newGroup = parseInt(group.dataset.groupId);
         currentGroupInput.value = newGroup;
         groupBtn.querySelector('.expense-round-btn-text').textContent = group.dataset.groupName;
 
@@ -1234,6 +1331,77 @@
                 setExpenseSplit(tab);
             }
         });
+    });
+
+    const amountMathInput = document.getElementById('expense-amount-math');
+    const amountMathDisplayContainer = document.getElementById('expense-amount-math-display-container');
+    const amountMathDisplay = document.getElementById('expense-amount-math-display');
+    const amountMathError = document.getElementById('expense-amount-math-error');
+    const amountMathDoneBtn = document.getElementById('expense-amount-math-done');
+
+    function setExpenseAmount() {
+        const newAmount = amountMathDisplay.textContent;
+        currentAmountInput.value = newAmount;
+    }
+
+    function validateMathBrackets(expression) {
+        let balance = 0;
+        for (const char of expression) {
+            if (char === '(') balance++;
+            if (char === ')') balance--;
+            if (balance < 0) return false;
+        }
+        if (balance !== 0) return false;
+
+        return true;
+    }
+
+    amountMathInput.addEventListener('input', function() {
+        amountMathError.classList.add('hidden');
+        amountMathDisplayContainer.classList.add('hidden');
+        amountMathDoneBtn.disabled = false;
+
+        if (amountMathInput.value === '') {
+            amountMathDisplayContainer.classList.remove('hidden');
+            amountMathDisplay.textContent = '0.00';
+            amountMathDoneBtn.disabled = true;
+            return;
+        }
+
+        let expression = amountMathInput.value;
+
+        const validCharacters = /^[0-9+\-*/().\s]*$/;
+        if (!validCharacters.test(expression)) {
+            amountMathError.classList.remove('hidden');
+            amountMathError.textContent = 'Invalid input character!';
+            amountMathDoneBtn.disabled = true;
+            return;
+        }
+
+        if (!validateMathBrackets(expression)) {
+            amountMathError.classList.remove('hidden');
+            amountMathError.textContent = 'Unbalanced brackets!';
+            amountMathDoneBtn.disabled = true;
+            return;
+        }
+
+        // Remove whitespace
+        expression = expression.replace(/\s+/g, '');
+
+        // Allow multiplication using brackets without the '*' operator
+        expression = expression.replace(/(\d)(\()/g, '$1*$2');
+        expression = expression.replace(/(\))(\d)/g, '$1*$2');
+
+        try {
+            const result = eval(expression);
+            amountMathError.classList.add('hidden');
+            amountMathDisplayContainer.classList.remove('hidden');
+            amountMathDisplay.textContent = result.toFixed(2);
+        } catch (error) {
+            amountMathError.classList.remove('hidden');
+            amountMathError.textContent = 'Invalid expression!';
+            amountMathDoneBtn.disabled = true;
+        }
     });
 
     document.addEventListener('DOMContentLoaded', function() {

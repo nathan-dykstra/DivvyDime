@@ -61,19 +61,19 @@
         @foreach ($group_balances as $group_balance)
             @if ($group_balance->balance > 0)
                 <div class="metric-container">
-                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="info-chip info-chip-link info-chip-grey">{{ $group_balance->name }}</a>
+                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="info-chip info-chip-truncate info-chip-link info-chip-grey">{{ $group_balance->name }}</a>
                     <span class="text-primary text-small"><span class="bold-username">{{ $friend->username }}</span>{{ __(' owes you') }}</span>
                     <span class="text-success metric-number">{{ __('$') . number_format($group_balance->balance, 2) }}</span>
                 </div>
             @elseif ($group_balance->balance < 0)
                 <div class="metric-container">
-                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="info-chip info-chip-link info-chip-grey">{{ $group_balance->name }}</a>
+                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="info-chip info-chip-truncate info-chip-link info-chip-grey">{{ $group_balance->name }}</a>
                     <span class="text-primary text-small">{{ __('You owe ') }}<span class="bold-username">{{ $friend->username }}</span></span>
                     <span class="text-warning metric-number">{{ __('$') . number_format(abs($group_balance->balance), 2) }}</span>
                 </div>
             @else
                 <div class="metric-container">
-                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="info-chip info-chip-link info-chip-grey">{{ $group_balance->name }}</a>
+                    <a href="{{ route('groups.show', $group_balance->group_id) }}" class="info-chip info-chip-truncate info-chip-link info-chip-grey">{{ $group_balance->name }}</a>
                     <span class="text-primary text-small">{{ __('You and ') }}<span class="bold-username">{{ $friend->username }}</span>{{ __(' are') }}</span>
                     <span class="text-success metric-number">{{ __('Settled Up!') }}</span>
                 </div>

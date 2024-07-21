@@ -15,3 +15,4 @@ Route::delete('/expenses/{expense}/destroy', [ExpensesController::class, 'destro
 Route::post('/expenses/search-friends-to-include', [ExpensesController::class, 'searchFriendsToInclude'])->name('expenses.search-friends-to-include');
 Route::post('/expenses/get-expense-group-details', [ExpensesController::class, 'getExpenseGroupDetails'])->name('expenses.get-expense-group-details');
 Route::patch('/expenses/{expense}/update-note', [ExpensesController::class, 'updateNote'])->name('expenses.update-note');
+Route::patch('/expenses/{expense}/update-category', [ExpensesController::class, 'updateCategory'])->name('expenses.update-category');

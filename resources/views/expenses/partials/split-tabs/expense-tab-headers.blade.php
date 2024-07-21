@@ -48,12 +48,12 @@
         data-expense-type-id="{{ $expense_type_ids['reimbursement'] }}"
         onclick="setExpenseSplit(this)"
     >{{ $expense_type_names[$expense_type_ids['reimbursement']] }}</div>
-    <div class="expense-split-tab {{ $expense?->expense_type_id === $expense_type_ids['itemized'] ? 'expense-split-tab-active' : '' }}"
+    <!--<div class="expense-split-tab {{ $expense?->expense_type_id === $expense_type_ids['itemized'] ? 'expense-split-tab-active' : '' }}"
         role="tab"
         tabindex="0"
         data-tab-id="expense-split-itemized"
         data-tab-name="{{ $expense_type_names[$expense_type_ids['itemized']] }}"
         data-expense-type-id="{{ $expense_type_ids['itemized'] }}"
         onclick="setExpenseSplit(this)"
-    >{{ $expense_type_names[$expense_type_ids['itemized']] }}</div>
+    >{{ $expense_type_names[$expense_type_ids['itemized']] }}</div>-->
 </div>
