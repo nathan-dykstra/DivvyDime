@@ -23,11 +23,11 @@
     </x-slot>
 
     <x-slot name="overflow_options">
-        <a class="dropdown-item" href=""> <!-- TODO: group balances page -->
+        <a class="dropdown-item" href="{{ route('groups.balances', $group) }}">
             <i class="fa-solid fa-scale-unbalanced"></i>
             <div>{{ __('Balances') }}</div>
         </a>
-        <a class="dropdown-item" href=""> <!-- TODO: group totals page -->
+        <a class="dropdown-item" href="{{ route('groups.totals', $group) }}">
             <i class="fa-solid fa-calculator"></i>
             <div>{{ __('Totals') }}</div>
         </a>

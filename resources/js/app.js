@@ -831,3 +831,87 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
+// Accordion Component
+
+window.openAllAccordions = function(accordionGroup = "") {
+    let accordions;
+    if (accordionGroup) {
+        accordions = Array.from(document.querySelectorAll('.accordion-toggle')).filter(toggle => {
+            return toggle.dataset.group === accordionGroup;
+        });
+    } else {
+        accordions = Array.from(document.querySelectorAll('.accordion-toggle'));
+    }
+
+    // Open all unopened accordions
+    accordions.forEach(toggle => {
+        const content = toggle.nextElementSibling;
+
+        if (content.classList.contains('hidden')) {
+            toggleAccordion(toggle);
+        }
+    });
+}
+
+window.closeAllAccordions = function(accordionGroup = "") {
+    let accordions;
+    if (accordionGroup) {
+        accordions = Array.from(document.querySelectorAll('.accordion-toggle')).filter(toggle => {
+            return toggle.dataset.group === accordionGroup;
+        });
+    } else {
+        accordions = Array.from(document.querySelectorAll('.accordion-toggle'));
+    }
+
+    // Close all opened accordions
+    accordions.forEach(toggle => {
+        const content = toggle.nextElementSibling;
+
+        if (!content.classList.contains('hidden')) {
+            toggleAccordion(toggle);
+        }
+    });
+}
+
+window.toggleAllAccordions = function(toggle, closedText, openedText, accordionGroup = "") {
+    const state = toggle.dataset.state;
+    if (state === "closed") {
+        toggle.dataset.state = "opened";
+        toggle.innerHTML = openedText;
+        openAllAccordions(accordionGroup);
+    } else {
+        toggle.dataset.state = "closed";
+        toggle.innerHTML = closedText;
+        closeAllAccordions(accordionGroup);
+    }
+}
+
+window.toggleAccordion = function(toggle, collapseOthers = false) {
+    const content = toggle.nextElementSibling;
+
+    if (content.classList.contains('hidden')) {
+        if (collapseOthers) {
+            const accordionGroup = toggle.dataset.group ?? "";
+            closeAllAccordions(accordionGroup);
+        }
+
+        content.classList.remove('hidden');
+
+        setTimeout(() => {
+            content.style.margin = null;
+            content.style.padding = null;
+            content.style.opacity = '100';
+            content.style.maxHeight = content.scrollHeight + 'px';
+        }, 10); // Ensure display is set before transitioning
+    } else {
+        content.style.margin = '0';
+        content.style.padding = '0';
+        content.style.opacity = null;
+        content.style.maxHeight = null;
+
+        setTimeout(() => {
+            content.classList.add('hidden');
+        }, 300); // Transition duration
+    }
+}

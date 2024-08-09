@@ -268,6 +268,49 @@ class GroupsController extends Controller
     }
 
     /**
+     * Displays the group balances page.
+     */
+    public function balances(Request $request, Group $group): View
+    {
+        $current_user = $request->user();
+
+        $users = $group->members()
+            ->orderByRaw("
+                CASE
+                    WHEN users.id = ? THEN 0
+                    ELSE 1
+                END, users.username ASC
+            ", [$current_user->id])
+            ->get();
+
+        foreach ($users as $user) {
+            $balances = Balance::select('users.id AS user_id', 'users.username', 'balances.*')
+                ->join('users', 'balances.user_id', 'users.id')
+                ->where('group_id', $group->id)
+                ->where('friend', $user->id);
+
+            $user->balances = $balances->get();
+            $user->balances_sum = $balances->sum('balance');
+        }
+
+        return view('groups.balances', [
+            'current_user' => $current_user,
+            'group' => $group,
+            'users' => $users,
+        ]);
+    }
+
+    /**
+     * Displays the group totals page.
+     */
+    public function totals(Request $request, Group $group): View
+    {
+        return view('groups.totals', [
+            'group' => $group,
+        ]);
+    }
+
+    /**
      * Filters the friends list on the "Add Members" modal.
      */
     public function searchFriendsToInvite(Request $request, Group $group): View
