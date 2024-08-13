@@ -305,8 +305,101 @@ class GroupsController extends Controller
      */
     public function totals(Request $request, Group $group): View
     {
+        $current_user = $request->user();
+
+        $excluded_types = [ExpenseType::PAYMENT, ExpenseType::SETTLE_ALL_BALANCES, ExpenseType::REIMBURSEMENT];
+
+        $start_of_current_month = Carbon::now()->startOfMonth();
+        $start_of_last_month = Carbon::now()->subMonth()->startOfMonth();
+        $end_of_last_month = Carbon::now()->subMonth()->endOfMonth();
+
+        $current_month = [
+            'group' => $group->expenses()
+                ->whereNotIn('expense_type_id', $excluded_types)
+                ->where('date', '>=', $start_of_current_month)
+                ->sum('amount'),
+            'paid' => $group->expenses()
+                ->whereNotIn('expense_type_id', $excluded_types)
+                ->where('payer', $current_user->id)
+                ->where('date', '>=', $start_of_current_month)
+                ->sum('amount'),
+            'share' => $group->expenses()
+                ->join('expense_participants', 'expenses.id', 'expense_participants.expense_id')
+                ->where('expense_participants.user_id', $current_user->id)
+                ->whereNotIn('expense_type_id', $excluded_types)
+                ->where('date', '>=', $start_of_current_month)
+                ->sum('share'),
+        ];
+
+        $last_month = [
+            'group' => $group->expenses()
+                ->whereNotIn('expense_type_id', $excluded_types)
+                ->whereBetween('date', [$start_of_last_month, $end_of_last_month])
+                ->sum('amount'),
+            'paid' => $group->expenses()
+                ->whereNotIn('expense_type_id', $excluded_types)
+                ->where('payer', $current_user->id)
+                ->whereBetween('date', [$start_of_last_month, $end_of_last_month])
+                ->sum('amount'),
+            'share' => $group->expenses()
+                ->join('expense_participants', 'expenses.id', 'expense_participants.expense_id')
+                ->where('expense_participants.user_id', $current_user->id)
+                ->whereNotIn('expense_type_id', $excluded_types)
+                ->whereBetween('date', [$start_of_last_month, $end_of_last_month])
+                ->sum('share'),
+        ];
+
+        $first_expense_date = $group->expenses()
+            ->whereNotIn('expense_type_id', $excluded_types)
+            ->min('date');
+
+        if ($first_expense_date) {
+            $first_expense_date = Carbon::parse($first_expense_date);
+            $num_months = $first_expense_date->diffInMonths(Carbon::now());
+
+            $all_time = [
+                'group' => $group->expenses()
+                    ->whereNotIn('expense_type_id', $excluded_types)
+                    ->where('date', '>=', $first_expense_date)
+                    ->sum('amount'),
+                'paid' => $group->expenses()
+                    ->whereNotIn('expense_type_id', $excluded_types)
+                    ->where('payer', $current_user->id)
+                    ->where('date', '>=', $first_expense_date)
+                    ->sum('amount'),
+                'share' => $group->expenses()
+                    ->join('expense_participants', 'expenses.id', 'expense_participants.expense_id')
+                    ->where('expense_participants.user_id', $current_user->id)
+                    ->whereNotIn('expense_type_id', $excluded_types)
+                    ->where('date', '>=', $first_expense_date)
+                    ->sum('share'),
+            ];
+
+            $average_month = [
+                'group' => $all_time['group'] / $num_months,
+                'paid' => $all_time['paid'] / $num_months,
+                'share' => $all_time['share'] / $num_months,
+            ];
+        } else {
+            $all_time = [
+                'group' => 0,
+                'paid' => 0,
+                'share' => 0,
+            ];
+
+            $average_month = [
+                'group' => 0,
+                'paid' => 0,
+                'share' => 0,
+            ];
+        }
+
         return view('groups.totals', [
             'group' => $group,
+            'current_month' => $current_month,
+            'last_month' => $last_month,
+            'average_month' => $average_month,
+            'all_time' => $all_time,
         ]);
     }
 

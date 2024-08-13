@@ -286,6 +286,10 @@ p {
     color: var(--text-success);
 }
 
+.text-grey {
+    color: var(--text-shy);
+}
+
 .text-center {
     text-align: center;
 }

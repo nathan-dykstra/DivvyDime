@@ -20,14 +20,16 @@
 
     <div class="container">
         <div class="restrict-max-width space-top-sm">
-            <div class="btn-container-end">
-                <x-primary-button
-                    class="expense-round-btn"
-                    data-state="closed"
-                    onclick="toggleAllAccordions(this, '{{ __('Expand All') }}', '{{ __('Collapse All') }}', '{{ $accordion_group }}')"
-                >
-                    {{ __('Expand All') }}
-                </x-primary-button>
+            <div class="section-search">
+                <div class="btn-container-start">
+                    <x-primary-button
+                        class="expense-round-btn"
+                        data-state="closed"
+                        onclick="toggleAllAccordions(this, '{{ __('Expand All') }}', '{{ __('Collapse All') }}', '{{ $accordion_group }}')"
+                    >
+                        {{ __('Expand All') }}
+                    </x-primary-button>
+                </div>
             </div>
 
             @foreach ($users as $user)
