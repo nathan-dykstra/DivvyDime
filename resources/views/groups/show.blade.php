@@ -103,7 +103,7 @@
         @if ($hidden_balances_count > 0)
             <div class="metric-container">
                 <span class="text-primary text-small">{{ __('Plus ') . $hidden_balances_count . __(' other ') }} {{ $hidden_balances_count > 1 ? __('balances') : __('balance') }}</span>
-                <x-no-background-button class="width-content" :href="route('groups.show', $group)">{{ __('View All') }}</x-no-background-button> <!-- TODO: Change this to link to the Group Balances page -->
+                <x-no-background-button class="width-content" :href="route('groups.balances', $group)">{{ __('View All') }}</x-no-background-button>
             </div>
         @endif
     </div>
