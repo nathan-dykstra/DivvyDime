@@ -13,6 +13,9 @@ Route::delete('/groups/{group}/destroy', [GroupsController::class, 'destroy'])->
 Route::get('/groups/{group}/settings', [GroupsController::class, 'settings'])->name('groups.settings');
 Route::patch('/groups/{group}/update', [GroupsController::class, 'update'])->name('groups.update');
 
+Route::get('/groups/{group}/balances', [GroupsController::class, 'balances'])->name('groups.balances');
+Route::get('/groups/{group}/totals', [GroupsController::class, 'totals'])->name('groups.totals');
+
 Route::post('/groups/{group}/search-friends-to-invite', [GroupsController::class, 'searchFriendsToInvite'])->name('groups.search-friends-to-invite');
 Route::post('/groups/{group}/invite', [GroupsController::class, 'invite'])->name('groups.invite');
 

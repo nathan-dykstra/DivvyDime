@@ -79,6 +79,15 @@ class PaymentsController extends Controller
             $total_balance = 0;
         }
 
+        if ($group && $friend) {
+            $payment_amount = Balance::where('user_id', $current_user->id)
+                ->where('friend', $friend->id)
+                ->where('group_id', $group->id)
+                ->value('balance');
+
+            $payment_amount = $payment_amount > 0 ? null : $payment_amount;
+        }
+
         return view('payments.create', [
             'payment' => null,
             'group' => $group,
@@ -89,6 +98,7 @@ class PaymentsController extends Controller
             'users_selection' => $users_selection,
             'total_balance' => $total_balance,
             'balances_selection' => $balances_selection,
+            'payment_amount' => $payment_amount ?? null,
         ]);
     }
 

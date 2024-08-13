@@ -63,6 +63,16 @@
         box-shadow: var(--box-shadow);
     }
 
+    .dropdown-item-no-icon {
+        padding: 8px 16px;
+        border-radius: var(--border-radius);
+        transition: background-color 0.1s ease, color 0.1s ease;
+        color: var(--text-heading);
+        max-width: 250px;
+        text-wrap: nowrap;
+        overflow: hidden;
+    }
+
     .dropdown-item {
         display: grid;
         gap: 8px;
@@ -86,7 +96,7 @@
         justify-content: center;
     }
 
-    .dropdown-item:hover {
+    .dropdown-item:hover, .dropdown-item-no-icon:hover {
         background-color: var(--secondary-grey-hover);
         cursor: pointer;
         color: var(--text-primary-highlight);

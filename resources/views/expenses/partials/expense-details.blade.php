@@ -1342,6 +1342,7 @@
     function setExpenseAmount() {
         const newAmount = amountMathDisplay.textContent;
         currentAmountInput.value = newAmount;
+        updateSplitDropdownAmounts();
     }
 
     function validateMathBrackets(expression) {
@@ -1391,6 +1392,7 @@
         // Allow multiplication using brackets without the '*' operator
         expression = expression.replace(/(\d)(\()/g, '$1*$2');
         expression = expression.replace(/(\))(\d)/g, '$1*$2');
+        expression = expression.replace(/(\))(\()/g, '$1*$2');
 
         try {
             const result = eval(expression);
