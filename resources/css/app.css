@@ -3097,6 +3097,35 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
 }
 
 
+/* Group Balances */
+
+
+.balance-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-lg);
+    color: var(--text-primary);
+}
+
+.balance-summary:hover {
+    background-color: var(--secondary-grey-hover);
+    cursor: pointer;
+}
+
+.balance-name-image {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.balance-breakdown {
+    margin-left: 64px;
+}
+
+
 /* Group Settings */
 
 

@@ -85,29 +85,3 @@
         </div>
     </div>
 </x-app-layout>
-
-<style>
-    .balance-summary {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 32px;
-        padding: 8px 16px;
-        border-radius: var(--border-radius-lg);
-    }
-
-    .balance-summary:hover {
-        background-color: var(--secondary-grey-hover);
-        cursor: pointer;
-    }
-
-    .balance-name-image {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .balance-breakdown {
-        margin-left: 64px;
-    }
-</style>
