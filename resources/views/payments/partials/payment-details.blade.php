@@ -85,7 +85,7 @@
                         <i class="payment-arrow fa-solid fa-right-long fa-2xl"></i>
 
                         <div class="profile-img-md-container"> <!-- TODO: default user image before selection -->
-                            <img src="{{ $payment?->recipient_user->getProfileImageUrlAttribute() ?? '' }}" alt="User profile image" class="profile-img" id="payment-recipient-img">
+                            <img src="{{ $payment?->recipient_user->getProfileImageUrlAttribute() ?? ($friend ? $friend->getProfileImageUrlAttribute() : '') }}" alt="User profile image" class="profile-img" id="payment-recipient-img">
                         </div>
                     </div>
 
@@ -119,7 +119,19 @@
                     <div class="expense-input-container payment-amount">
                         <span class="expense-currency">{{ __('$') }}</span>
                         <span id="payment-amount-placeholder" class="payment-amount-placeholder {{ $payment?->is_settle_all_balances ? '' : 'hidden' }}" onclick="handleAmountClick()">{{ $payment ? $payment->amount : '' }}</span>
-                        <input id="payment-amount" class="expense-form-amount {{ $payment?->is_settle_all_balances ? 'hidden' : '' }}" name="payment-amount" type="number" step="0.01" min="0" max="99999999" placeholder="{{ __('0.00') }}" value="{{ old('payment-amount', $payment ? $payment->amount : '') }}" autocomplete="off" required />
+                        <input
+                            id="payment-amount"
+                            class="expense-form-amount {{ $payment?->is_settle_all_balances ? 'hidden' : '' }}"
+                            name="payment-amount"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="99999999"
+                            placeholder="{{ __('0.00') }}"
+                            value="{{ old('payment-amount', $payment ? $payment->amount : ($payment_amount ? number_format(abs($payment_amount), 2) : '')) }}"
+                            autocomplete="off"
+                            required
+                        />
                     </div>
                 </div>
 

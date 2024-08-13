@@ -274,8 +274,14 @@ class GroupsController extends Controller
     {
         $current_user = $request->user();
 
-        $users = $group->members()
-            ->orderByRaw("
+        $users = $group->members();
+
+        // If the group is the default group, only show the current user and their friends
+        if ($group->id === Group::DEFAULT_GROUP) {
+            $users = $users->whereIn('users.id', [$current_user->id, ...$current_user->friends()->pluck('users.id')->toArray()]);
+        }
+
+        $users = $users->orderByRaw("
                 CASE
                     WHEN users.id = ? THEN 0
                     ELSE 1
