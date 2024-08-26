@@ -127,13 +127,15 @@ class ExpensesController extends Controller
         $friend = $request->input('friend') ? User::find($request->input('friend')) : null;
 
         if ($group) {
-            $group->group_members = $group->members()->orderByRaw("
-                CASE
-                    WHEN users.id = ? THEN 0
-                    ELSE 1
-                END, users.username ASC
-            ", [$current_user->id])
-            ->get();
+            $group->group_members = $group->members()
+                ->wherePivot('is_active', true)
+                ->orderByRaw("
+                    CASE
+                        WHEN users.id = ? THEN 0
+                        ELSE 1
+                    END, users.username ASC
+                ", [$current_user->id])
+                ->get();
         }
 
         $category_groups = [

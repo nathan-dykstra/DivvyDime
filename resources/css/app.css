@@ -3178,6 +3178,12 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
     color: var(--text-success);
 }
 
+.group-settings-member-options {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
 
 
 
