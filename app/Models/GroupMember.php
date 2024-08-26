@@ -13,11 +13,13 @@ class GroupMember extends Model
     protected $fillable = [
         'group_id',
         'user_id',
+        'is_active',
     ];
 
     protected $casts = [
         'group_id' => 'int',
         'user_id' => 'int',
+        'is_active' => 'bool',
     ];
 
     protected $dispatchesEvents = [

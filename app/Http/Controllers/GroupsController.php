@@ -605,19 +605,55 @@ class GroupsController extends Controller
     /**
      * Remove a member from the group.
      */
-    public function removeMember(Request $request, Group $group):JsonResponse
+    public function removeMember(Request $request, Group $group): JsonResponse
     {
         $member = User::find($request->input('member_id'));
 
         // Update expenses to default user and delete balances
         $this->updateExpensesOnGroupExit($group, $member);
 
-        GroupMember::where('group_id', $group->id)->where('user_id', $member->id)->delete();
+        GroupMember::where('group_id', $group->id)
+            ->where('user_id', $member->id)
+            ->delete();
 
         Session::flash('status', 'member-removed');
 
         return response()->json([
             'message' => 'Member removed successfully!',
+            'redirect' => route('groups.settings', $group),
+        ]);
+    }
+
+    /**
+     * Deactivate a member in the group.
+     */
+    public function deactivateMember(Request $request, Group $group): JsonResponse
+    {
+        GroupMember::where('group_id', $group->id)
+            ->where('user_id', $request->input('member_id'))
+            ->update(['is_active' => false]);
+
+        Session::flash('status', 'member-deactivated');
+
+        return response()->json([
+            'message' => 'Member deactivated successfully!',
+            'redirect' => route('groups.settings', $group),
+        ]);
+    }
+
+    /**
+     * Reactivate an inactive member in the group.
+     */
+    public function reactivateMember(Request $request, Group $group): JsonResponse
+    {
+        GroupMember::where('group_id', $group->id)
+            ->where('user_id', $request->input('member_id'))
+            ->update(['is_active' => true]);
+
+        Session::flash('status', 'member-reactivated');
+
+        return response()->json([
+            'message' => 'Member reactivated successfully!',
             'redirect' => route('groups.settings', $group),
         ]);
     }

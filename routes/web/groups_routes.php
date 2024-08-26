@@ -20,6 +20,8 @@ Route::post('/groups/{group}/search-friends-to-invite', [GroupsController::class
 Route::post('/groups/{group}/invite', [GroupsController::class, 'invite'])->name('groups.invite');
 
 Route::post('/groups/{group}/remove-member', [GroupsController::class, 'removeMember'])->name('groups.remove-member');
+Route::post('/groups/{group}/deactivate-member', [GroupsController::class, 'deactivateMember'])->name('groups.deactivate-member');
+Route::post('/groups/{group}/reactivate-member', [GroupsController::class, 'reactivateMember'])->name('groups.reactivate-member');
 Route::post('/groups/{group}/leave-group', [GroupsController::class, 'leaveGroup'])->name('groups.leave-group');
 
 Route::post('/groups/invites/accept', [GroupsController::class, 'accept'])->name('groups.accept');

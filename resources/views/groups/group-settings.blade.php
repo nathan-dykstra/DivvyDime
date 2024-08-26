@@ -39,6 +39,10 @@
         <x-session-status innerClass="text-warning">{{ __('There were issues with all of the emails in your invite!') }}</x-session-status>
     @elseif (session('status') === 'member-removed')
         <x-session-status>{{ __('Member removed.') }}</x-session-status>
+    @elseif (session('status') === 'member-deactivated')
+        <x-session-status>{{ __('Member deactivated.') }}</x-session-status>
+    @elseif (session('status') === 'member-reactivated')
+        <x-session-status>{{ __('Member reactivated.') }}</x-session-status>
     @elseif (session('status') === 'group-image-uploaded')
         <x-session-status>{{ __('Group image uploaded.') }}</x-session-status>
     @elseif (session('status') === 'group-image-deleted')
@@ -73,19 +77,49 @@
                             </div>
                         </div>
 
-                        @if (auth()->user()->id === $group->owner && auth()->user()->id !== $member->id)
-                            <div class="vertical-center">
-                                <div class="tooltip tooltip-left">
-                                    <x-icon-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'remove-member')" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="configureRemoveMemberModal(this)" icon="fa-solid fa-user-minus icon" />
-                                    <span class="tooltip-text" id="pin-sidebar-tooltip">{{ __('Remove ') . $member->username }}</span>
-                                </div>
-                            </div>
-                        @endif
-                        @if ($member->id === $group->owner)
-                            <div class="vertical-center">
+                        <div class="group-settings-member-options">
+                            @if ($member->id === $group->owner)
                                 <div class="info-chip info-chip-truncate info-chip-blue">{{ __('Admin') }}</div>
-                            </div>
-                        @endif
+                            @endif
+
+                            @if (!$member->pivot->is_active)
+                                <div class="info-chip info-chip-truncate info-chip-yellow">{{ __('Inactive') }}</div>
+                            @endif
+
+                            @if (auth()->user()->id === $group->owner)
+                                <x-dropdown>
+                                    <x-slot name="trigger">
+                                        <x-no-background-button class="mobile-header-btn" icon="fa-solid fa-ellipsis-vertical" />
+                                    </x-slot>
+
+                                    <x-slot name="content">
+                                        @if (auth()->user()->id !== $member->id)
+                                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'remove-member')" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="configureRemoveMemberModal(this)">
+                                                <i class="fa-solid fa-user-minus icon"></i>
+                                                <div>{{ __('Remove') }}</div>
+                                            </div>
+                                        @else
+                                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')">
+                                                <i class="fa-solid fa-right-from-bracket icon"></i>
+                                                <div>{{ __('Leave Group') }}</div>
+                                            </div>
+                                        @endif
+
+                                        @if ($member->pivot->is_active)
+                                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'deactivate-member')" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="configureDeactivateMemberModal(this)">
+                                                <i class="fa-solid fa-user-lock icon"></i>
+                                                <div>{{ __('Deactivate') }}</div>
+                                            </div>
+                                        @else
+                                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'reactivate-member')" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="configureReactivateMemberModal(this)">
+                                                <i class="fa-solid fa-user-check icon"></i>
+                                                <div>{{ __('Reactivate') }}</div>
+                                            </div>
+                                        @endif
+                                    </x-slot>
+                                </x-dropdown>
+                            @endif
+                        </div>
                     </div>
                 @endforeach
             </section>
@@ -112,6 +146,38 @@
                 @if  (true) <!-- TODO: hide button if user's group balances not settled -->
                     <x-danger-button id="remove-member-btn" onclick="">{{ __('Remove') }}</x-danger-button>
                 @endif
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal name="deactivate-member" id="deactivate-member-modal" focusable>
+        <div class="space-bottom-sm">
+            <div>
+                <h3></h3>
+                <p class="text-shy">
+                    {{ __('Are you sure you want to deactivate this member? Inactive members will not be added to new expenses created in this group by default. However, they can still be added to group expenses manually.') }}
+                </p>
+            </div>
+
+            <div class="btn-container-end">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                <x-primary-button class="primary-color-btn" id="deactivate-member-btn" onclick="">{{ __('Deactivate') }}</x-primary-button>
+            </div>
+        </div>
+    </x-modal>
+
+    <x-modal name="reactivate-member" id="reactivate-member-modal" focusable>
+        <div class="space-bottom-sm">
+            <div>
+                <h3></h3>
+                <p class="text-shy">
+                    {{ __('Are you sure you want to reactivate this member? Active members will be added to new expenses created in this group by default.') }}
+                </p>
+            </div>
+
+            <div class="btn-container-end">
+                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                <x-primary-button class="primary-color-btn" id="reactivate-member-btn" onclick="">{{ __('Reactivate') }}</x-primary-button>
             </div>
         </div>
     </x-modal>
@@ -356,6 +422,26 @@
         document.getElementById('remove-member-btn').setAttribute('onclick', 'removeMember(' + userId + ')');
     }
 
+    function configureDeactivateMemberModal(deactivateMemberBtn) {
+        const userId = deactivateMemberBtn.dataset.userId;
+        const username = deactivateMemberBtn.dataset.username;
+
+        const modal = document.getElementById('deactivate-member-modal');
+
+        modal.querySelector('h3').textContent = '{{ __('Deactivate ') }}' + username;
+        document.getElementById('deactivate-member-btn').setAttribute('onclick', 'deactivateMember(' + userId + ')');
+    }
+
+    function configureReactivateMemberModal(reactivateMemberBtn) {
+        const userId = reactivateMemberBtn.dataset.userId;
+        const username = reactivateMemberBtn.dataset.username;
+
+        const modal = document.getElementById('reactivate-member-modal');
+
+        modal.querySelector('h3').textContent = '{{ __('Reactivate ') }}' + username;
+        document.getElementById('reactivate-member-btn').setAttribute('onclick', 'reactivateMember(' + userId + ')');
+    }
+
     function sendInvite() {
         var inviteChips = inviteChipContainer.querySelectorAll('.invite-chip .invite-chip-text');
 
@@ -387,6 +473,40 @@
     function removeMember(memberId) {
         $.ajax({
             url: "{{ route('groups.remove-member', $group) }}",
+            method: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'member_id': memberId,
+            },
+            success: function(response) {
+                window.location.href = response.redirect;
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function deactivateMember(memberId) {
+        $.ajax({
+            url: "{{ route('groups.deactivate-member', $group) }}",
+            method: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'member_id': memberId,
+            },
+            success: function(response) {
+                window.location.href = response.redirect;
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function reactivateMember(memberId) {
+        $.ajax({
+            url: "{{ route('groups.reactivate-member', $group) }}",
             method: 'POST',
             data: {
                 '_token': '{{ csrf_token() }}',
