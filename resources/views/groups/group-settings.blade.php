@@ -66,7 +66,7 @@
                 </header>
 
                 @foreach ($group_members as $member)
-                    <div class="group-settings-member">
+                    <div class="group-settings-member" data-user-id="{{ $member->id }}">
                         <div class="dropdown-user-item-img-name">
                             <div class="profile-img-sm-container">
                                 <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
@@ -94,12 +94,12 @@
 
                                     <x-slot name="content">
                                         @if (auth()->user()->id !== $member->id)
-                                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'remove-member')" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="configureRemoveMemberModal(this)">
+                                            <div class="dropdown-item warning-hover" x-data="" x-on:click.prevent="$dispatch('open-modal', 'remove-member')" data-user-id="{{ $member->id }}" data-username="{{ $member->username }}" onclick="configureRemoveMemberModal(this)">
                                                 <i class="fa-solid fa-user-minus icon"></i>
                                                 <div>{{ __('Remove') }}</div>
                                             </div>
                                         @else
-                                            <div class="dropdown-item" x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')">
+                                            <div class="dropdown-item warning-hover" x-data="" x-on:click.prevent="$dispatch('open-modal', 'leave-group')">
                                                 <i class="fa-solid fa-right-from-bracket icon"></i>
                                                 <div>{{ __('Leave Group') }}</div>
                                             </div>
@@ -229,187 +229,312 @@
                 </p>
             </div>
 
-            <div>
-                <x-input-label for="user-email" value="{{ __('Search friends or type email and press Enter') }}" class="screen-reader-only" />
-                <x-text-input id="user-email" name="user-email" type="email" placeholder="{{ __('Search friends or type email and press Enter') }}" />
-                <x-input-error :messages="$errors->get('email')" />
+            <div class="expense-involved-container">
+                <div class="involved-chips-container" id="user-chips-container">
+                    <input id="invite-users" class="expense-involved" type="search" placeholder="{{ __('Search friends or type email') }}" autofocus autocomplete="off" />
+                </div>
+
+                <div class="expense-involved-dropdown hidden" id="invite-users-dropdown"></div>
             </div>
 
-            <div class="invited-emails-container" id="invited-emails-container"></div>
-
-            <template id="invite-chip-template">
-                <div class="invite-chip">
-                    <div class="invite-chip-text"></div>
-                    <x-icon-button icon="fa-solid fa-circle-xmark fa-sm" onclick="removeEmail(this)" />
-                </div>
-            </template>
-
-            @if (auth()->user()->friends()->count() > 0)
-                <h4>Your friends</h4>
-
-                <div class="space-top-xs" id="invite-friends-container">
-                    @include('groups.partials.friends-to-invite')
-                </div>
-            @endif
-
             <div class="btn-container-end">
-                <x-secondary-button x-on:click="$dispatch('close')">{{ __('Cancel') }}</x-secondary-button>
+                <x-secondary-button x-on:click="$dispatch('close')" onclick="clearUserChips()">{{ __('Cancel') }}</x-secondary-button>
                 <x-primary-button class="primary-color-btn" onclick="sendInvite()">{{ __('Send Invite') }}</x-primary-button>
             </div>
         </div>
     </x-modal>
+
+    <!-- Templates -->
+
+    <template id="invite-chip-template">
+        <div class="involved-chip" data-user-email="">
+            <div class="involved-chip-text"></div>
+            <x-icon-button icon="fa-solid fa-xmark fa-sm" onclick="removeUserChip(this)" />
+        </div>
+    </template>
+
+    <template id="dropdown-item-already-added-template">
+        <div class="involved-dropdown-item" onmouseover="highlightDropdownItem(this)">
+            <div class="dropdown-user-item-img-name">
+                <div class="profile-img-sm-container">
+                    <img src="" alt="User profile image" class="profile-img">
+                </div>
+                <div>
+                    <div class="involved-dropdown-user-name"></div>
+                    <div class="text-shy">{{ __('Already added') }}</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-user-check friend-added-icon"></i>
+        </div>
+    </template>
+
+    <template id="dropdown-item-not-added-template">
+        <div class="involved-dropdown-item" onmouseover="highlightDropdownItem(this)">
+            <div class="dropdown-user-item-img-name">
+                <div class="profile-img-sm-container">
+                    <img src="" alt="User profile image" class="profile-img">
+                </div>
+                <div>
+                    <div class="involved-dropdown-user-name"></div>
+                    <div class="text-shy involved-dropdown-user-email"></div>
+                </div>
+            </div>
+            <i class="fa-solid fa-user-plus add-friend-icon"></i>
+        </div>
+    </template>
+
+    <template id="dropdown-item-not-friend">
+        <div class="involved-dropdown-item" onmouseover="highlightDropdownItem(this)">
+            <div class="dropdown-user-item-img-name">
+                <div class="profile-img-sm-container">
+                    <img src="" alt="User profile image" class="profile-img">
+                </div>
+                <div>
+                    <div class="involved-dropdown-user-name"></div>
+                    <div class="text-shy">{{ __('Add email') }}</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-user-plus add-friend-icon"></i>
+        </div>
+    </template>
+
+    <template id="dropdown-divider-template">
+        <div class="involved-dropdown-divider"></div>
+    </template>
 </x-app-layout>
 
 <script>
-    const emailInput = document.getElementById('user-email');
-    const inviteChipContainer = document.getElementById('invited-emails-container');
+    const inviteUsersInput = document.getElementById('invite-users');
+    const inviteChipsContainer = document.getElementById('user-chips-container');
+    const inviteDropdown = document.getElementById('invite-users-dropdown');
 
-    emailInput.addEventListener('input', function(event) {
-        var searchString = event.target.value;
-        var inviteChips = inviteChipContainer.querySelectorAll('.invite-chip .invite-chip-text');
+    let selectedDropdownItemIndex = 0;
+
+    inviteUsersInput.addEventListener('input', function(event) {
+        const searchString = event.target.value;
+
+        // Remove backspace highlight on last user chip (if it exists)
+        if (inviteChipsContainer.children.length >= 2 && searchString !== '') {
+            const lastChip = inviteChipsContainer.children[inviteChipsContainer.children.length - 2];
+            lastChip.classList.remove('involved-chip-selected');
+        }
 
         $.ajax({
-            url: "{{ route('groups.search-friends-to-invite', $group) }}",
+            url: "{{ route('groups.search-friends-to-invite') }}",
             method: 'POST',
             data: {
                 '_token': '{{ csrf_token() }}',
                 'search_string': searchString,
             },
-            success: function(html) {
-                friendsToInvite = $('.friends-to-invite');
-                friendsToInvite.replaceWith(html);
-
-                var emails = [];
-                inviteChips.forEach(function(chip) {
-                    emails.push(chip.textContent.trim());
-                });
-
-                $('#friends-to-invite').children().each(function() {
-                    let friendEmail = $(this).find('.text-shy:not(.existing-member)').text().trim();
-                
-                    if (emails.includes(friendEmail)) {
-                        let icon = $(this).find('.fa-solid');
-                        icon.removeClass('add-friend-icon fa-user-plus').addClass('friend-added-icon fa-user-check');
-                    }
-                });
+            success: function(response) {
+                if (searchString === '') {
+                    inviteDropdown.classList.add('hidden');
+                } else {
+                    displaySearchResults(response);
+                }
             },
             error: function(error) {
-                console.log(error);
+                console.error(error);
             }
         });
     });
 
-    emailInput.addEventListener('keydown', function(event) {
-        if (event.keyCode === 13) { // Enter key
-            event.preventDefault();
-
-            if ($(emailInput).val() === '') {
-                return;
-            }
-
-            var inputValue = $(emailInput).val().trim().toLowerCase();
-
-            if ($(inviteChipContainer).children().length === 0) {
-                inviteChipContainer.style.display = 'flex';
-            }
-
-            var chipExists = false;
-
-            $('#invited-emails-container').children().each(function() {
-                if ($(this).find('.invite-chip-text').text().trim() === inputValue) {
-                    chipExists = true;
-                    return;
-                }
-            });
-
-            if (!chipExists) {
-                var inviteChipContent = $('#invite-chip-template').html();
-                var inviteChip = $(inviteChipContent).clone();
-                inviteChip.find('div').text(inputValue);
-                $(inviteChipContainer).append(inviteChip);
-
-                $('#friends-to-invite').children().each(function() {
-                    let emailValue = $(this).find('.text-shy:not(.existing-member)').text().trim();
-                
-                    if (emailValue === inputValue) {
-                        let icon = $(this).find('.fa-solid');
-                        icon.removeClass('add-friend-icon fa-user-plus').addClass('friend-added-icon fa-user-check');
-                    }
-                });
-            }
-
-            // Clear and reset input field
-
-            emailInput.value = ''; 
-
-            let inputEvent = new Event('input', {
-                bubbles: true,
-                cancelable: true,
-            });
-
-            emailInput.dispatchEvent(inputEvent);
+    inviteUsersInput.addEventListener('blur', function() {
+        // Remove backspace highlight on last user chip (if it exists)
+        if (inviteChipsContainer.children.length >= 2) {
+            const lastChip = inviteChipsContainer.children[inviteChipsContainer.children.length - 2];
+            lastChip.classList.remove('involved-chip-selected');
         }
-    })
+    });
 
-    function removeEmail(btn) {
-        inviteChip = btn.closest('.invite-chip');
-        inviteChipEmail = $(btn).prev('.invite-chip-text').text().trim();
+    function displaySearchResults(response) {
+        // Clear the dropdown from any previous results
+        inviteDropdown.innerHTML = '';
 
-        $('#friends-to-invite').children().each(function() {
-            let emailValue = $(this).find('.text-shy:not(.existing-member)').text().trim();
+        if (response.friends.length) {
+            // Get an array of user IDs that are already involved
+            const inviteChipUsersAlreadyAdded = Array.from(inviteChipsContainer.children).map(child => parseInt(child.dataset.userId));
+            const membersAlreadyAdded = Array.from(document.querySelectorAll('.group-settings-member')).map(member => parseInt(member.dataset.userId));
+            const usersAlreadyAdded = inviteChipUsersAlreadyAdded.concat(membersAlreadyAdded);
 
-            if (emailValue === inviteChipEmail) {
-                let icon = $(this).find('.fa-solid');
-                icon.removeClass('friend-added-icon fa-user-check').addClass('add-friend-icon fa-user-plus');
+            response.friends.forEach(user => {
+                let dropdownItem;
+
+                if (usersAlreadyAdded.includes(parseInt(user.id))) { // This user has already been added
+                    let dropdownItemTemplate = document.getElementById('dropdown-item-already-added-template');
+                    dropdownItem = dropdownItemTemplate.content.cloneNode(true);
+
+                    dropdownItem.querySelector('.profile-img').src = user.profile_image_url;
+                    dropdownItem.querySelector('.involved-dropdown-user-name').textContent = user.username;
+
+                    dropdownItem.querySelector('.involved-dropdown-item').addEventListener('click', () => {
+                        inviteDropdown.classList.add('hidden');
+                        inviteUsersInput.value = '';
+                        inviteUsersInput.focus();
+                    });
+                } else { // This user has not yet been added
+                    let dropdownItemTemplate = document.getElementById('dropdown-item-not-added-template');
+                    dropdownItem = dropdownItemTemplate.content.cloneNode(true);
+
+                    dropdownItem.querySelector('.profile-img').src = user.profile_image_url;
+                    dropdownItem.querySelector('.involved-dropdown-user-name').textContent = user.username;
+                    dropdownItem.querySelector('.involved-dropdown-user-email').textContent = user.email;
+
+                    dropdownItem.querySelector('.involved-dropdown-item').addEventListener('click', () => {
+                        addUserChip(user);
+                    });
+                }
+
+                // Add the item to the involved users search results dropdown
+                inviteDropdown.appendChild(dropdownItem);
+            });
+        }
+
+        const inputEmail = String(inviteUsersInput.value).trim().toLowerCase();
+        const isValidEmail = validateEmail(inputEmail);
+
+        if (isValidEmail) {
+            if (response.friends.length) {
+                // Add a divider between the search results and the "Add email" option
+                let dropdownDividerTemplate = document.getElementById('dropdown-divider-template');
+                dropdownDivider = dropdownDividerTemplate.content.cloneNode(true);
+                inviteDropdown.appendChild(dropdownDivider);
             }
-        });
 
-        $(inviteChip).remove();
+            // Add the "Add email" option for valid emails
 
-        if ($(inviteChipContainer).children().length === 0) {
-            inviteChipContainer.style.display = 'none';
+            let dropdownItemTemplate = document.getElementById('dropdown-item-not-friend');
+            let dropdownItem = dropdownItemTemplate.content.cloneNode(true);
+
+            dropdownItem.querySelector('.involved-dropdown-user-name').textContent = inputEmail;
+            dropdownItem.querySelector('.involved-dropdown-item').addEventListener('click', () => {
+                addUserChip({ username: inputEmail, email: inputEmail });
+            });
+
+            inviteDropdown.appendChild(dropdownItem);
+        }
+
+        if (response.friends.length || isValidEmail) {
+            // Highlight the first item and display the dropdown
+            selectedDropdownItemIndex = 0;
+            inviteDropdown.children[0].classList.add('involved-dropdown-item-selected');
+            inviteDropdown.classList.remove('hidden');
+        } else {
+            inviteDropdown.classList.add('hidden');
         }
     }
 
-    function addFriendEmail(event) {
-        if ($(inviteChipContainer).children().length === 0) {
-            inviteChipContainer.style.display = 'flex';
+    function validateEmail(email) {
+        const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return emailRegex.test(email);
+    }
+
+    function addUserChip(user) {
+        let userChipTemplate = document.getElementById('invite-chip-template');
+        let userChip = userChipTemplate.content.cloneNode(true);
+
+        // Configure the chip content
+        userChip.querySelector('.involved-chip-text').textContent = user.username;
+        userChip.querySelector('.involved-chip').dataset.userEmail = user.email;
+
+        // Add the chip
+        const inviteSearchInput = inviteChipsContainer.querySelector('.expense-involved');
+        inviteSearchInput.parentNode.insertBefore(userChip, inviteSearchInput);
+
+        // Clear and hide search dropdown results
+        inviteDropdown.classList.add('hidden');
+        inviteUsersInput.value = '';
+        inviteUsersInput.focus();
+    }
+
+    inviteChipsContainer.addEventListener('click', function() {
+        inviteUsersInput.focus();
+    });
+
+    function removeUserChip(removeBtn) {
+        userChip = removeBtn.closest('.involved-chip');
+        userChip.parentNode.removeChild(userChip);
+
+        inviteUsersInput.value = '';
+        inviteUsersInput.focus();
+    }
+
+    document.addEventListener('click', function(event) {
+        const clickedElement = event.target;
+
+        if (!inviteDropdown.contains(clickedElement)) {
+            // Hide dropdown and reset the highlighted dropdown item
+            inviteDropdown.classList.add('hidden');
+            selectedDropdownItemIndex = 0;
         }
+    });
 
-        addFriendBtn = event.target;
+    function highlightDropdownItem(item) {
+        // Highlight the specified involved users search dropdown item
+        if (!item.classList.contains('involved-dropdown-item-selected')) {
+            inviteDropdown.querySelector('.involved-dropdown-item-selected').classList.remove('involved-dropdown-item-selected');
+            item.classList.add('involved-dropdown-item-selected');
 
-        var emailText = $(addFriendBtn).closest('div').prev().find('.text-shy').text().trim();
+            const itemIndex = Array.from(inviteDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')).indexOf(item);
+            selectedDropdownItemIndex = itemIndex;
+        }
+    }
 
-        var chipExists = false;
+    inviteUsersInput.addEventListener('keydown', function(event) {
+        const dropdownItemsCount = inviteDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)').length;
 
-        $('#invited-emails-container').children().each(function() {
-            if ($(this).find('.invite-chip-text').text().trim() === emailText) {
-                chipExists = true;
-                return;
+        if ((event.key === 'Backspace' || event.keyCode === 8) && event.target.value === '' && inviteChipsContainer.children.length >= 2) { // Backspace
+            // Highlight/delete the last User chip
+            const lastChip = inviteChipsContainer.children[inviteChipsContainer.children.length - 2];
+            if (lastChip.classList.contains('involved-chip-selected')) {
+                // Remove the chip
+                lastChip.querySelector('button').click();
+            } else {
+                // Highlight the chip on backspace (if it's not a fixed chip)
+                if (!lastChip.classList.contains('involved-chip-fixed')) {
+                    lastChip.classList.add('involved-chip-selected');
+                }
             }
-        });
+        } else if (event.key === 'Enter' || event.keyCode === 13) { // Enter
+            event.preventDefault();
 
-        if (!chipExists) {
-            var inviteChipContent = $('#invite-chip-template').html();
-            var inviteChip = $(inviteChipContent).clone();
-            inviteChip.find('div').text(emailText);
+            // Click the highlighted dropdown item (to add the corresponding chip)
+            const selectedDropdownItem = inviteDropdown.querySelector('.involved-dropdown-item-selected');
+            selectedDropdownItem.click();
+        } else if (event.key === 'ArrowUp' || event.keyCode === 38) { // Arrow Up
+            event.preventDefault();
 
-            $(inviteChipContainer).append(inviteChip);
+            // Update highlighted dropdown item
+            inviteDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')[selectedDropdownItemIndex].classList.remove('involved-dropdown-item-selected');
+            if (selectedDropdownItemIndex === 0) {
+                selectedDropdownItemIndex = dropdownItemsCount - 1;
+            } else {
+                selectedDropdownItemIndex--;
+            }
+            inviteDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')[selectedDropdownItemIndex].classList.add('involved-dropdown-item-selected');
+        } else if (event.key === 'ArrowDown' || event.keyCode === 40) { // Arrow Down
+            event.preventDefault();
 
-            $(addFriendBtn).removeClass('fa-user-plus add-friend-icon');
-            $(addFriendBtn).addClass('fa-user-check friend-added-icon')
+            // Update highlighted dropdown item
+            inviteDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')[selectedDropdownItemIndex].classList.remove('involved-dropdown-item-selected');
+            if (selectedDropdownItemIndex === dropdownItemsCount - 1) {
+                selectedDropdownItemIndex = 0;
+            } else {
+                selectedDropdownItemIndex++;
+            }
+            inviteDropdown.querySelectorAll(':scope > :not(.involved-dropdown-divider)')[selectedDropdownItemIndex].classList.add('involved-dropdown-item-selected');
+        } else if (event.key === 'Escape' || event.keyCode === 27) { // Escape
+            // Hide the dropdown
+            inviteDropdown.classList.add('hidden');
         }
+    });
 
-        // Clear and reset input field
+    function clearUserChips() {
+        const userChips = inviteChipsContainer.querySelectorAll('.involved-chip');
 
-        emailInput.value = ''; 
-
-        let inputEvent = new Event('input', {
-            bubbles: true,
-            cancelable: true,
+        userChips.forEach(chip => {
+            chip.remove();
         });
-
-        emailInput.dispatchEvent(inputEvent);
     }
 
     function configureRemoveMemberModal(removeMemberBtn) {
@@ -443,12 +568,7 @@
     }
 
     function sendInvite() {
-        var inviteChips = inviteChipContainer.querySelectorAll('.invite-chip .invite-chip-text');
-
-        var emails = [];
-        inviteChips.forEach(function(chip) {
-            emails.push(chip.textContent.trim());
-        });
+        var emails = Array.from(inviteChipsContainer.querySelectorAll('.involved-chip')).map(child => String(child.dataset.userEmail));
 
         if (emails.length === 0) {
             return;

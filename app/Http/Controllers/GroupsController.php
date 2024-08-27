@@ -412,22 +412,27 @@ class GroupsController extends Controller
     /**
      * Filters the friends list on the "Add Members" modal.
      */
-    public function searchFriendsToInvite(Request $request, Group $group): View
+    public function searchFriendsToInvite(Request $request): JsonResponse
     {
         $search_string = $request->input('search_string');
 
-        $friends = auth()->user()->friends()
+        $friends = $request->user()->friends()
             ->where(function ($query) use ($search_string) {
                 $query->whereRaw('users.username LIKE ?', ["%$search_string%"])
                     ->orWhereRaw('users.email LIKE ?', ["%$search_string%"]);
             })
-            ->orderBy('username', 'asc')
+            ->orderBy('username', 'ASC')
             ->get();
 
-        return view('groups.partials.friends-to-invite', [
-            'group' => $group,
+        foreach ($friends as $friend) {
+            $friend->profile_image_url = $friend->getProfileImageUrlAttribute();
+        }
+
+        $response = [
             'friends' => $friends,
-        ]);
+        ];
+    
+        return response()->json($response);
     }
 
     /**
