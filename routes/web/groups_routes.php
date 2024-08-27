@@ -16,7 +16,7 @@ Route::patch('/groups/{group}/update', [GroupsController::class, 'update'])->nam
 Route::get('/groups/{group}/balances', [GroupsController::class, 'balances'])->name('groups.balances');
 Route::get('/groups/{group}/totals', [GroupsController::class, 'totals'])->name('groups.totals');
 
-Route::post('/groups/{group}/search-friends-to-invite', [GroupsController::class, 'searchFriendsToInvite'])->name('groups.search-friends-to-invite');
+Route::post('/groups/search-friends-to-invite', [GroupsController::class, 'searchFriendsToInvite'])->name('groups.search-friends-to-invite');
 Route::post('/groups/{group}/invite', [GroupsController::class, 'invite'])->name('groups.invite');
 
 Route::post('/groups/{group}/remove-member', [GroupsController::class, 'removeMember'])->name('groups.remove-member');

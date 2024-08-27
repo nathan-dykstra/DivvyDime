@@ -3166,12 +3166,6 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
 
 .add-friend-icon {
     color: var(--icon-grey);
-    transition: color 0.3s ease-in-out;
-}
-
-.add-friend-icon:hover {
-    color: var(--blue-text);
-    cursor: pointer;
 }
 
 .friend-added-icon {
@@ -3318,7 +3312,7 @@ body::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover, .m
     background-color: var(--secondary-grey);
     border-radius: var(--border-radius);
     padding: var(--container-padding);
-    overflow: hidden;
+    /*overflow: hidden;*/
     box-shadow: var(--box-shadow);
     transition: all 0.3s ease-in-out;
 }
