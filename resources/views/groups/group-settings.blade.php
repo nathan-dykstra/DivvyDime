@@ -66,7 +66,7 @@
                 </header>
 
                 @foreach ($group_members as $member)
-                    <div class="group-settings-member" data-user-id="{{ $member->id }}">
+                    <div class="group-settings-member" data-user-email="{{ $member->email }}">
                         <div class="dropdown-user-item-img-name">
                             <div class="profile-img-sm-container">
                                 <img src="{{ $member->getProfileImageUrlAttribute() }}" alt="User profile image" class="profile-img">
@@ -298,6 +298,21 @@
         </div>
     </template>
 
+    <template id="dropdown-item-not-friend-added-template">
+        <div class="involved-dropdown-item" onmouseover="highlightDropdownItem(this)">
+            <div class="dropdown-user-item-img-name">
+                <div class="profile-img-sm-container">
+                    <img src="" alt="User profile image" class="profile-img">
+                </div>
+                <div>
+                    <div class="involved-dropdown-user-name"></div>
+                    <div class="text-shy">{{ __('Already added') }}</div>
+                </div>
+            </div>
+            <i class="fa-solid fa-user-check friend-added-icon"></i>
+        </div>
+    </template>
+
     <template id="dropdown-divider-template">
         <div class="involved-dropdown-divider"></div>
     </template>
@@ -351,16 +366,16 @@
         // Clear the dropdown from any previous results
         inviteDropdown.innerHTML = '';
 
-        if (response.friends.length) {
-            // Get an array of user IDs that are already involved
-            const inviteChipUsersAlreadyAdded = Array.from(inviteChipsContainer.children).map(child => parseInt(child.dataset.userId));
-            const membersAlreadyAdded = Array.from(document.querySelectorAll('.group-settings-member')).map(member => parseInt(member.dataset.userId));
-            const usersAlreadyAdded = inviteChipUsersAlreadyAdded.concat(membersAlreadyAdded);
+        // Get an array of user emails that are already in the group or added to invite chips
+        const chipEmailsAlreadyAdded = Array.from(inviteChipsContainer.children).map(child => String(child.dataset.userEmail));
+        const memberEmailsAlreadyAdded = Array.from(document.querySelectorAll('.group-settings-member')).map(member => String(member.dataset.userEmail));
+        const emailsAlreadyAdded = chipEmailsAlreadyAdded.concat(memberEmailsAlreadyAdded);
 
+        if (response.friends.length) {
             response.friends.forEach(user => {
                 let dropdownItem;
 
-                if (usersAlreadyAdded.includes(parseInt(user.id))) { // This user has already been added
+                if (emailsAlreadyAdded.includes(String(user.email))) { // This user has already been added
                     let dropdownItemTemplate = document.getElementById('dropdown-item-already-added-template');
                     dropdownItem = dropdownItemTemplate.content.cloneNode(true);
 
@@ -403,14 +418,27 @@
 
             // Add the "Add email" option for valid emails
 
-            let dropdownItemTemplate = document.getElementById('dropdown-item-not-friend');
-            let dropdownItem = dropdownItemTemplate.content.cloneNode(true);
+            let dropdownItem;
+
+            if (emailsAlreadyAdded.includes(String(inputEmail))) {
+                let dropdownItemTemplate = document.getElementById('dropdown-item-not-friend-added-template');
+                dropdownItem = dropdownItemTemplate.content.cloneNode(true);
+
+                dropdownItem.querySelector('.involved-dropdown-item').addEventListener('click', () => {
+                        inviteDropdown.classList.add('hidden');
+                        inviteUsersInput.value = '';
+                        inviteUsersInput.focus();
+                    });
+            } else {
+                let dropdownItemTemplate = document.getElementById('dropdown-item-not-friend');
+                dropdownItem = dropdownItemTemplate.content.cloneNode(true);
+
+                dropdownItem.querySelector('.involved-dropdown-item').addEventListener('click', () => {
+                    addUserChip({ username: inputEmail, email: inputEmail });
+                });
+            }
 
             dropdownItem.querySelector('.involved-dropdown-user-name').textContent = inputEmail;
-            dropdownItem.querySelector('.involved-dropdown-item').addEventListener('click', () => {
-                addUserChip({ username: inputEmail, email: inputEmail });
-            });
-
             inviteDropdown.appendChild(dropdownItem);
         }
 
