@@ -711,6 +711,7 @@ class ExpensesController extends Controller
         foreach ($groups as $group) {
             $group->group_image_url = $group->getGroupImageUrlAttribute();
             $group->group_members = $group->members()
+                ->wherePivot('is_active', true)
                 ->orderByRaw("
                     CASE
                         WHEN users.id = ? THEN 0
