@@ -5,7 +5,7 @@
         </div>
     
         <div class="guest-app-slogan margin-bottom-lg animate-fade-in">
-            <h3>{{ _('Divvy up and start saving, one dime at a time!') }}</h3>
+            <h3>{{ __('Divvy up and start saving, one dime at a time!') }}</h3>
         </div>
     
         <div class="btn-container-end">
